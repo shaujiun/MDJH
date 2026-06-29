@@ -1,0 +1,5114 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>模擬考成績系統｜登入</title>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --primary-light: #dbeafe;
+      --text: #172033;
+      --muted: #667085;
+      --line: #d9e2ef;
+      --danger: #dc2626;
+      --success: #15803d;
+      --card: rgba(255, 255, 255, 0.92);
+      --shadow: 0 24px 70px rgba(15, 23, 42, 0.18);
+      font-family: "Microsoft JhengHei", "Noto Sans TC", system-ui, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(37, 99, 235, 0.24), transparent 34rem),
+        linear-gradient(135deg, #f8fbff 0%, #eef4ff 48%, #e0ecff 100%);
+      display: grid;
+      place-items: center;
+      padding: 32px 18px;
+    }
+
+    .login-shell {
+      width: min(1040px, 100%);
+      display: grid;
+      grid-template-columns: 1.08fr 0.92fr;
+      background: var(--card);
+      border: 1px solid rgba(255, 255, 255, 0.72);
+      border-radius: 32px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      backdrop-filter: blur(18px);
+    }
+
+    .intro-panel {
+      position: relative;
+      padding: 56px;
+      background:
+        linear-gradient(150deg, rgba(37, 99, 235, 0.95), rgba(30, 64, 175, 0.92)),
+        url("data:image/svg+xml,%3Csvg width='160' height='160' viewBox='0 0 160 160' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='rgba(255,255,255,0.16)' stroke-width='2'%3E%3Cpath d='M20 40h120M20 80h120M20 120h120M40 20v120M80 20v120M120 20v120'/%3E%3C/g%3E%3C/svg%3E");
+      color: #ffffff;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 48px;
+    }
+
+    .system-badge {
+      width: fit-content;
+      padding: 9px 14px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.16);
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      font-size: 14px;
+      letter-spacing: 0.08em;
+    }
+
+    .intro-panel h1 {
+      margin: 28px 0 18px;
+      font-size: clamp(34px, 5vw, 54px);
+      line-height: 1.12;
+      letter-spacing: 0.02em;
+    }
+
+    .intro-panel p {
+      max-width: 520px;
+      margin: 0;
+      color: rgba(255, 255, 255, 0.82);
+      font-size: 18px;
+      line-height: 1.8;
+    }
+
+    .feature-list {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .feature-list li {
+      padding: 16px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.14);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      font-weight: 700;
+      line-height: 1.5;
+    }
+
+    .login-panel {
+      padding: 56px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .login-panel h2 {
+      margin: 0 0 10px;
+      font-size: 30px;
+    }
+
+    .login-panel .hint {
+      margin: 0 0 32px;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+
+    input,
+    select {
+      width: 100%;
+      height: 50px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 0 15px;
+      color: var(--text);
+      background: #ffffff;
+      font: inherit;
+      outline: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    input:focus,
+    select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.14);
+    }
+
+    .password-row {
+      position: relative;
+    }
+
+    .password-row input {
+      padding-right: 92px;
+    }
+
+    .toggle-password {
+      position: absolute;
+      top: 50%;
+      right: 8px;
+      transform: translateY(-50%);
+      border: 0;
+      border-radius: 10px;
+      background: var(--primary-light);
+      color: var(--primary-dark);
+      padding: 8px 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .form-options {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      margin: 8px 0 12px;
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    .remember {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+
+    .remember input {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--primary);
+    }
+
+    .password-help {
+      margin: 0 0 24px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .text-button {
+      border: 0;
+      padding: 0;
+      color: var(--primary-dark);
+      background: transparent;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .text-button:hover {
+      text-decoration: underline;
+    }
+
+    .recovery-panel h3 {
+      margin: 0 0 10px;
+      font-size: 24px;
+    }
+
+    .recovery-panel .hint {
+      margin-bottom: 24px;
+    }
+
+    .secondary-login-button {
+      width: 100%;
+      min-height: 48px;
+      margin-top: 12px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      color: var(--primary-dark);
+      background: #ffffff;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .login-button {
+      width: 100%;
+      min-height: 52px;
+      border: 0;
+      border-radius: 16px;
+      background: var(--primary);
+      color: #ffffff;
+      font: inherit;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      box-shadow: 0 14px 24px rgba(37, 99, 235, 0.24);
+      transition: transform 0.2s ease, background 0.2s ease;
+    }
+
+    .login-button:hover {
+      background: var(--primary-dark);
+      transform: translateY(-1px);
+    }
+
+    .message {
+      min-height: 26px;
+      margin-top: 16px;
+      font-weight: 700;
+      line-height: 1.6;
+    }
+
+    .message.error {
+      color: var(--danger);
+    }
+
+    .message.success {
+      color: var(--success);
+    }
+
+    .demo-account {
+      margin-top: 30px;
+      padding: 16px;
+      border-radius: 18px;
+      background: #f8fafc;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      line-height: 1.7;
+      font-size: 14px;
+    }
+
+    .demo-account strong {
+      color: var(--text);
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .admin-app {
+      width: min(1380px, 100%);
+    }
+
+    .portal-app {
+      width: min(1380px, 100%);
+      display: grid;
+      gap: 22px;
+    }
+
+    .admin-layout {
+      display: grid;
+      grid-template-columns: 230px minmax(0, 1fr);
+      gap: 24px;
+      align-items: start;
+    }
+
+    .admin-sidebar {
+      position: sticky;
+      top: 24px;
+      padding: 22px 16px;
+      border: 1px solid rgba(255, 255, 255, 0.72);
+      border-radius: 26px;
+      background: var(--card);
+      box-shadow: 0 18px 52px rgba(15, 23, 42, 0.12);
+      backdrop-filter: blur(18px);
+    }
+
+    .admin-sidebar-title {
+      margin: 0 8px 16px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+    }
+
+    .admin-nav {
+      display: grid;
+      gap: 8px;
+    }
+
+    .admin-nav-button {
+      width: 100%;
+      border: 0;
+      border-radius: 14px;
+      padding: 13px 14px;
+      color: var(--text);
+      background: transparent;
+      font: inherit;
+      font-weight: 800;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .admin-nav-button:hover {
+      background: #f1f5f9;
+    }
+
+    .admin-nav-button.active {
+      color: #ffffff;
+      background: var(--primary);
+      box-shadow: 0 10px 20px rgba(37, 99, 235, 0.2);
+    }
+
+    .admin-main {
+      min-width: 0;
+      display: grid;
+      gap: 22px;
+    }
+
+    .admin-page {
+      display: none;
+    }
+
+    .admin-page.active {
+      display: block;
+    }
+
+    .admin-page.app-grid.active {
+      display: grid;
+    }
+
+    .app-header,
+    .app-card {
+      background: var(--card);
+      border: 1px solid rgba(255, 255, 255, 0.72);
+      border-radius: 26px;
+      box-shadow: 0 18px 52px rgba(15, 23, 42, 0.12);
+      backdrop-filter: blur(18px);
+    }
+
+    .app-header {
+      padding: 28px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+    }
+
+    .app-header h1 {
+      margin: 0 0 8px;
+      font-size: clamp(26px, 4vw, 38px);
+    }
+
+    .app-header p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .logout-button,
+    .secondary-button {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: #ffffff;
+      color: var(--primary-dark);
+      padding: 11px 16px;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .app-grid {
+      display: grid;
+      grid-template-columns: 0.95fr 1.05fr;
+      gap: 22px;
+    }
+
+    .app-card {
+      padding: 28px;
+    }
+
+    .app-card h2 {
+      margin: 0 0 18px;
+      font-size: 24px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .form-grid .wide {
+      grid-column: 1 / -1;
+    }
+
+    .file-drop {
+      border: 2px dashed #b8c7dc;
+      border-radius: 20px;
+      background: #f8fbff;
+      padding: 22px;
+      text-align: center;
+      color: var(--muted);
+    }
+
+    .file-drop input {
+      height: auto;
+      margin-top: 14px;
+      padding: 12px;
+      cursor: pointer;
+    }
+
+    .action-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+
+    .primary-action {
+      border: 0;
+      border-radius: 14px;
+      background: var(--primary);
+      color: #ffffff;
+      padding: 12px 18px;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .preview-status {
+      margin-top: 16px;
+      color: var(--muted);
+      line-height: 1.7;
+      font-weight: 700;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .summary-item {
+      padding: 16px;
+      border-radius: 18px;
+      background: #f8fafc;
+      border: 1px solid var(--line);
+    }
+
+    .summary-item strong {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 24px;
+    }
+
+    .summary-item span {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .preview-table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #ffffff;
+      min-width: 760px;
+    }
+
+    th,
+    td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      white-space: nowrap;
+    }
+
+    th {
+      background: #eff6ff;
+      color: var(--primary-dark);
+      font-size: 14px;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .notice-list {
+      margin: 16px 0 0;
+      padding-left: 20px;
+      color: var(--muted);
+      line-height: 1.8;
+    }
+
+    .issue-list {
+      margin-top: 18px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .issue-item {
+      padding: 12px 14px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: #f8fafc;
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: 14px;
+    }
+
+    .issue-item strong {
+      color: var(--text);
+    }
+
+    .issue-error {
+      border-color: #fecaca;
+      background: #fef2f2;
+      color: #991b1b;
+    }
+
+    .issue-warning {
+      border-color: #fde68a;
+      background: #fffbeb;
+      color: #92400e;
+    }
+
+    .issue-ok {
+      border-color: #bbf7d0;
+      background: #f0fdf4;
+      color: #166534;
+    }
+
+    .settings-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 22px;
+    }
+
+    .mini-table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      margin-top: 12px;
+    }
+
+    .mini-table {
+      min-width: 520px;
+    }
+
+    .mini-table input {
+      height: 38px;
+      min-width: 72px;
+      padding: 0 10px;
+      border-radius: 10px;
+    }
+
+    .manual-score-panel {
+      margin-top: 22px;
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: #f8fbff;
+    }
+
+    .manual-score-panel h3 {
+      margin: 0 0 8px;
+    }
+
+    .manual-score-panel .form-group {
+      max-width: 220px;
+    }
+
+    .manual-score-input {
+      width: 110px;
+      height: 40px;
+      border-radius: 10px;
+    }
+
+    .absent-check {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0;
+      cursor: pointer;
+    }
+
+    .absent-check input {
+      width: 18px;
+      height: 18px;
+    }
+
+    .setting-note {
+      margin: 12px 0 0;
+      color: var(--muted);
+      line-height: 1.7;
+      font-size: 14px;
+    }
+
+    .connection-card {
+      padding: 22px 28px;
+    }
+
+    .connection-row {
+      display: grid;
+      grid-template-columns: 1.1fr 1.1fr 1.1fr auto;
+      gap: 14px;
+      align-items: end;
+    }
+
+    .switch-row {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      color: var(--muted);
+      font-weight: 700;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+
+    .switch-row input {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--primary);
+    }
+
+    code,
+    small {
+      word-break: break-word;
+    }
+
+    .report-filter-row {
+      display: grid;
+      grid-template-columns: 1.5fr 0.8fr auto auto;
+      gap: 14px;
+      align-items: end;
+    }
+
+    .score-cell strong,
+    .score-cell small {
+      display: block;
+    }
+
+    .score-cell small {
+      margin-top: 3px;
+      color: var(--muted);
+    }
+
+    .report-summary {
+      margin-top: 18px;
+    }
+
+    .analysis-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+      margin: 22px 0;
+    }
+
+    .analysis-card {
+      padding: 20px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: #f8fbff;
+    }
+
+    .analysis-card h3 {
+      margin: 0 0 16px;
+      font-size: 18px;
+    }
+
+    .bar-chart {
+      display: grid;
+      gap: 14px;
+    }
+
+    .bar-row,
+    .distribution-row {
+      display: grid;
+      grid-template-columns: 52px minmax(0, 1fr) 58px;
+      gap: 10px;
+      align-items: center;
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .distribution-row {
+      grid-template-columns: 52px minmax(0, 1fr);
+    }
+
+    .bar-track {
+      height: 18px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: #e2e8f0;
+    }
+
+    .bar-fill {
+      height: 100%;
+      min-width: 2px;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #2563eb, #38bdf8);
+    }
+
+    .distribution-track {
+      display: flex;
+      min-height: 28px;
+      overflow: hidden;
+      border-radius: 9px;
+      background: #e2e8f0;
+    }
+
+    .distribution-segment {
+      display: grid;
+      min-width: 0;
+      place-items: center;
+      color: #ffffff;
+      font-size: 11px;
+      white-space: nowrap;
+    }
+
+    .grade-a { background: #2563eb; }
+    .grade-b { background: #0f9f6e; }
+    .grade-c { background: #f59e0b; }
+    .grade-absent { background: #64748b; }
+
+    .individual-report-sheet {
+      width: min(820px, 100%);
+      margin: 0 auto;
+      padding: 36px;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: #ffffff;
+    }
+
+    .individual-report-header {
+      padding-bottom: 18px;
+      border-bottom: 3px solid var(--primary);
+      text-align: center;
+    }
+
+    .individual-report-header h1 {
+      margin: 0 0 8px;
+      font-size: 28px;
+    }
+
+    .individual-student-info,
+    .individual-summary-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin: 20px 0;
+    }
+
+    .individual-info-item {
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #f8fafc;
+    }
+
+    .individual-info-item span {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .individual-score-table {
+      min-width: 0;
+    }
+
+    .individual-report-note {
+      margin-top: 22px;
+      color: var(--muted);
+      font-size: 12px;
+      text-align: center;
+    }
+
+    @media print {
+      body {
+        background: #ffffff;
+      }
+
+      .admin-sidebar,
+      .app-header,
+      .report-actions,
+      .report-filter-row,
+      .admin-page:not([data-admin-page="reports"]) {
+        display: none !important;
+      }
+
+      .admin-app,
+      .admin-main,
+      .admin-page[data-admin-page="reports"] {
+        display: block !important;
+        padding: 0;
+      }
+
+      .app-card {
+        border: 0;
+        box-shadow: none;
+        padding: 0;
+      }
+
+      table {
+        min-width: 0;
+        font-size: 10px;
+      }
+
+      th,
+      td {
+        padding: 5px;
+      }
+
+      body.printing-individual > *:not(#individualReportSheet) {
+        display: none !important;
+      }
+
+      body.printing-individual #individualReportSheet {
+        display: block !important;
+        width: 100%;
+        padding: 0;
+        border: 0;
+        border-radius: 0;
+      }
+    }
+
+    @media (max-width: 860px) {
+      body {
+        display: block;
+      }
+
+      .login-shell {
+        grid-template-columns: 1fr;
+      }
+
+      .admin-layout,
+      .app-header,
+      .app-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .admin-sidebar {
+        position: static;
+        padding: 12px;
+      }
+
+      .admin-sidebar-title {
+        display: none;
+      }
+
+      .admin-nav {
+        display: flex;
+        gap: 8px;
+        overflow-x: auto;
+      }
+
+      .admin-nav-button {
+        width: auto;
+        flex: 0 0 auto;
+        white-space: nowrap;
+      }
+
+      .app-header {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .intro-panel,
+      .login-panel {
+        padding: 36px 24px;
+      }
+
+      .summary-grid,
+      .form-grid,
+      .settings-grid,
+      .connection-row,
+      .report-filter-row,
+      .analysis-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .feature-list {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .form-options {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="login-shell">
+    <section class="intro-panel" aria-label="系統介紹">
+      <div>
+        <div class="system-badge">模擬考成績系統</div>
+        <h1>成績轉換與列印管理平台</h1>
+        <p>
+          提供模擬考成績換算、學生資料查詢、成績單列印與班級報表整理，
+          讓導師與行政端可以更快速完成模擬考成績後續作業。
+        </p>
+      </div>
+
+      <ul class="feature-list">
+        <li>成績換算</li>
+        <li>報表列印</li>
+        <li>權限登入</li>
+      </ul>
+    </section>
+
+    <section class="login-panel" aria-label="登入表單">
+      <h2 id="authPanelTitle">登入系統</h2>
+      <p class="hint" id="authPanelHint">請使用學校提供的帳號登入。此頁目前是前端示範，可再串接正式資料庫。</p>
+
+      <form id="loginForm" novalidate>
+        <div class="form-group">
+          <label for="role">登入身分</label>
+          <select id="role" name="role" required>
+            <option value="">請選擇身分</option>
+            <option value="student">學生</option>
+            <option value="subject_teacher">任課老師</option>
+            <option value="homeroom_teacher">導師</option>
+            <option value="admin">管理員</option>
+            <option value="viewer">查詢人員</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="account">帳號</label>
+          <input id="account" name="account" type="text" autocomplete="username" placeholder="例如：teacher01" required>
+        </div>
+
+        <div class="form-group">
+          <label for="password">密碼</label>
+          <div class="password-row">
+            <input id="password" name="password" type="password" autocomplete="current-password" placeholder="請輸入密碼" required>
+            <button class="toggle-password" type="button" id="togglePassword">顯示</button>
+          </div>
+        </div>
+
+        <div class="form-options">
+          <label class="remember">
+            <input id="remember" name="remember" type="checkbox">
+            記住此裝置
+          </label>
+          <label class="remember">
+            <input id="useSupabaseAuth" name="useSupabaseAuth" type="checkbox">
+            使用 Supabase Auth
+          </label>
+        </div>
+
+        <p class="password-help">
+          第一次使用可
+          <button class="text-button" type="button" id="showSignupButton">建立帳號</button>；
+          忘記密碼時，可
+          <button class="text-button" type="button" id="showResetRequestButton">寄送重設信</button>；
+          如無法收信，請聯絡註冊組長協助重設。
+        </p>
+
+        <button class="login-button" type="submit">登入</button>
+        <div class="message" id="message" role="status" aria-live="polite"></div>
+      </form>
+
+      <form class="recovery-panel hidden" id="signupForm" novalidate>
+        <h3>建立帳號</h3>
+        <p class="hint">請使用學校登記的 Email 建立帳號。帳號建立後，需由管理員在名冊中綁定身分。</p>
+        <div class="form-group">
+          <label for="signupDisplayName">姓名</label>
+          <input id="signupDisplayName" name="signupDisplayName" type="text" autocomplete="name" placeholder="例如：王小明" required>
+        </div>
+        <div class="form-group">
+          <label for="signupEmail">Email</label>
+          <input id="signupEmail" name="signupEmail" type="email" autocomplete="email" placeholder="例如：student@example.com" required>
+        </div>
+        <div class="form-group">
+          <label for="signupPassword">密碼</label>
+          <input id="signupPassword" name="signupPassword" type="password" autocomplete="new-password" minlength="8" required>
+        </div>
+        <div class="form-group">
+          <label for="signupConfirmPassword">再次輸入密碼</label>
+          <input id="signupConfirmPassword" name="signupConfirmPassword" type="password" autocomplete="new-password" minlength="8" required>
+        </div>
+        <button class="login-button" type="submit">送出建立帳號</button>
+        <button class="secondary-login-button" type="button" id="cancelSignupButton">返回登入</button>
+        <div class="message" id="signupMessage" role="status" aria-live="polite"></div>
+      </form>
+
+      <form class="recovery-panel hidden" id="resetRequestForm" novalidate>
+        <h3>忘記密碼</h3>
+        <p class="hint">請輸入帳號使用的 Email，系統會寄送設定新密碼的連結。</p>
+        <div class="form-group">
+          <label for="resetEmail">Email</label>
+          <input id="resetEmail" name="resetEmail" type="email" autocomplete="email" placeholder="例如：teacher@example.com" required>
+        </div>
+        <button class="login-button" type="submit">寄送重設信</button>
+        <button class="secondary-login-button" type="button" id="cancelResetRequestButton">返回登入</button>
+        <div class="message" id="resetMessage" role="status" aria-live="polite"></div>
+      </form>
+
+      <form class="recovery-panel hidden" id="updatePasswordForm" novalidate>
+        <h3>設定新密碼</h3>
+        <p class="hint">請輸入至少 8 個字元的新密碼，完成後即可使用新密碼登入。</p>
+        <div class="form-group">
+          <label for="newPassword">新密碼</label>
+          <input id="newPassword" name="newPassword" type="password" autocomplete="new-password" minlength="8" required>
+        </div>
+        <div class="form-group">
+          <label for="confirmNewPassword">再次輸入新密碼</label>
+          <input id="confirmNewPassword" name="confirmNewPassword" type="password" autocomplete="new-password" minlength="8" required>
+        </div>
+        <button class="login-button" type="submit">儲存新密碼</button>
+        <div class="message" id="updatePasswordMessage" role="status" aria-live="polite"></div>
+      </form>
+
+      <div class="demo-account" id="demoAccount">
+        <strong>示範管理員：</strong> admin01／123456<br>
+        <strong>示範教師：</strong> teacher01／123456<br>
+        正式使用前，建議改成連接 Supabase 或學校內部帳號系統。
+      </div>
+    </section>
+  </main>
+
+  <section class="admin-app hidden" id="adminApp" aria-label="行政匯入頁面">
+    <div class="admin-layout">
+      <aside class="admin-sidebar" aria-label="行政功能選單">
+        <p class="admin-sidebar-title">行政功能</p>
+        <nav class="admin-nav">
+          <button class="admin-nav-button active" type="button" data-admin-target="import">成績匯入</button>
+          <button class="admin-nav-button" type="button" data-admin-target="math">數非補登</button>
+          <button class="admin-nav-button" type="button" data-admin-target="reports">成績查詢</button>
+          <button class="admin-nav-button" type="button" data-admin-target="people">人員與帳號</button>
+          <button class="admin-nav-button" type="button" data-admin-target="rules">換算與積分</button>
+          <button class="admin-nav-button" type="button" data-admin-target="connection">系統連線</button>
+        </nav>
+      </aside>
+
+      <div class="admin-main">
+        <header class="app-header">
+          <div>
+            <div class="system-badge">行政人員專區</div>
+            <h1 id="adminPageTitle">成績匯入</h1>
+            <p id="adminPageDescription">匯入讀卡結果、檢查學生資料並寫入成績。</p>
+          </div>
+          <button class="logout-button" type="button" id="logoutButton">返回登入頁</button>
+        </header>
+
+    <section class="app-card connection-card admin-page" data-admin-page="connection" aria-label="Supabase 連線設定">
+      <h2>Supabase 連線設定</h2>
+      <p class="hint">目前預設為示範模式。未來建立 Supabase 專案並登入後，可填入設定再勾選「正式送出 RPC」。</p>
+      <div class="connection-row">
+        <div class="form-group">
+          <label for="supabaseUrl">Supabase URL</label>
+          <input id="supabaseUrl" type="url" placeholder="https://xxxx.supabase.co">
+        </div>
+        <div class="form-group">
+          <label for="supabaseAnonKey">Supabase anon key</label>
+          <input id="supabaseAnonKey" type="password" placeholder="只填 anon key，不填 service role key">
+        </div>
+        <div class="form-group">
+          <label for="supabaseAccessToken">登入後 access token</label>
+          <input id="supabaseAccessToken" type="password" placeholder="正式登入後由系統自動帶入" readonly>
+        </div>
+        <label class="switch-row">
+          <input id="enableLiveRpc" type="checkbox">
+          正式送出 RPC
+        </label>
+      </div>
+      <div class="action-row">
+        <button class="secondary-button" type="button" id="saveSupabaseConfigButton">儲存連線設定</button>
+        <button class="primary-action" type="button" id="runHealthCheckButton">執行系統檢查</button>
+      </div>
+      <p class="setting-note" id="supabaseStatus">尚未啟用正式送出；目前所有儲存都只會在畫面示範。</p>
+      <div class="manual-score-panel">
+        <h3>Supabase Auth 網址設定</h3>
+        <p class="setting-note">試行上線後，請將目前網址填入 Supabase Auth 的 Site URL 與 Redirect URLs，讓建立帳號、Email 驗證與忘記密碼可正確回到本系統。</p>
+        <div class="form-grid">
+          <div class="form-group wide">
+            <label for="currentSiteUrlInput">目前網站網址</label>
+            <input id="currentSiteUrlInput" type="text" readonly>
+          </div>
+        </div>
+        <div class="action-row">
+          <button class="secondary-button" type="button" id="copySiteUrlButton">複製目前網址</button>
+        </div>
+        <p class="setting-note" id="siteUrlStatus">上線後請把這個網址貼到 Supabase Auth 設定。</p>
+      </div>
+      <div class="mini-table-wrap" style="margin-top: 16px;">
+        <table class="mini-table">
+          <thead>
+            <tr><th>檢查項目</th><th>狀態</th><th>說明</th></tr>
+          </thead>
+          <tbody id="healthCheckBody">
+            <tr><td colspan="3">完成 Supabase 設定並以管理員登入後，可執行系統檢查。</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="setting-note" id="healthCheckStatus">尚未執行系統檢查。</p>
+
+      <div class="manual-score-panel">
+        <h3>上線前檢查</h3>
+        <p class="setting-note">試行上線前可先檢查首頁檔案、Excel 解析程式與 Supabase 連線設定狀態。</p>
+        <div class="action-row">
+          <button class="secondary-button" type="button" id="runDeployCheckButton">執行上線前檢查</button>
+        </div>
+        <div class="mini-table-wrap" style="margin-top: 12px;">
+          <table class="mini-table">
+            <thead>
+              <tr><th>檢查項目</th><th>狀態</th><th>說明</th></tr>
+            </thead>
+            <tbody id="deployCheckBody">
+              <tr><td colspan="3">試行上線前可先執行檢查。</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="setting-note" id="deployCheckStatus">尚未執行上線前檢查。</p>
+      </div>
+    </section>
+
+    <div class="app-grid admin-page active" data-admin-page="import">
+      <section class="app-card" aria-label="考試設定">
+        <h2>考試設定</h2>
+        <form id="importForm" novalidate>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="academicYear">學年度</label>
+              <input id="academicYear" name="academicYear" type="number" value="113" min="100" max="130">
+            </div>
+
+            <div class="form-group">
+              <label for="semester">學期</label>
+              <select id="semester" name="semester">
+                <option value="1">第 1 學期</option>
+                <option value="2">第 2 學期</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="gradeLevel">年級</label>
+              <select id="gradeLevel" name="gradeLevel">
+                <option value="all">全部年級</option>
+                <option value="9">九年級</option>
+                <option value="8">八年級</option>
+                <option value="7">七年級</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="examType">考試類型</label>
+              <select id="examType" name="examType">
+                <option value="mock_exam">模擬考</option>
+                <option value="weekly_exam">週考</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="examNumber">第幾次考試</label>
+              <select id="examNumber" name="examNumber">
+                <option value="1">第 1 次</option>
+                <option value="2">第 2 次</option>
+                <option value="3">第 3 次</option>
+                <option value="4">第 4 次</option>
+                <option value="5">第 5 次</option>
+                <option value="6">第 6 次</option>
+                <option value="7">第 7 次</option>
+                <option value="8">第 8 次</option>
+              </select>
+            </div>
+
+            <div class="form-group wide">
+              <label for="examName">考試名稱</label>
+              <input id="examName" name="examName" type="text" value="113(1) 暑期輔導模擬考">
+            </div>
+
+            <div class="form-group">
+              <label for="examDate">考試日期</label>
+              <input id="examDate" name="examDate" type="date">
+            </div>
+
+            <div class="form-group">
+              <label for="ruleSet">等級換算標準</label>
+              <select id="ruleSet" name="ruleSet">
+                <option value="09檔預設換算標準">09 檔預設換算標準</option>
+              </select>
+            </div>
+
+            <div class="form-group wide">
+              <label for="pointRuleSet">積分規則版本</label>
+              <select id="pointRuleSet" name="pointRuleSet">
+                <option value="預設積分版" data-city="台南市">台南市 113 預設積分版</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="file-drop">
+            <strong>選擇讀卡結果 Excel</strong>
+            <p>優先辨識學號、姓名、班級、座號、科目與答對題數；`09.` 格式僅保留為參考相容模式。</p>
+            <input id="excelFile" name="excelFile" type="file" accept=".xlsx,.xls">
+          </div>
+
+          <div class="action-row">
+            <button class="primary-action" type="button" id="previewButton">預覽資料</button>
+            <button class="secondary-button" type="button" id="importButton">確認匯入</button>
+          </div>
+
+          <div class="preview-status" id="previewStatus" role="status" aria-live="polite">
+            尚未選擇檔案。預覽會讀取實際 Excel，但不會寫入資料庫。
+          </div>
+        </form>
+      </section>
+
+      <section class="app-card" aria-label="匯入預覽">
+        <h2>匯入預覽</h2>
+
+        <div class="summary-grid">
+          <div class="summary-item">
+            <strong id="sheetCount">0</strong>
+            <span>資料工作表</span>
+          </div>
+          <div class="summary-item">
+            <strong id="classCount">0</strong>
+            <span>偵測班級</span>
+          </div>
+          <div class="summary-item">
+            <strong id="studentCount">0</strong>
+            <span>學生人數</span>
+          </div>
+        </div>
+
+        <div class="preview-table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>學號</th>
+                <th>姓名</th>
+                <th>班級</th>
+                <th>座號</th>
+                <th>科目</th>
+                <th>答對題數</th>
+              </tr>
+            </thead>
+            <tbody id="previewTableBody">
+              <tr>
+                <td colspan="6">按下「預覽資料」後，這裡會顯示前幾筆讀卡結果。</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <ul class="notice-list" id="noticeList">
+          <li>系統優先依學號配對學生，姓名、班級與座號作為核對資料。</li>
+          <li>科目會轉成國文、英閱、英聽、數選、數非、自然或社會。</li>
+        </ul>
+        <div class="issue-list" id="importIssueList">
+          <div class="issue-item">預覽後會顯示匯入檢核結果。</div>
+        </div>
+
+      </section>
+    </div>
+
+    <section class="app-card admin-page" data-admin-page="math" aria-label="數學非選手動補登">
+      <h2>數學非選手動補登</h2>
+      <div class="manual-score-panel hidden" id="mathNonChoicePanel">
+        <p class="setting-note">系統已依數學選擇讀卡名單建立學生列。請輸入實際得分，`0` 分請直接輸入 `0`；缺考請勾選缺考。</p>
+        <div class="form-group">
+          <label for="mathNonChoiceTotal">數非總分</label>
+          <input id="mathNonChoiceTotal" type="number" min="1" step="1" value="6">
+        </div>
+        <div class="mini-table-wrap">
+          <table class="mini-table">
+            <thead>
+              <tr>
+                <th>學號</th>
+                <th>姓名</th>
+                <th>班級</th>
+                <th>座號</th>
+                <th>得分</th>
+                <th>缺考</th>
+              </tr>
+            </thead>
+            <tbody id="mathNonChoiceBody"></tbody>
+          </table>
+        </div>
+        <div class="action-row">
+          <button class="primary-action" type="button" id="saveMathNonChoiceButton">加入待匯入成績</button>
+        </div>
+        <p class="setting-note" id="mathNonChoiceStatus">尚未補登數學非選成績。</p>
+      </div>
+      <p class="setting-note" id="mathNonChoiceEmpty">請先到「成績匯入」上傳數學選擇報表，系統才會建立補登名單。</p>
+    </section>
+
+    <section class="admin-page" data-admin-page="people" aria-label="人員與帳號管理">
+      <div class="settings-grid">
+        <form class="app-card" id="studentEditorForm" novalidate>
+          <h2>學生名冊</h2>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="studentNoInput">學號</label>
+              <input id="studentNoInput" type="text" required>
+            </div>
+            <div class="form-group">
+              <label for="studentNameInput">姓名</label>
+              <input id="studentNameInput" type="text" required>
+            </div>
+            <div class="form-group">
+              <label for="studentYearInput">學年度</label>
+              <input id="studentYearInput" type="number" value="113" min="100" max="130">
+            </div>
+            <div class="form-group">
+              <label for="studentClassInput">班級</label>
+              <select id="studentClassInput"></select>
+            </div>
+            <div class="form-group">
+              <label for="studentSeatInput">座號</label>
+              <input id="studentSeatInput" type="number" min="1">
+            </div>
+            <div class="form-group">
+              <label for="studentAccountEmailInput">登入 Email（選填）</label>
+              <input id="studentAccountEmailInput" type="email" placeholder="需為已註冊帳號">
+            </div>
+          </div>
+          <div class="action-row">
+            <button class="primary-action" type="submit">儲存學生</button>
+          </div>
+          <p class="setting-note" id="studentEditorStatus">可先建立名冊，之後再綁定學生已註冊的 Email 帳號。</p>
+
+          <div class="manual-score-panel">
+            <h3>批次建立學生名冊</h3>
+            <p class="setting-note">可從 Excel 複製貼上，每列格式：學號,姓名,學年度,班級,座號,登入 Email。Email 可留空。</p>
+            <div class="form-group wide">
+              <label for="batchStudentTextarea">批次學生資料</label>
+              <textarea id="batchStudentTextarea" rows="6" placeholder="例如：
+1130901,王小明,113,九培,1,student01@example.com
+1130902,李小華,113,九培,2,"></textarea>
+            </div>
+            <div class="action-row">
+              <button class="secondary-button" type="button" id="previewBatchStudentButton">預覽學生名冊</button>
+              <button class="primary-action" type="button" id="executeBatchStudentButton">正式批次建立</button>
+            </div>
+            <p class="setting-note" id="batchStudentStatus">批次建立會逐筆新增或更新學生目前名冊。</p>
+          </div>
+        </form>
+
+        <form class="app-card" id="teacherEditorForm" novalidate>
+          <h2>教師名冊</h2>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="teacherNameInput">姓名</label>
+              <input id="teacherNameInput" type="text" required>
+            </div>
+            <div class="form-group">
+              <label for="teacherEmailInput">聯絡 Email</label>
+              <input id="teacherEmailInput" type="email">
+            </div>
+            <div class="form-group">
+              <label for="teacherPhoneInput">電話</label>
+              <input id="teacherPhoneInput" type="text">
+            </div>
+            <div class="form-group">
+              <label for="teacherRoleInput">身分</label>
+              <select id="teacherRoleInput">
+                <option value="homeroom_teacher">導師</option>
+                <option value="subject_teacher">任課老師</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="teacherYearInput">學年度</label>
+              <input id="teacherYearInput" type="number" value="113" min="100" max="130">
+            </div>
+            <div class="form-group">
+              <label for="teacherClassInput">任教班級</label>
+              <select id="teacherClassInput"></select>
+            </div>
+            <div class="form-group" id="teacherSubjectGroup">
+              <label for="teacherSubjectInput">任教科目</label>
+              <select id="teacherSubjectInput">
+                <option value="chinese">國文</option>
+                <option value="english">英文</option>
+                <option value="math">數學</option>
+                <option value="science">自然</option>
+                <option value="social">社會</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="teacherAccountEmailInput">登入 Email（選填）</label>
+              <input id="teacherAccountEmailInput" type="email" placeholder="需為已註冊帳號">
+            </div>
+          </div>
+          <div class="action-row">
+            <button class="primary-action" type="submit">儲存教師</button>
+          </div>
+          <p class="setting-note" id="teacherEditorStatus">綁定帳號後，系統會依導師或任課老師設定角色。</p>
+        </form>
+      </div>
+
+      <section class="app-card" style="margin-top: 22px;">
+        <h2>班級與座號調整</h2>
+        <p class="hint">用於培訓班加入、退出或重新編座號。此處只調整目前名冊，不會改變已匯入成績單的班級與座號快照。</p>
+        <form id="seatAdjustForm" novalidate>
+          <div class="form-grid">
+            <div class="form-group wide">
+              <label for="seatStudentSelect">選擇學生</label>
+              <select id="seatStudentSelect"><option value="">請先載入學生名單</option></select>
+            </div>
+            <div class="form-group">
+              <label for="seatYearInput">目標學年度</label>
+              <input id="seatYearInput" type="number" value="113" min="100" max="130">
+            </div>
+            <div class="form-group">
+              <label for="seatClassInput">目標班級</label>
+              <select id="seatClassInput"></select>
+            </div>
+            <div class="form-group">
+              <label for="seatNoInput">新座號</label>
+              <input id="seatNoInput" type="number" min="1">
+            </div>
+            <div class="form-group">
+              <label for="seatNoteInput">調整原因</label>
+              <input id="seatNoteInput" type="text" placeholder="例如：退出培訓班、加入培訓班、重新編座號">
+            </div>
+            <label class="switch-row wide">
+              <input id="allowSeatConflictInput" type="checkbox">
+              允許暫時重複座號（僅批次調整或換座號時使用）
+            </label>
+          </div>
+          <div class="action-row">
+            <button class="primary-action" type="submit">套用班級座號</button>
+          </div>
+          <p class="setting-note" id="seatAdjustStatus">正式連線後可調整目前名冊；舊成績單不受影響。</p>
+        </form>
+
+        <div class="manual-score-panel">
+          <h3>批次調整</h3>
+          <p class="setting-note">可從 Excel 複製貼上，每列格式：學號,班級,座號,原因。也支援用 Tab 分隔。</p>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="batchSeatYearInput">批次目標學年度</label>
+              <input id="batchSeatYearInput" type="number" value="113" min="100" max="130">
+            </div>
+            <label class="switch-row">
+              <input id="batchAllowSeatConflictInput" type="checkbox">
+              允許批次暫時重複座號
+            </label>
+            <div class="form-group wide">
+              <label for="batchSeatTextarea">批次內容</label>
+              <textarea id="batchSeatTextarea" rows="6" placeholder="例如：
+1130901,九培,1,加入培訓班
+1130902,九培,2,加入培訓班"></textarea>
+            </div>
+          </div>
+          <div class="action-row">
+            <button class="secondary-button" type="button" id="previewBatchSeatButton">預覽批次</button>
+            <button class="primary-action" type="button" id="executeBatchSeatButton">正式批次套用</button>
+          </div>
+          <p class="setting-note" id="batchSeatStatus">批次調整會逐筆留下調整紀錄。</p>
+        </div>
+      </section>
+
+      <section class="app-card" style="margin-top: 22px;">
+        <h2>學籍年度維護</h2>
+        <p class="hint">預設於每年 7 月 10 日升級七、八年級；九年級畢業生標記為畢業並停用登入帳號，舊成績快照仍保留。</p>
+        <div class="report-filter-row">
+          <div class="form-group">
+            <label for="advanceFromYearInput">來源學年度</label>
+            <input id="advanceFromYearInput" type="number" value="113" min="100" max="130">
+          </div>
+          <div class="form-group">
+            <label for="advanceToYearInput">目標學年度</label>
+            <input id="advanceToYearInput" type="number" value="114" min="100" max="130">
+          </div>
+          <div class="form-group">
+            <label for="advanceEffectiveDateInput">生效日期</label>
+            <input id="advanceEffectiveDateInput" type="date" value="2025-07-10">
+          </div>
+          <button class="secondary-button" type="button" id="previewAdvanceButton">預覽升級</button>
+          <button class="primary-action" type="button" id="executeAdvanceButton">正式執行</button>
+        </div>
+        <p class="setting-note" id="advanceYearStatus">正式執行前請先預覽，確認升級與畢業人數。</p>
+      </section>
+
+      <section class="app-card" style="margin-top: 22px;">
+        <div class="action-row" style="margin-top: 0;">
+          <button class="secondary-button" type="button" id="refreshPeopleButton">重新整理名單</button>
+        </div>
+        <h2 style="margin-top: 22px;">學生名單</h2>
+        <div class="preview-table-wrap">
+          <table>
+            <thead><tr><th>學號</th><th>姓名</th><th>班級</th><th>座號</th><th>帳號</th><th>狀態</th><th>操作</th></tr></thead>
+            <tbody id="studentListBody"><tr><td colspan="7">尚未載入名單。</td></tr></tbody>
+          </table>
+        </div>
+        <h2 style="margin-top: 28px;">教師名單</h2>
+        <div class="preview-table-wrap">
+          <table>
+            <thead><tr><th>姓名</th><th>身分</th><th>班級</th><th>科目</th><th>帳號</th><th>狀態</th><th>操作</th></tr></thead>
+            <tbody id="teacherListBody"><tr><td colspan="7">尚未載入名單。</td></tr></tbody>
+          </table>
+        </div>
+        <p class="setting-note" id="peopleListStatus">正式連線後可查詢及停用名冊。</p>
+      </section>
+    </section>
+
+    <section class="app-card admin-page" data-admin-page="reports" aria-label="成績查詢與列印">
+      <h2 id="reportHeading">成績查詢與列印</h2>
+      <p class="hint">選擇考試與班級後，可檢視五科等級、百分制、積分及班級與年級排名。</p>
+      <div class="report-filter-row">
+        <div class="form-group">
+          <label for="reportExamSelect">考試</label>
+          <select id="reportExamSelect">
+            <option value="">尚未載入考試</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="reportClassSelect">班級</label>
+          <select id="reportClassSelect">
+            <option value="">全部班級</option>
+          </select>
+        </div>
+        <button class="primary-action" type="button" id="loadReportButton">查詢成績</button>
+        <button class="secondary-button" type="button" id="publishExamButton">發布成績</button>
+        <button class="secondary-button" type="button" id="printReportButton">列印目前表格</button>
+      </div>
+      <div class="report-filter-row" style="margin-top: 14px;">
+        <div class="form-group">
+          <label for="reportStudentSelect">個人成績單學生</label>
+          <select id="reportStudentSelect"><option value="">請先查詢成績</option></select>
+        </div>
+        <button class="secondary-button" type="button" id="printStudentReportButton">列印個人成績單</button>
+      </div>
+
+      <div class="summary-grid report-summary">
+        <div class="summary-item"><strong id="reportStudentCount">0</strong><span>學生人數</span></div>
+        <div class="summary-item"><strong id="reportClassCount">0</strong><span>班級數</span></div>
+        <div class="summary-item"><strong id="reportAveragePoints">0</strong><span>平均總積分</span></div>
+      </div>
+
+      <div class="analysis-grid">
+        <section class="analysis-card">
+          <h3>各科平均百分制</h3>
+          <div class="bar-chart" id="reportAverageChart"><p class="setting-note">查詢後顯示圖表。</p></div>
+        </section>
+        <section class="analysis-card">
+          <h3>各科等級分布</h3>
+          <div class="bar-chart" id="reportGradeChart"><p class="setting-note">查詢後顯示圖表。</p></div>
+        </section>
+      </div>
+
+      <div class="preview-table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>班級</th>
+              <th>座號</th>
+              <th>姓名</th>
+              <th>國文</th>
+              <th>英文</th>
+              <th>數學</th>
+              <th>自然</th>
+              <th>社會</th>
+              <th>A／B</th>
+              <th>總積分</th>
+              <th>積分班排／校排</th>
+              <th>百分總分</th>
+              <th>百分班排／校排</th>
+            </tr>
+          </thead>
+          <tbody id="reportTableBody">
+            <tr><td colspan="13">請先查詢考試成績。</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="setting-note" id="reportStatus">正式連線後可讀取已匯入並完成換算的成績。</p>
+    </section>
+
+    <section class="app-card admin-page" data-admin-page="rules" aria-label="標準與積分設定">
+      <h2>標準與積分設定</h2>
+      <p class="hint">管理員可先建立或調整版本，再於匯入模擬考時選用。正式版會寫入 `conversion_rule_sets`、`conversion_rules`、`point_rule_sets` 與 `grade_points`。</p>
+
+      <div class="settings-grid">
+        <form id="ruleEditorForm" novalidate>
+          <h3>新增等級換算標準</h3>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="newRuleYear">學年度</label>
+              <input id="newRuleYear" type="number" value="113" min="100" max="130">
+            </div>
+            <div class="form-group">
+              <label for="newRuleGrade">適用年級</label>
+              <select id="newRuleGrade">
+                <option value="all">七、八、九年級</option>
+                <option value="9">九年級</option>
+                <option value="8">八年級</option>
+                <option value="7">七年級</option>
+              </select>
+            </div>
+            <div class="form-group wide">
+              <label for="newRuleName">版本名稱</label>
+              <input id="newRuleName" type="text" value="台南市 113 模擬考換算標準">
+            </div>
+          </div>
+
+          <div class="mini-table-wrap">
+            <table class="mini-table">
+              <thead>
+                <tr>
+                  <th>等級</th>
+                  <th>國文題數</th>
+                  <th>英文百分制</th>
+                  <th>數學百分制</th>
+                  <th>自然題數</th>
+                  <th>社會題數</th>
+                </tr>
+              </thead>
+              <tbody id="ruleEditorBody"></tbody>
+            </table>
+          </div>
+
+          <div class="action-row">
+            <button class="primary-action" type="button" id="saveRuleSetButton">儲存換算標準</button>
+          </div>
+          <p class="setting-note" id="ruleSetStatus">目前為畫面示範，儲存後會先加入上方「等級換算標準」下拉選單。</p>
+        </form>
+
+        <form id="pointEditorForm" novalidate>
+          <h3>新增積分規則版本</h3>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="newPointCity">縣市</label>
+              <input id="newPointCity" type="text" value="台南市">
+            </div>
+            <div class="form-group">
+              <label for="newPointYear">學年度</label>
+              <input id="newPointYear" type="number" value="113" min="100" max="130">
+            </div>
+            <div class="form-group wide">
+              <label for="newPointName">版本名稱</label>
+              <input id="newPointName" type="text" value="台南市 113 預設積分版">
+            </div>
+          </div>
+
+          <div class="mini-table-wrap">
+            <table class="mini-table">
+              <thead>
+                <tr>
+                  <th>等級</th>
+                  <th>積分</th>
+                </tr>
+              </thead>
+              <tbody id="pointEditorBody"></tbody>
+            </table>
+          </div>
+
+          <div class="action-row">
+            <button class="primary-action" type="button" id="savePointSetButton">儲存積分版本</button>
+          </div>
+          <p class="setting-note" id="pointSetStatus">目前為畫面示範，儲存後會先加入上方「積分規則版本」下拉選單。</p>
+        </form>
+      </div>
+    </section>
+      </div>
+    </div>
+  </section>
+
+  <section class="portal-app hidden" id="portalApp" aria-label="個人與任教成績查詢">
+    <header class="app-header">
+      <div>
+        <div class="system-badge" id="portalRoleBadge">成績查詢專區</div>
+        <h1 id="portalTitle">我的模擬考成績</h1>
+        <p id="portalDescription">查詢已發布的模擬考成績。</p>
+      </div>
+      <button class="logout-button" type="button" id="portalLogoutButton">返回登入頁</button>
+    </header>
+
+    <section class="app-card">
+      <div class="report-filter-row">
+        <div class="form-group">
+          <label for="portalExamSelect">考試</label>
+          <select id="portalExamSelect">
+            <option value="">尚未載入考試</option>
+          </select>
+        </div>
+        <button class="primary-action" type="button" id="portalLoadButton">查詢成績</button>
+        <button class="secondary-button" type="button" id="portalPrintButton">列印目前表格</button>
+      </div>
+      <div class="report-filter-row" style="margin-top: 14px;">
+        <div class="form-group">
+          <label for="portalStudentSelect">個人成績單學生</label>
+          <select id="portalStudentSelect"><option value="">請先查詢成績</option></select>
+        </div>
+        <button class="secondary-button" type="button" id="portalStudentPrintButton">列印個人成績單</button>
+      </div>
+
+      <div class="summary-grid report-summary">
+        <div class="summary-item"><strong id="portalStudentCount">0</strong><span>顯示學生</span></div>
+        <div class="summary-item"><strong id="portalClassCount">0</strong><span>班級數</span></div>
+        <div class="summary-item"><strong id="portalAveragePoints">－</strong><span>平均總積分</span></div>
+      </div>
+
+      <div class="analysis-grid">
+        <section class="analysis-card">
+          <h3>各科百分制表現</h3>
+          <div class="bar-chart" id="portalAverageChart"><p class="setting-note">查詢後顯示圖表。</p></div>
+        </section>
+        <section class="analysis-card">
+          <h3>各科等級分布</h3>
+          <div class="bar-chart" id="portalGradeChart"><p class="setting-note">查詢後顯示圖表。</p></div>
+        </section>
+      </div>
+
+      <div class="preview-table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>班級</th>
+              <th>座號</th>
+              <th>姓名</th>
+              <th>國文</th>
+              <th>英文</th>
+              <th>數學</th>
+              <th>自然</th>
+              <th>社會</th>
+              <th>A／B</th>
+              <th>總積分</th>
+              <th>積分班排／校排</th>
+              <th>百分總分</th>
+              <th>百分班排／校排</th>
+            </tr>
+          </thead>
+          <tbody id="portalTableBody">
+            <tr><td colspan="13">登入後會載入可查詢的成績。</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="setting-note" id="portalStatus">只會顯示目前帳號有權限查看的資料。</p>
+    </section>
+  </section>
+
+  <section class="individual-report-sheet hidden" id="individualReportSheet" aria-label="個人成績單">
+    <header class="individual-report-header">
+      <h1 id="individualReportTitle">模擬考個人成績單</h1>
+      <p id="individualReportExam">考試名稱</p>
+    </header>
+    <div class="individual-student-info" id="individualStudentInfo"></div>
+    <table class="individual-score-table">
+      <thead>
+        <tr><th>科目</th><th>等級</th><th>百分制</th><th>積分</th></tr>
+      </thead>
+      <tbody id="individualScoreBody"></tbody>
+    </table>
+    <div class="individual-summary-grid" id="individualSummaryGrid"></div>
+    <p class="individual-report-note">本成績單依考試當時的學生資料與換算規則產生。</p>
+  </section>
+
+  <script src="xlsx.full.min.js"></script>
+  <script>
+    const loginForm = document.querySelector("#loginForm");
+    const message = document.querySelector("#message");
+    const authPanelTitle = document.querySelector("#authPanelTitle");
+    const authPanelHint = document.querySelector("#authPanelHint");
+    const signupForm = document.querySelector("#signupForm");
+    const resetRequestForm = document.querySelector("#resetRequestForm");
+    const updatePasswordForm = document.querySelector("#updatePasswordForm");
+    const signupDisplayName = document.querySelector("#signupDisplayName");
+    const signupEmail = document.querySelector("#signupEmail");
+    const signupPassword = document.querySelector("#signupPassword");
+    const signupConfirmPassword = document.querySelector("#signupConfirmPassword");
+    const resetEmail = document.querySelector("#resetEmail");
+    const newPassword = document.querySelector("#newPassword");
+    const confirmNewPassword = document.querySelector("#confirmNewPassword");
+    const signupMessage = document.querySelector("#signupMessage");
+    const resetMessage = document.querySelector("#resetMessage");
+    const updatePasswordMessage = document.querySelector("#updatePasswordMessage");
+    const showSignupButton = document.querySelector("#showSignupButton");
+    const cancelSignupButton = document.querySelector("#cancelSignupButton");
+    const showResetRequestButton = document.querySelector("#showResetRequestButton");
+    const cancelResetRequestButton = document.querySelector("#cancelResetRequestButton");
+    const demoAccount = document.querySelector("#demoAccount");
+    const roleInput = document.querySelector("#role");
+    const accountInput = document.querySelector("#account");
+    const passwordInput = document.querySelector("#password");
+    const togglePassword = document.querySelector("#togglePassword");
+    const useSupabaseAuth = document.querySelector("#useSupabaseAuth");
+    const loginShell = document.querySelector(".login-shell");
+    const adminApp = document.querySelector("#adminApp");
+    const portalApp = document.querySelector("#portalApp");
+    const portalRoleBadge = document.querySelector("#portalRoleBadge");
+    const portalTitle = document.querySelector("#portalTitle");
+    const portalDescription = document.querySelector("#portalDescription");
+    const portalLogoutButton = document.querySelector("#portalLogoutButton");
+    const portalExamSelect = document.querySelector("#portalExamSelect");
+    const portalLoadButton = document.querySelector("#portalLoadButton");
+    const portalPrintButton = document.querySelector("#portalPrintButton");
+    const portalStudentSelect = document.querySelector("#portalStudentSelect");
+    const portalStudentPrintButton = document.querySelector("#portalStudentPrintButton");
+    const portalTableBody = document.querySelector("#portalTableBody");
+    const portalStudentCount = document.querySelector("#portalStudentCount");
+    const portalClassCount = document.querySelector("#portalClassCount");
+    const portalAveragePoints = document.querySelector("#portalAveragePoints");
+    const portalAverageChart = document.querySelector("#portalAverageChart");
+    const portalGradeChart = document.querySelector("#portalGradeChart");
+    const portalStatus = document.querySelector("#portalStatus");
+    const adminNavButtons = [...document.querySelectorAll("[data-admin-target]")];
+    const adminPages = [...document.querySelectorAll("[data-admin-page]")];
+    const adminPageTitle = document.querySelector("#adminPageTitle");
+    const adminPageDescription = document.querySelector("#adminPageDescription");
+    const logoutButton = document.querySelector("#logoutButton");
+    const academicYearInput = document.querySelector("#academicYear");
+    const semesterInput = document.querySelector("#semester");
+    const gradeLevelInput = document.querySelector("#gradeLevel");
+    const examTypeInput = document.querySelector("#examType");
+    const examNumberInput = document.querySelector("#examNumber");
+    const examNameInput = document.querySelector("#examName");
+    const examDateInput = document.querySelector("#examDate");
+    const excelFile = document.querySelector("#excelFile");
+    const previewButton = document.querySelector("#previewButton");
+    const importButton = document.querySelector("#importButton");
+    const previewStatus = document.querySelector("#previewStatus");
+    const previewTableBody = document.querySelector("#previewTableBody");
+    const sheetCount = document.querySelector("#sheetCount");
+    const classCount = document.querySelector("#classCount");
+    const studentCount = document.querySelector("#studentCount");
+    const noticeList = document.querySelector("#noticeList");
+    const importIssueList = document.querySelector("#importIssueList");
+    const mathNonChoicePanel = document.querySelector("#mathNonChoicePanel");
+    const mathNonChoiceTotal = document.querySelector("#mathNonChoiceTotal");
+    const mathNonChoiceBody = document.querySelector("#mathNonChoiceBody");
+    const saveMathNonChoiceButton = document.querySelector("#saveMathNonChoiceButton");
+    const mathNonChoiceStatus = document.querySelector("#mathNonChoiceStatus");
+    const mathNonChoiceEmpty = document.querySelector("#mathNonChoiceEmpty");
+    const studentEditorForm = document.querySelector("#studentEditorForm");
+    const studentNoInput = document.querySelector("#studentNoInput");
+    const studentNameInput = document.querySelector("#studentNameInput");
+    const studentYearInput = document.querySelector("#studentYearInput");
+    const studentClassInput = document.querySelector("#studentClassInput");
+    const studentSeatInput = document.querySelector("#studentSeatInput");
+    const studentAccountEmailInput = document.querySelector("#studentAccountEmailInput");
+    const studentEditorStatus = document.querySelector("#studentEditorStatus");
+    const batchStudentTextarea = document.querySelector("#batchStudentTextarea");
+    const previewBatchStudentButton = document.querySelector("#previewBatchStudentButton");
+    const executeBatchStudentButton = document.querySelector("#executeBatchStudentButton");
+    const batchStudentStatus = document.querySelector("#batchStudentStatus");
+    const teacherEditorForm = document.querySelector("#teacherEditorForm");
+    const teacherNameInput = document.querySelector("#teacherNameInput");
+    const teacherEmailInput = document.querySelector("#teacherEmailInput");
+    const teacherPhoneInput = document.querySelector("#teacherPhoneInput");
+    const teacherRoleInput = document.querySelector("#teacherRoleInput");
+    const teacherYearInput = document.querySelector("#teacherYearInput");
+    const teacherClassInput = document.querySelector("#teacherClassInput");
+    const teacherSubjectGroup = document.querySelector("#teacherSubjectGroup");
+    const teacherSubjectInput = document.querySelector("#teacherSubjectInput");
+    const teacherAccountEmailInput = document.querySelector("#teacherAccountEmailInput");
+    const teacherEditorStatus = document.querySelector("#teacherEditorStatus");
+    const seatAdjustForm = document.querySelector("#seatAdjustForm");
+    const seatStudentSelect = document.querySelector("#seatStudentSelect");
+    const seatYearInput = document.querySelector("#seatYearInput");
+    const seatClassInput = document.querySelector("#seatClassInput");
+    const seatNoInput = document.querySelector("#seatNoInput");
+    const seatNoteInput = document.querySelector("#seatNoteInput");
+    const allowSeatConflictInput = document.querySelector("#allowSeatConflictInput");
+    const seatAdjustStatus = document.querySelector("#seatAdjustStatus");
+    const batchSeatYearInput = document.querySelector("#batchSeatYearInput");
+    const batchAllowSeatConflictInput = document.querySelector("#batchAllowSeatConflictInput");
+    const batchSeatTextarea = document.querySelector("#batchSeatTextarea");
+    const previewBatchSeatButton = document.querySelector("#previewBatchSeatButton");
+    const executeBatchSeatButton = document.querySelector("#executeBatchSeatButton");
+    const batchSeatStatus = document.querySelector("#batchSeatStatus");
+    const advanceFromYearInput = document.querySelector("#advanceFromYearInput");
+    const advanceToYearInput = document.querySelector("#advanceToYearInput");
+    const advanceEffectiveDateInput = document.querySelector("#advanceEffectiveDateInput");
+    const previewAdvanceButton = document.querySelector("#previewAdvanceButton");
+    const executeAdvanceButton = document.querySelector("#executeAdvanceButton");
+    const advanceYearStatus = document.querySelector("#advanceYearStatus");
+    const refreshPeopleButton = document.querySelector("#refreshPeopleButton");
+    const studentListBody = document.querySelector("#studentListBody");
+    const teacherListBody = document.querySelector("#teacherListBody");
+    const peopleListStatus = document.querySelector("#peopleListStatus");
+    const reportExamSelect = document.querySelector("#reportExamSelect");
+    const reportClassSelect = document.querySelector("#reportClassSelect");
+    const loadReportButton = document.querySelector("#loadReportButton");
+    const publishExamButton = document.querySelector("#publishExamButton");
+    const printReportButton = document.querySelector("#printReportButton");
+    const reportStudentSelect = document.querySelector("#reportStudentSelect");
+    const printStudentReportButton = document.querySelector("#printStudentReportButton");
+    const reportTableBody = document.querySelector("#reportTableBody");
+    const reportStudentCount = document.querySelector("#reportStudentCount");
+    const reportClassCount = document.querySelector("#reportClassCount");
+    const reportAveragePoints = document.querySelector("#reportAveragePoints");
+    const reportAverageChart = document.querySelector("#reportAverageChart");
+    const reportGradeChart = document.querySelector("#reportGradeChart");
+    const reportHeading = document.querySelector("#reportHeading");
+    const reportStatus = document.querySelector("#reportStatus");
+    const individualReportSheet = document.querySelector("#individualReportSheet");
+    const individualReportTitle = document.querySelector("#individualReportTitle");
+    const individualReportExam = document.querySelector("#individualReportExam");
+    const individualStudentInfo = document.querySelector("#individualStudentInfo");
+    const individualScoreBody = document.querySelector("#individualScoreBody");
+    const individualSummaryGrid = document.querySelector("#individualSummaryGrid");
+    const ruleSetSelect = document.querySelector("#ruleSet");
+    const pointRuleSetSelect = document.querySelector("#pointRuleSet");
+    const ruleEditorBody = document.querySelector("#ruleEditorBody");
+    const pointEditorBody = document.querySelector("#pointEditorBody");
+    const saveRuleSetButton = document.querySelector("#saveRuleSetButton");
+    const savePointSetButton = document.querySelector("#savePointSetButton");
+    const ruleSetStatus = document.querySelector("#ruleSetStatus");
+    const pointSetStatus = document.querySelector("#pointSetStatus");
+    const supabaseUrl = document.querySelector("#supabaseUrl");
+    const supabaseAnonKey = document.querySelector("#supabaseAnonKey");
+    const supabaseAccessToken = document.querySelector("#supabaseAccessToken");
+    const enableLiveRpc = document.querySelector("#enableLiveRpc");
+    const supabaseStatus = document.querySelector("#supabaseStatus");
+    const saveSupabaseConfigButton = document.querySelector("#saveSupabaseConfigButton");
+    const currentSiteUrlInput = document.querySelector("#currentSiteUrlInput");
+    const copySiteUrlButton = document.querySelector("#copySiteUrlButton");
+    const siteUrlStatus = document.querySelector("#siteUrlStatus");
+    const runHealthCheckButton = document.querySelector("#runHealthCheckButton");
+    const healthCheckBody = document.querySelector("#healthCheckBody");
+    const healthCheckStatus = document.querySelector("#healthCheckStatus");
+    const runDeployCheckButton = document.querySelector("#runDeployCheckButton");
+    const deployCheckBody = document.querySelector("#deployCheckBody");
+    const deployCheckStatus = document.querySelector("#deployCheckStatus");
+    const newRuleYear = document.querySelector("#newRuleYear");
+    const newRuleGrade = document.querySelector("#newRuleGrade");
+    const newRuleName = document.querySelector("#newRuleName");
+    const newPointCity = document.querySelector("#newPointCity");
+    const newPointYear = document.querySelector("#newPointYear");
+    const newPointName = document.querySelector("#newPointName");
+    let currentSession = null;
+    let currentProfile = null;
+    let currentParsedImport = null;
+    let currentReportRows = [];
+    let currentReportExamName = "";
+    let currentPortalRows = [];
+    let currentPortalExamName = "";
+    let classCatalog = [
+      { academic_year: 113, grade_level: 9, class_code: "九培", class_name: "九年級培訓班" },
+      { academic_year: 113, grade_level: 9, class_code: "901", class_name: "九年級美術班" },
+      { academic_year: 113, grade_level: 9, class_code: "902", class_name: "九年級體育班" },
+      { academic_year: 113, grade_level: 8, class_code: "八培", class_name: "八年級培訓班" },
+      { academic_year: 113, grade_level: 8, class_code: "801", class_name: "八年級美術班" },
+      { academic_year: 113, grade_level: 8, class_code: "802", class_name: "八年級體育班" },
+      { academic_year: 113, grade_level: 7, class_code: "七培", class_name: "七年級培訓班" },
+      { academic_year: 113, grade_level: 7, class_code: "701", class_name: "七年級美術班" },
+      { academic_year: 113, grade_level: 7, class_code: "702", class_name: "七年級體育班" }
+    ];
+
+    const gradeRows = [
+      { grade: "A++", chinese: 40, english: 98.14, math: 93.2, science: 48, social: 52, points: 7 },
+      { grade: "A+", chinese: 39, english: 96.23, math: 86.4, science: 47, social: 50, points: 6 },
+      { grade: "A", chinese: 37, english: 90.7, math: 76.4, science: 44, social: 48, points: 5 },
+      { grade: "B++", chinese: 33, english: 82.3, math: 66.2, science: 37, social: 42, points: 4 },
+      { grade: "B+", chinese: 30, english: 70.01, math: 56.9, science: 30, social: 36, points: 3 },
+      { grade: "B", chinese: 18, english: 38.43, math: 38.1, science: 19, social: 21, points: 2 },
+      { grade: "C", chinese: 1, english: 0.01, math: 0.01, science: 1, social: 1, points: 1 }
+    ];
+
+    function initializeSettingEditors() {
+      ruleEditorBody.innerHTML = gradeRows.map((row) => `
+        <tr>
+          <td>${row.grade}</td>
+          <td><input type="number" step="0.01" data-rule-grade="${row.grade}" data-rule-field="chinese" value="${row.chinese}"></td>
+          <td><input type="number" step="0.01" data-rule-grade="${row.grade}" data-rule-field="english" value="${row.english}"></td>
+          <td><input type="number" step="0.01" data-rule-grade="${row.grade}" data-rule-field="math" value="${row.math}"></td>
+          <td><input type="number" step="0.01" data-rule-grade="${row.grade}" data-rule-field="science" value="${row.science}"></td>
+          <td><input type="number" step="0.01" data-rule-grade="${row.grade}" data-rule-field="social" value="${row.social}"></td>
+        </tr>
+      `).join("");
+
+      pointEditorBody.innerHTML = gradeRows.map((row) => `
+        <tr>
+          <td>${row.grade}</td>
+          <td><input type="number" step="1" min="0" data-point-grade="${row.grade}" value="${row.points}"></td>
+        </tr>
+      `).join("");
+    }
+
+    function showAdminPage(pageName) {
+      const pageText = {
+        import: {
+          title: "成績匯入",
+          description: "匯入讀卡結果、檢查學生資料並寫入成績。"
+        },
+        math: {
+          title: "數學非選補登",
+          description: "依數學選擇名單手動輸入數非得分。"
+        },
+        people: {
+          title: "人員與帳號",
+          description: "管理學生、教師名冊並綁定已註冊的登入帳號。"
+        },
+        reports: {
+          title: "成績查詢",
+          description: "依考試與班級檢視成績、排名並列印表格。"
+        },
+        rules: {
+          title: "換算與積分",
+          description: "建立不同年度、年級或縣市適用的規則版本。"
+        },
+        connection: {
+          title: "系統連線",
+          description: "管理 Supabase 連線與正式資料送出設定。"
+        }
+      };
+      const selected = pageText[pageName] ? pageName : "import";
+
+      adminNavButtons.forEach((button) => {
+        const isActive = button.dataset.adminTarget === selected;
+        button.classList.toggle("active", isActive);
+        button.setAttribute("aria-current", isActive ? "page" : "false");
+      });
+      adminPages.forEach((page) => {
+        page.classList.toggle("active", page.dataset.adminPage === selected);
+      });
+      adminPageTitle.textContent = pageText[selected].title;
+      adminPageDescription.textContent = pageText[selected].description;
+    }
+
+    function populateClassSelect(selectElement, academicYear) {
+      const selectedValue = selectElement.value;
+      const classes = classCatalog.filter((item) => Number(item.academic_year) === Number(academicYear));
+      selectElement.innerHTML = classes.length
+        ? classes.map((item) => `<option value="${escapeHtml(item.class_code)}">${escapeHtml(item.class_code)}｜${escapeHtml(item.class_name)}</option>`).join("")
+        : '<option value="">尚無此學年度班級</option>';
+
+      if (classes.some((item) => item.class_code === selectedValue)) {
+        selectElement.value = selectedValue;
+      }
+    }
+
+    function updateTeacherSubjectVisibility() {
+      teacherSubjectGroup.classList.toggle("hidden", teacherRoleInput.value !== "subject_teacher");
+    }
+
+    function roleLabel(role) {
+      return {
+        student: "學生",
+        subject_teacher: "任課老師",
+        homeroom_teacher: "導師",
+        admin: "管理員",
+        viewer: "查詢人員"
+      }[role] || role || "未設定";
+    }
+
+    function subjectLabel(subject) {
+      return {
+        chinese: "國文",
+        english: "英文",
+        math: "數學",
+        science: "自然",
+        social: "社會"
+      }[subject] || "－";
+    }
+
+    function renderPeopleLists(data) {
+      const students = data.students || [];
+      const teachers = data.teachers || [];
+
+      studentListBody.innerHTML = students.length
+        ? students.map((student) => {
+          const isActive = student.status === "active";
+          return `
+            <tr>
+              <td>${escapeHtml(student.student_no)}</td>
+              <td>${escapeHtml(student.student_name)}</td>
+              <td>${escapeHtml(student.class_code || "－")}</td>
+              <td>${escapeHtml(student.seat_no ?? "－")}</td>
+              <td>${escapeHtml(student.account_email || "未綁定")}</td>
+              <td>${isActive ? "在籍" : escapeHtml(student.status)}</td>
+              <td><button class="secondary-button person-status-button" type="button" data-person-type="student" data-person-id="${escapeHtml(student.id)}" data-next-active="${String(!isActive)}">${isActive ? "停用" : "恢復"}</button></td>
+            </tr>
+          `;
+        }).join("")
+        : '<tr><td colspan="7">目前沒有學生資料。</td></tr>';
+
+      teacherListBody.innerHTML = teachers.length
+        ? teachers.map((teacher) => `
+          <tr>
+            <td>${escapeHtml(teacher.teacher_name)}</td>
+            <td>${escapeHtml(roleLabel(teacher.role))}</td>
+            <td>${escapeHtml(teacher.class_code || "－")}</td>
+            <td>${escapeHtml(subjectLabel(teacher.subject))}</td>
+            <td>${escapeHtml(teacher.account_email || "未綁定")}</td>
+            <td>${teacher.is_active ? "啟用" : "停用"}</td>
+            <td><button class="secondary-button person-status-button" type="button" data-person-type="teacher" data-person-id="${escapeHtml(teacher.id)}" data-next-active="${String(!teacher.is_active)}">${teacher.is_active ? "停用" : "恢復"}</button></td>
+          </tr>
+        `).join("")
+        : '<tr><td colspan="7">目前沒有教師資料。</td></tr>';
+    }
+
+    function populateSeatStudentSelect(students = []) {
+      const activeStudents = students.filter((student) => student.status === "active");
+      seatStudentSelect.innerHTML = activeStudents.length
+        ? activeStudents.map((student) => `
+          <option value="${escapeHtml(student.id)}"
+            data-year="${escapeHtml(student.academic_year ?? "")}"
+            data-class-code="${escapeHtml(student.class_code || "")}"
+            data-seat-no="${escapeHtml(student.seat_no ?? "")}">
+            ${escapeHtml(student.class_code || "未設定")} ${escapeHtml(student.seat_no ?? "－")} 號｜${escapeHtml(student.student_name)}（${escapeHtml(student.student_no)}）
+          </option>
+        `).join("")
+        : '<option value="">目前沒有可調整的在籍學生</option>';
+      applySelectedSeatStudent();
+    }
+
+    function applySelectedSeatStudent() {
+      const option = seatStudentSelect.selectedOptions[0];
+      if (!option || !option.value) {
+        return;
+      }
+      if (option.dataset.year) {
+        seatYearInput.value = option.dataset.year;
+      }
+      populateClassSelect(seatClassInput, seatYearInput.value);
+      if (option.dataset.classCode) {
+        seatClassInput.value = option.dataset.classCode;
+      }
+      seatNoInput.value = option.dataset.seatNo || "";
+    }
+
+    function parseBatchSeatUpdates() {
+      const lines = batchSeatTextarea.value
+        .split(/\r?\n/)
+        .map((line) => line.trim())
+        .filter(Boolean);
+      const updates = [];
+      const errors = [];
+
+      lines.forEach((line, index) => {
+        const columns = line.split(/\t|,/).map((value) => value.trim());
+        const [studentNo, classCode, seatNoText, note = ""] = columns;
+        const seatNo = Number(seatNoText);
+
+        if (!studentNo || !classCode || !seatNoText) {
+          errors.push(`第 ${index + 1} 列缺少學號、班級或座號。`);
+          return;
+        }
+        if (!Number.isInteger(seatNo) || seatNo <= 0) {
+          errors.push(`第 ${index + 1} 列座號不是正整數。`);
+          return;
+        }
+
+        updates.push({
+          student_no: studentNo,
+          class_code: classCode,
+          seat_no: seatNo,
+          note
+        });
+      });
+
+      return { updates, errors };
+    }
+
+    function previewBatchSeatUpdates() {
+      const { updates, errors } = parseBatchSeatUpdates();
+      if (errors.length) {
+        batchSeatStatus.textContent = `批次資料有 ${errors.length} 項需修正：${errors.slice(0, 3).join("；")}${errors.length > 3 ? "……" : ""}`;
+        return null;
+      }
+      if (!updates.length) {
+        batchSeatStatus.textContent = "請先貼上批次調整資料。";
+        return null;
+      }
+
+      const classSummary = updates.reduce((summary, item) => {
+        summary[item.class_code] = (summary[item.class_code] || 0) + 1;
+        return summary;
+      }, {});
+      batchSeatStatus.textContent = `批次預覽：共 ${updates.length} 筆；${Object.entries(classSummary).map(([classCode, count]) => `${classCode} ${count} 人`).join("、")}。`;
+      return updates;
+    }
+
+    function parseBatchStudentRows() {
+      const lines = batchStudentTextarea.value
+        .split(/\r?\n/)
+        .map((line) => line.trim())
+        .filter(Boolean);
+      const rows = [];
+      const errors = [];
+
+      lines.forEach((line, index) => {
+        const columns = line.split(/\t|,/).map((value) => value.trim());
+        const [studentNo, studentName, yearText, classCode, seatText, accountEmail = ""] = columns;
+        if (index === 0 && studentNo === "學號" && studentName === "姓名") {
+          return;
+        }
+        const academicYear = Number(yearText);
+        const seatNo = Number(seatText);
+
+        if (!studentNo || !studentName || !yearText || !classCode || !seatText) {
+          errors.push(`第 ${index + 1} 列缺少學號、姓名、學年度、班級或座號。`);
+          return;
+        }
+        if (!Number.isInteger(academicYear)) {
+          errors.push(`第 ${index + 1} 列學年度不是整數。`);
+          return;
+        }
+        if (!Number.isInteger(seatNo) || seatNo <= 0) {
+          errors.push(`第 ${index + 1} 列座號不是正整數。`);
+          return;
+        }
+
+        rows.push({
+          p_student_no: studentNo,
+          p_student_name: studentName,
+          p_academic_year: academicYear,
+          p_class_code: classCode,
+          p_seat_no: seatNo,
+          p_account_email: accountEmail || null
+        });
+      });
+
+      const seen = new Set();
+      rows.forEach((row) => {
+        if (seen.has(row.p_student_no)) {
+          errors.push(`學號重複：${row.p_student_no}。`);
+        }
+        seen.add(row.p_student_no);
+      });
+
+      return { rows, errors };
+    }
+
+    function previewBatchStudents() {
+      const { rows, errors } = parseBatchStudentRows();
+      if (errors.length) {
+        batchStudentStatus.textContent = `批次學生資料有 ${errors.length} 項需修正：${errors.slice(0, 3).join("；")}${errors.length > 3 ? "……" : ""}`;
+        return null;
+      }
+      if (!rows.length) {
+        batchStudentStatus.textContent = "請先貼上批次學生名冊。";
+        return null;
+      }
+
+      const classSummary = rows.reduce((summary, row) => {
+        const key = `${row.p_academic_year} ${row.p_class_code}`;
+        summary[key] = (summary[key] || 0) + 1;
+        return summary;
+      }, {});
+      batchStudentStatus.textContent = `批次預覽：共 ${rows.length} 位學生；${Object.entries(classSummary).map(([key, count]) => `${key}：${count} 人`).join("、")}。`;
+      return rows;
+    }
+
+    async function loadPeopleData() {
+      if (!getSupabaseConfig().enabled) {
+        populateClassSelect(studentClassInput, studentYearInput.value);
+        populateClassSelect(teacherClassInput, teacherYearInput.value);
+        populateClassSelect(seatClassInput, seatYearInput.value);
+        peopleListStatus.textContent = "示範模式：班級使用目前預設資料，正式名單尚未從 Supabase 載入。";
+        return;
+      }
+
+      peopleListStatus.textContent = "正在載入師生名單……";
+      const result = await callSupabaseRpc("admin_list_people", {});
+      const data = result.data || {};
+      if (Array.isArray(data.classes) && data.classes.length) {
+        classCatalog = data.classes;
+      }
+      populateClassSelect(studentClassInput, studentYearInput.value);
+      populateClassSelect(teacherClassInput, teacherYearInput.value);
+      populateClassSelect(seatClassInput, seatYearInput.value);
+      renderPeopleLists(data);
+      populateSeatStudentSelect(data.students || []);
+      peopleListStatus.textContent = `已載入 ${data.students?.length || 0} 位學生、${data.teachers?.length || 0} 位教師。`;
+    }
+
+    function buildAdvanceYearPayload(dryRun) {
+      const fromYear = Number(advanceFromYearInput.value);
+      const toYear = Number(advanceToYearInput.value);
+      const effectiveDate = advanceEffectiveDateInput.value || null;
+
+      if (!Number.isInteger(fromYear) || !Number.isInteger(toYear)) {
+        throw new Error("來源學年度與目標學年度必須是整數。");
+      }
+      if (toYear <= fromYear) {
+        throw new Error("目標學年度必須大於來源學年度。");
+      }
+
+      return {
+        p_from_academic_year: fromYear,
+        p_to_academic_year: toYear,
+        p_effective_date: effectiveDate,
+        p_dry_run: dryRun
+      };
+    }
+
+    function formatAdvanceResult(data) {
+      return `七、八年級升級 ${data.promote_count || 0} 人；九年級畢業 ${data.graduate_count || 0} 人；建立或更新班級 ${data.created_or_updated_class_count || 0} 班。`;
+    }
+
+    function renderHealthCheck(data) {
+      const checks = Array.isArray(data.checks) ? data.checks : [];
+      healthCheckBody.innerHTML = checks.length
+        ? checks.map((check) => `
+          <tr>
+            <td>${escapeHtml(check.label)}</td>
+            <td>${check.ok ? "通過" : "待處理"}</td>
+            <td>${escapeHtml(check.hint || "")}</td>
+          </tr>
+        `).join("")
+        : '<tr><td colspan="3">沒有收到檢查項目。</td></tr>';
+
+      const counts = data.counts || {};
+      healthCheckStatus.textContent = `檢查完成：目前帳號 ${data.current_account || "未提供"}，角色 ${data.current_role || "未知"}；班級 ${counts.classes || 0}、學生 ${counts.students || 0}、教師 ${counts.teachers || 0}、考試 ${counts.exams || 0}。`;
+    }
+
+    async function runSystemHealthCheck() {
+      if (!getSupabaseConfig().enabled) {
+        healthCheckBody.innerHTML = `
+          <tr><td>Supabase 正式送出</td><td>待處理</td><td>請先設定 URL、anon key，並勾選正式送出 RPC。</td></tr>
+          <tr><td>管理員登入 token</td><td>待處理</td><td>請使用 Supabase Auth 登入 admin 帳號後再檢查。</td></tr>
+        `;
+        healthCheckStatus.textContent = "示範模式無法檢查正式資料庫。";
+        return;
+      }
+
+      healthCheckStatus.textContent = "正在執行系統檢查……";
+      const result = await callSupabaseRpc("admin_system_health_check", {});
+      renderHealthCheck(result.data || {});
+    }
+
+    function renderDeployCheck(checks) {
+      deployCheckBody.innerHTML = checks.map((check) => `
+        <tr>
+          <td>${escapeHtml(check.label)}</td>
+          <td>${escapeHtml(check.status)}</td>
+          <td>${escapeHtml(check.hint)}</td>
+        </tr>
+      `).join("");
+
+      const blockingCount = checks.filter((check) => check.level === "blocker").length;
+      const warningCount = checks.filter((check) => check.level === "warning").length;
+      deployCheckStatus.textContent = blockingCount
+        ? `上線前檢查完成：有 ${blockingCount} 項需要先處理，另有 ${warningCount} 項提醒。`
+        : `上線前檢查完成：沒有阻擋項目，提醒 ${warningCount} 項。`;
+    }
+
+    function runDeploymentPreflightCheck() {
+      const config = getSupabaseConfig();
+      const protocol = window.location.protocol;
+      const pathName = window.location.pathname || "";
+      const isLocalPreview = protocol === "file:" || location.hostname === "localhost" || location.hostname === "127.0.0.1";
+      const isSecureWeb = protocol === "https:";
+      const checks = [
+        {
+          label: "首頁檔名",
+          level: pathName.endsWith("/") || pathName.toLowerCase().endsWith("/index.html") || isLocalPreview ? "ok" : "warning",
+          status: pathName.endsWith("/") || pathName.toLowerCase().endsWith("/index.html") || isLocalPreview ? "通過" : "提醒",
+          hint: isLocalPreview
+            ? "目前是本機預覽；正式上線時請使用 index.html 作為首頁。"
+            : "正式網址建議由 index.html 作為首頁，避免中文檔名造成主機辨識問題。"
+        },
+        {
+          label: "Excel 解析程式",
+          level: window.XLSX ? "ok" : "blocker",
+          status: window.XLSX ? "通過" : "待處理",
+          hint: window.XLSX ? "已載入 xlsx.full.min.js。" : "找不到 XLSX，請確認 xlsx.full.min.js 與 index.html 放在同一層。"
+        },
+        {
+          label: "網址安全性",
+          level: isSecureWeb || isLocalPreview ? "ok" : "warning",
+          status: isSecureWeb ? "通過" : (isLocalPreview ? "本機預覽" : "提醒"),
+          hint: isSecureWeb
+            ? "目前使用 HTTPS，適合 Supabase Auth 與正式測試。"
+            : (isLocalPreview ? "本機預覽可測畫面；正式網站建議使用 HTTPS。" : "正式網站建議使用 HTTPS。")
+        },
+        {
+          label: "Supabase URL",
+          level: /^https:\/\/.+\.supabase\.co\/?$/.test(config.url) ? "ok" : "blocker",
+          status: /^https:\/\/.+\.supabase\.co\/?$/.test(config.url) ? "通過" : "待處理",
+          hint: /^https:\/\/.+\.supabase\.co\/?$/.test(config.url) ? "URL 格式看起來正確。" : "請填入 Supabase Project URL，例如 https://xxxx.supabase.co。"
+        },
+        {
+          label: "Supabase anon key",
+          level: config.anonKey && config.anonKey.length > 40 ? "ok" : "blocker",
+          status: config.anonKey && config.anonKey.length > 40 ? "通過" : "待處理",
+          hint: config.anonKey && config.anonKey.length > 40 ? "已填入 anon key。" : "請填入 Supabase anon public key，不要使用 service_role key。"
+        },
+        {
+          label: "正式送出 RPC",
+          level: config.enabled ? "ok" : "warning",
+          status: config.enabled ? "通過" : "提醒",
+          hint: config.enabled ? "已勾選正式送出 RPC。" : "若只是預覽可不勾；要寫入資料庫前需勾選。"
+        },
+        {
+          label: "Supabase Auth",
+          level: useSupabaseAuth.checked ? "ok" : "warning",
+          status: useSupabaseAuth.checked ? "通過" : "提醒",
+          hint: useSupabaseAuth.checked ? "登入介面已切換為 Supabase Auth。" : "正式上線測試時，登入介面需勾選 Supabase Auth。"
+        },
+        {
+          label: "Auth Redirect URL",
+          level: isSecureWeb ? "warning" : "warning",
+          status: "提醒",
+          hint: isSecureWeb
+            ? "請確認已將目前網站網址填入 Supabase Auth 的 Site URL 與 Redirect URLs。"
+            : "正式網址完成後，需將 HTTPS 網址填入 Supabase Auth 的 Site URL 與 Redirect URLs。"
+        },
+        {
+          label: "管理員登入",
+          level: currentSession?.access_token && currentProfile?.role === "admin" ? "ok" : "warning",
+          status: currentSession?.access_token && currentProfile?.role === "admin" ? "通過" : "提醒",
+          hint: currentSession?.access_token && currentProfile?.role === "admin"
+            ? "目前已有 admin 登入狀態。"
+            : "執行正式系統檢查前，需先用 admin 帳號登入。"
+        }
+      ];
+      renderDeployCheck(checks);
+    }
+
+    async function runAdvanceSchoolYear(dryRun) {
+      const payload = buildAdvanceYearPayload(dryRun);
+
+      if (!getSupabaseConfig().enabled) {
+        const demoPromoteCount = classCatalog.filter((item) => Number(item.academic_year) === payload.p_from_academic_year && Number(item.grade_level) < 9).length * 25;
+        const demoGraduateCount = classCatalog.filter((item) => Number(item.academic_year) === payload.p_from_academic_year && Number(item.grade_level) === 9).length * 25;
+        advanceYearStatus.textContent = `示範模式：預估七、八年級升級 ${demoPromoteCount} 人；九年級畢業 ${demoGraduateCount} 人。尚未送至 Supabase。`;
+        return;
+      }
+
+      const result = await callSupabaseRpc("admin_advance_school_year", payload);
+      advanceYearStatus.textContent = `${dryRun ? "預覽完成" : "正式執行完成"}：${formatAdvanceResult(result.data || {})}`;
+      if (!dryRun) {
+        await loadPeopleData();
+      }
+    }
+
+    function getDemoReportData() {
+      return {
+        selected_exam_id: "demo-exam",
+        exams: [{
+          id: "demo-exam",
+          academic_year: 113,
+          semester: 1,
+          grade_level: 9,
+          exam_type: "mock_exam",
+          exam_number: 1,
+          exam_name: "113 學年度九年級第 1 次模擬考",
+          exam_date: "2024-09-05",
+          is_published: true
+        }],
+        rows: [
+          {
+            student_no: "1130901", student_name: "示範學生一", class_code: "九培", seat_no: 1,
+            chinese_grade: "A", chinese_percent: 92, english_grade: "A+", english_percent: 96.5,
+            math_grade: "B++", math_percent: 84, science_grade: "A", science_percent: 90,
+            social_grade: "B+", social_percent: 78,
+            chinese_points: 5, english_points: 6, math_points: 4, science_points: 5, social_points: 3,
+            a_count: 3, b_count: 2,
+            total_grade_points: 23, total_percent_score: 440.5,
+            class_grade_rank: 1, school_grade_rank: 3, class_percent_rank: 1, school_percent_rank: 4
+          },
+          {
+            student_no: "1130902", student_name: "示範學生二", class_code: "九培", seat_no: 2,
+            chinese_grade: "B++", chinese_percent: 85, english_grade: "A", english_percent: 91,
+            math_grade: "B+", math_percent: 73, science_grade: "B++", science_percent: 82,
+            social_grade: "B", social_percent: 68,
+            chinese_points: 4, english_points: 5, math_points: 3, science_points: 4, social_points: 2,
+            a_count: 1, b_count: 4,
+            total_grade_points: 18, total_percent_score: 399,
+            class_grade_rank: 2, school_grade_rank: 8, class_percent_rank: 2, school_percent_rank: 9
+          }
+        ]
+      };
+    }
+
+    function formatScoreCell(grade, percent) {
+      if (grade == null && percent == null) {
+        return '<td class="score-cell"><strong>－</strong><small>－</small></td>';
+      }
+      const gradeText = grade === "absent" ? "缺考" : grade;
+      return `<td class="score-cell"><strong>${escapeHtml(gradeText || "缺考")}</strong><small>${percent == null ? "－" : escapeHtml(Number(percent).toFixed(2))}</small></td>`;
+    }
+
+    function renderAnalysisCharts(rows, averageContainer, gradeContainer) {
+      const subjects = [
+        { key: "chinese", label: "國文" },
+        { key: "english", label: "英文" },
+        { key: "math", label: "數學" },
+        { key: "science", label: "自然" },
+        { key: "social", label: "社會" }
+      ];
+
+      const subjectStats = subjects.map((subject) => {
+        const percentValues = rows
+          .map((row) => row[`${subject.key}_percent`])
+          .filter((value) => value != null && Number.isFinite(Number(value)))
+          .map(Number);
+        const grades = rows
+          .map((row) => row[`${subject.key}_grade`])
+          .filter((grade) => grade != null);
+        const distribution = { A: 0, B: 0, C: 0, absent: 0 };
+
+        grades.forEach((grade) => {
+          if (String(grade).startsWith("A")) {
+            distribution.A += 1;
+          } else if (String(grade).startsWith("B")) {
+            distribution.B += 1;
+          } else if (grade === "C") {
+            distribution.C += 1;
+          } else {
+            distribution.absent += 1;
+          }
+        });
+
+        return {
+          ...subject,
+          average: percentValues.length
+            ? percentValues.reduce((sum, value) => sum + value, 0) / percentValues.length
+            : null,
+          distribution,
+          gradeCount: grades.length
+        };
+      }).filter((subject) => subject.average != null || subject.gradeCount > 0);
+
+      averageContainer.innerHTML = subjectStats.length
+        ? subjectStats.map((subject) => {
+          const average = subject.average ?? 0;
+          return `
+            <div class="bar-row">
+              <span>${subject.label}</span>
+              <div class="bar-track" title="${subject.label}平均 ${average.toFixed(2)} 分">
+                <div class="bar-fill" style="width: ${Math.max(0, Math.min(100, average))}%"></div>
+              </div>
+              <span>${average.toFixed(1)}</span>
+            </div>
+          `;
+        }).join("")
+        : '<p class="setting-note">目前沒有可計算的百分制成績。</p>';
+
+      gradeContainer.innerHTML = subjectStats.length
+        ? subjectStats.map((subject) => {
+          const total = subject.gradeCount || 1;
+          const segments = [
+            ["A", subject.distribution.A, "grade-a"],
+            ["B", subject.distribution.B, "grade-b"],
+            ["C", subject.distribution.C, "grade-c"],
+            ["缺", subject.distribution.absent, "grade-absent"]
+          ].filter(([, count]) => count > 0);
+          return `
+            <div class="distribution-row">
+              <span>${subject.label}</span>
+              <div class="distribution-track">
+                ${segments.map(([label, count, className]) => `
+                  <span class="distribution-segment ${className}" style="width: ${(count / total) * 100}%" title="${label}：${count} 人">${label} ${count}</span>
+                `).join("")}
+              </div>
+            </div>
+          `;
+        }).join("")
+        : '<p class="setting-note">目前沒有可計算的等級資料。</p>';
+    }
+
+    function populateStudentReportSelect(selectElement, rows) {
+      selectElement.innerHTML = rows.length
+        ? rows.map((row, index) => `<option value="${index}">${escapeHtml(row.class_code || "－")} ${escapeHtml(row.seat_no ?? "－")} 號｜${escapeHtml(row.student_name || row.student_no || "－")}</option>`).join("")
+        : '<option value="">目前沒有學生資料</option>';
+    }
+
+    function printIndividualReport(row, examName) {
+      if (!row) {
+        return false;
+      }
+
+      const subjects = [
+        { key: "chinese", label: "國文" },
+        { key: "english", label: "英文" },
+        { key: "math", label: "數學" },
+        { key: "science", label: "自然" },
+        { key: "social", label: "社會" }
+      ].filter((subject) => row[`${subject.key}_grade`] != null || row[`${subject.key}_percent`] != null);
+
+      individualReportTitle.textContent = "模擬考個人成績單";
+      individualReportExam.textContent = examName || "模擬考成績";
+      individualStudentInfo.innerHTML = `
+        <div class="individual-info-item"><span>班級</span><strong>${escapeHtml(row.class_code || "－")}</strong></div>
+        <div class="individual-info-item"><span>座號</span><strong>${escapeHtml(row.seat_no ?? "－")}</strong></div>
+        <div class="individual-info-item"><span>姓名</span><strong>${escapeHtml(row.student_name || "－")}</strong></div>
+        <div class="individual-info-item"><span>學號</span><strong>${escapeHtml(row.student_no || "－")}</strong></div>
+      `;
+      individualScoreBody.innerHTML = subjects.length
+        ? subjects.map((subject) => {
+          const grade = row[`${subject.key}_grade`];
+          const percent = row[`${subject.key}_percent`];
+          const points = row[`${subject.key}_points`];
+          return `
+            <tr>
+              <td>${subject.label}</td>
+              <td>${escapeHtml(grade === "absent" ? "缺考" : grade || "－")}</td>
+              <td>${percent == null ? "－" : escapeHtml(Number(percent).toFixed(2))}</td>
+              <td>${escapeHtml(points ?? "－")}</td>
+            </tr>
+          `;
+        }).join("")
+        : '<tr><td colspan="4">目前沒有可列印的科目成績。</td></tr>';
+      individualSummaryGrid.innerHTML = `
+        <div class="individual-info-item"><span>A／B 個數</span><strong>${escapeHtml(row.a_count ?? "－")}／${escapeHtml(row.b_count ?? "－")}</strong></div>
+        <div class="individual-info-item"><span>總積分</span><strong>${escapeHtml(row.total_grade_points ?? "－")}</strong></div>
+        <div class="individual-info-item"><span>積分班排／校排</span><strong>${escapeHtml(row.class_grade_rank ?? "－")}／${escapeHtml(row.school_grade_rank ?? "－")}</strong></div>
+        <div class="individual-info-item"><span>百分制總分</span><strong>${escapeHtml(row.total_percent_score ?? "－")}</strong></div>
+        <div class="individual-info-item"><span>百分班排／校排</span><strong>${escapeHtml(row.class_percent_rank ?? "－")}／${escapeHtml(row.school_percent_rank ?? "－")}</strong></div>
+      `;
+
+      individualReportSheet.classList.remove("hidden");
+      document.body.classList.add("printing-individual");
+      window.print();
+      return true;
+    }
+
+    window.addEventListener("afterprint", () => {
+      document.body.classList.remove("printing-individual");
+      individualReportSheet.classList.add("hidden");
+    });
+
+    function renderScoreReport(data) {
+      const exams = Array.isArray(data.exams) ? data.exams : [];
+      const rows = Array.isArray(data.rows) ? data.rows : [];
+      const previousExamId = reportExamSelect.value;
+      const selectedExamId = data.selected_exam_id || previousExamId || exams[0]?.id || "";
+
+      reportExamSelect.innerHTML = exams.length
+        ? exams.map((exam) => `<option value="${escapeHtml(exam.id)}">${escapeHtml(exam.exam_name)}｜${exam.grade_level} 年級</option>`).join("")
+        : '<option value="">目前沒有考試資料</option>';
+      reportExamSelect.value = exams.some((exam) => exam.id === selectedExamId) ? selectedExamId : exams[0]?.id || "";
+
+      const classCodes = [...new Set(rows.map((row) => row.class_code).filter(Boolean))].sort();
+      const previousClassCode = reportClassSelect.value;
+      reportClassSelect.innerHTML = '<option value="">全部班級</option>'
+        + classCodes.map((classCode) => `<option value="${escapeHtml(classCode)}">${escapeHtml(classCode)}</option>`).join("");
+      if (classCodes.includes(previousClassCode)) {
+        reportClassSelect.value = previousClassCode;
+      }
+
+      reportTableBody.innerHTML = rows.length
+        ? rows.map((row) => `
+          <tr>
+            <td>${escapeHtml(row.class_code || "－")}</td>
+            <td>${escapeHtml(row.seat_no ?? "－")}</td>
+            <td>${escapeHtml(row.student_name || row.student_no || "－")}</td>
+            ${formatScoreCell(row.chinese_grade, row.chinese_percent)}
+            ${formatScoreCell(row.english_grade, row.english_percent)}
+            ${formatScoreCell(row.math_grade, row.math_percent)}
+            ${formatScoreCell(row.science_grade, row.science_percent)}
+            ${formatScoreCell(row.social_grade, row.social_percent)}
+            <td>${escapeHtml(row.a_count ?? 0)}／${escapeHtml(row.b_count ?? 0)}</td>
+            <td>${escapeHtml(row.total_grade_points ?? 0)}</td>
+            <td>${escapeHtml(row.class_grade_rank ?? "－")}／${escapeHtml(row.school_grade_rank ?? "－")}</td>
+            <td>${escapeHtml(row.total_percent_score ?? 0)}</td>
+            <td>${escapeHtml(row.class_percent_rank ?? "－")}／${escapeHtml(row.school_percent_rank ?? "－")}</td>
+          </tr>
+        `).join("")
+        : '<tr><td colspan="13">這次考試尚無符合條件的成績。</td></tr>';
+
+      const selectedExam = exams.find((exam) => exam.id === reportExamSelect.value);
+      currentReportRows = rows;
+      currentReportExamName = selectedExam?.exam_name || "模擬考成績";
+      populateStudentReportSelect(reportStudentSelect, rows);
+      reportHeading.textContent = selectedExam ? `${selectedExam.exam_name}｜成績表` : "成績查詢與列印";
+      publishExamButton.dataset.isPublished = String(Boolean(selectedExam?.is_published));
+      publishExamButton.textContent = selectedExam?.is_published ? "取消發布" : "發布成績";
+      publishExamButton.disabled = !selectedExam;
+      reportStudentCount.textContent = String(rows.length);
+      reportClassCount.textContent = String(new Set(rows.map((row) => row.class_code).filter(Boolean)).size);
+      const averagePoints = rows.length
+        ? rows.reduce((sum, row) => sum + Number(row.total_grade_points || 0), 0) / rows.length
+        : 0;
+      reportAveragePoints.textContent = averagePoints.toFixed(1);
+      renderAnalysisCharts(rows, reportAverageChart, reportGradeChart);
+    }
+
+    async function loadScoreReport() {
+      reportStatus.textContent = "正在載入成績資料……";
+      if (!getSupabaseConfig().enabled) {
+        const data = getDemoReportData();
+        const selectedClass = reportClassSelect.value;
+        if (selectedClass) {
+          data.rows = data.rows.filter((row) => row.class_code === selectedClass);
+        }
+        renderScoreReport(data);
+        reportStatus.textContent = "目前為示範模式；表格使用範例資料，尚未讀取 Supabase。";
+        return;
+      }
+
+      const selectedExamId = reportExamSelect.value;
+      const result = await callSupabaseRpc("admin_get_score_report", {
+        p_exam_id: selectedExamId && !selectedExamId.startsWith("demo-") ? selectedExamId : null,
+        p_class_code: reportClassSelect.value || null
+      });
+      renderScoreReport(result.data || {});
+      reportStatus.textContent = `查詢完成，共 ${result.data?.rows?.length || 0} 位學生。`;
+    }
+
+    function getDemoPortalData(role) {
+      const data = getDemoReportData();
+      data.role = role;
+
+      if (role === "student") {
+        data.rows = data.rows.slice(0, 1);
+      } else if (role === "subject_teacher") {
+        data.rows = data.rows.map((row) => ({
+          ...row,
+          chinese_grade: null,
+          chinese_percent: null,
+          english_grade: null,
+          english_percent: null,
+          math_grade: null,
+          math_percent: null,
+          social_grade: null,
+          social_percent: null,
+          a_count: null,
+          b_count: null,
+          total_grade_points: null,
+          total_percent_score: null,
+          class_grade_rank: null,
+          school_grade_rank: null,
+          class_percent_rank: null,
+          school_percent_rank: null
+        }));
+      }
+
+      return data;
+    }
+
+    function configurePortal(profile) {
+      const settings = {
+        student: ["學生專區", "我的模擬考成績", "只顯示自己的歷次成績與排名。"],
+        homeroom_teacher: ["導師專區", "班級模擬考成績", "顯示目前導師班級的完整五科成績。"],
+        subject_teacher: ["任課老師專區", "任教科目成績", "只顯示任教班級及任教科目的成績。"],
+        viewer: ["成績查詢專區", "已發布成績查詢", "顯示系統已發布的模擬考成績。"]
+      };
+      const [badge, title, description] = settings[profile.role] || settings.viewer;
+      portalRoleBadge.textContent = badge;
+      portalTitle.textContent = title;
+      portalDescription.textContent = `${profile.display_name || profile.account_name || "使用者"}｜${description}`;
+    }
+
+    function renderPortalReport(data) {
+      const exams = Array.isArray(data.exams) ? data.exams : [];
+      const rows = Array.isArray(data.rows) ? data.rows : [];
+      const selectedExamId = data.selected_exam_id || portalExamSelect.value || exams[0]?.id || "";
+
+      portalExamSelect.innerHTML = exams.length
+        ? exams.map((exam) => `<option value="${escapeHtml(exam.id)}">${escapeHtml(exam.exam_name)}｜${exam.grade_level} 年級</option>`).join("")
+        : '<option value="">目前沒有已發布的考試</option>';
+      portalExamSelect.value = exams.some((exam) => exam.id === selectedExamId) ? selectedExamId : exams[0]?.id || "";
+      const selectedExam = exams.find((exam) => exam.id === portalExamSelect.value);
+
+      portalTableBody.innerHTML = rows.length
+        ? rows.map((row) => `
+          <tr>
+            <td>${escapeHtml(row.class_code || "－")}</td>
+            <td>${escapeHtml(row.seat_no ?? "－")}</td>
+            <td>${escapeHtml(row.student_name || row.student_no || "－")}</td>
+            ${formatScoreCell(row.chinese_grade, row.chinese_percent)}
+            ${formatScoreCell(row.english_grade, row.english_percent)}
+            ${formatScoreCell(row.math_grade, row.math_percent)}
+            ${formatScoreCell(row.science_grade, row.science_percent)}
+            ${formatScoreCell(row.social_grade, row.social_percent)}
+            <td>${row.a_count == null ? "－" : `${escapeHtml(row.a_count)}／${escapeHtml(row.b_count ?? 0)}`}</td>
+            <td>${escapeHtml(row.total_grade_points ?? "－")}</td>
+            <td>${escapeHtml(row.class_grade_rank ?? "－")}／${escapeHtml(row.school_grade_rank ?? "－")}</td>
+            <td>${escapeHtml(row.total_percent_score ?? "－")}</td>
+            <td>${escapeHtml(row.class_percent_rank ?? "－")}／${escapeHtml(row.school_percent_rank ?? "－")}</td>
+          </tr>
+        `).join("")
+        : '<tr><td colspan="13">目前沒有可查看的已發布成績。</td></tr>';
+
+      portalStudentCount.textContent = String(rows.length);
+      currentPortalRows = rows;
+      currentPortalExamName = selectedExam?.exam_name || "模擬考成績";
+      populateStudentReportSelect(portalStudentSelect, rows);
+      portalClassCount.textContent = String(new Set(rows.map((row) => row.class_code).filter(Boolean)).size);
+      const pointRows = rows.filter((row) => row.total_grade_points != null);
+      portalAveragePoints.textContent = pointRows.length
+        ? (pointRows.reduce((sum, row) => sum + Number(row.total_grade_points), 0) / pointRows.length).toFixed(1)
+        : "－";
+      renderAnalysisCharts(rows, portalAverageChart, portalGradeChart);
+    }
+
+    async function loadPortalReport() {
+      portalStatus.textContent = "正在載入可查看的成績……";
+      if (!currentSession?.access_token) {
+        const data = getDemoPortalData(currentProfile?.role || roleInput.value || "student");
+        renderPortalReport(data);
+        portalStatus.textContent = "目前為示範模式；正式登入後會依帳號角色讀取 Supabase。";
+        return;
+      }
+
+      const selectedExamId = portalExamSelect.value;
+      const result = await callSupabaseRpc("get_role_score_report", {
+        p_exam_id: selectedExamId && !selectedExamId.startsWith("demo-") ? selectedExamId : null
+      }, true);
+      renderPortalReport(result.data || {});
+      portalStatus.textContent = `查詢完成，共顯示 ${result.data?.rows?.length || 0} 位學生。`;
+    }
+
+    function addOptionIfMissing(selectElement, value, label, data = {}) {
+      const existing = Array.from(selectElement.options).find((option) => option.value === value);
+      if (existing) {
+        existing.textContent = label;
+        Object.entries(data).forEach(([key, itemValue]) => {
+          existing.dataset[key] = itemValue;
+        });
+        selectElement.value = value;
+        return;
+      }
+
+      const option = document.createElement("option");
+      option.value = value;
+      option.textContent = label;
+      Object.entries(data).forEach(([key, itemValue]) => {
+        option.dataset[key] = itemValue;
+      });
+      selectElement.appendChild(option);
+      selectElement.value = value;
+    }
+
+    function getRuleEditorRows() {
+      return gradeRows.flatMap((row) => {
+        const fields = [
+          { subject: "chinese", unit: "correct_count" },
+          { subject: "english", unit: "percentage" },
+          { subject: "math", unit: "percentage" },
+          { subject: "science", unit: "correct_count" },
+          { subject: "social", unit: "correct_count" }
+        ];
+
+        return fields.map((field) => {
+          const input = ruleEditorBody.querySelector(`[data-rule-grade="${row.grade}"][data-rule-field="${field.subject}"]`);
+          return {
+            subject: field.subject,
+            grade: row.grade,
+            threshold_value: Number(input?.value || 0),
+            threshold_unit: field.unit
+          };
+        });
+      });
+    }
+
+    function getPointEditorValues() {
+      return gradeRows.reduce((points, row) => {
+        const input = pointEditorBody.querySelector(`[data-point-grade="${row.grade}"]`);
+        points[row.grade] = Number(input?.value || 0);
+        return points;
+      }, {});
+    }
+
+    function buildConversionRuleSetPayload(gradeLevel) {
+      return {
+        p_academic_year: Number(newRuleYear.value || 113),
+        p_grade_level: Number(gradeLevel),
+        p_exam_type: "mock_exam",
+        p_version_name: newRuleName.value.trim() || `${newRuleYear.value || 113} 模擬考換算標準`,
+        p_source_file_name: "網頁手動建立",
+        p_rules: getRuleEditorRows()
+      };
+    }
+
+    function buildPointRuleSetPayload() {
+      const city = newPointCity.value.trim() || "台南市";
+      const year = Number(newPointYear.value || 113);
+      const name = newPointName.value.trim() || `${city} ${year} 積分版`;
+
+      return {
+        p_city_name: city,
+        p_academic_year: year,
+        p_version_name: name,
+        p_description: "由管理員於網頁手動建立",
+        p_points: getPointEditorValues()
+      };
+    }
+
+    function applyParsedExamSettings(result, fileName) {
+      const grades = [...new Set(result.records.map((record) => record.grade).filter(Boolean))];
+      if (grades.length === 1) {
+        gradeLevelInput.value = String(grades[0]);
+      }
+      if (result.examType) {
+        examTypeInput.value = result.examType;
+      }
+      if (result.examNumber) {
+        examNumberInput.value = String(result.examNumber);
+      }
+      if (result.sheets.length === 1 && result.sheets[0].reportTitle) {
+        examNameInput.value = result.sheets[0].reportTitle.replace(/班級成績報表$/, "");
+      } else if (!examNameInput.value.trim()) {
+        examNameInput.value = fileName.replace(/\.(xlsx|xls)$/i, "");
+      }
+    }
+
+    function getImportGradeGroups() {
+      const selectedGrade = Number(gradeLevelInput.value);
+      const grouped = new Map();
+
+      currentParsedImport.records.forEach((record) => {
+        const grade = Number(record.grade || selectedGrade);
+        if (!Number.isInteger(grade) || grade < 7 || grade > 9) {
+          throw new Error("部分資料無法判斷年級，請先在考試設定選擇年級。");
+        }
+        if (!grouped.has(grade)) {
+          grouped.set(grade, []);
+        }
+        grouped.get(grade).push(record);
+      });
+
+      return grouped;
+    }
+
+    function buildExamImportPayloads() {
+      if (!currentParsedImport?.records.length) {
+        throw new Error("請先完成 Excel 預覽。");
+      }
+      if (currentParsedImport.records.some((record) => !record.studentNo)) {
+        throw new Error("匯入資料含有空白學號，請改用包含學號的讀卡報表。");
+      }
+      if (currentParsedImport.records.some((record) => !record.component)) {
+        throw new Error("匯入資料含有無法辨識的科目。");
+      }
+      if (currentParsedImport.records.some((record) => record.score === null && !record.isAbsent)) {
+        throw new Error("匯入資料含有空白成績，請補登成績或標記缺考。");
+      }
+
+      const academicYear = Number(academicYearInput.value);
+      const semester = Number(semesterInput.value);
+      const examNumber = Number(examNumberInput.value);
+      const examName = examNameInput.value.trim();
+      const ruleVersionName = ruleSetSelect.value;
+      const pointVersionName = pointRuleSetSelect.value;
+
+      if (!Number.isInteger(academicYear) || ![1, 2].includes(semester) || !examName) {
+        throw new Error("請完整填寫學年度、學期與考試名稱。");
+      }
+      if (!ruleVersionName || !pointVersionName) {
+        throw new Error("請選擇等級換算標準與積分規則版本。");
+      }
+
+      return [...getImportGradeGroups()].map(([grade, records]) => ({
+        p_academic_year: academicYear,
+        p_semester: semester,
+        p_grade_level: grade,
+        p_exam_type: examTypeInput.value,
+        p_exam_number: examNumber,
+        p_exam_name: examName,
+        p_exam_date: examDateInput.value || null,
+        p_rule_version_name: ruleVersionName,
+        p_point_city_name: pointRuleSetSelect.selectedOptions[0]?.dataset.city || "台南市",
+        p_point_version_name: pointVersionName,
+        p_original_file_name: excelFile.files[0]?.name || "manual-import",
+        p_component_totals: currentParsedImport.componentTotals || {},
+        p_records: records.map((record) => ({
+          student_no: record.studentNo,
+          name: record.name,
+          class_code: record.classCode,
+          seat_no: record.seatNo,
+          component: record.component,
+          score: record.score,
+          is_absent: Boolean(record.isAbsent),
+          entry_method: record.source === "manual" ? "manual" : "excel_import"
+        })),
+        p_recalculate: true
+      }));
+    }
+
+    function formatRpcPreview(functionName, payload) {
+      return `RPC：${functionName}\n${JSON.stringify(payload, null, 2)}`;
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function getGradeFromSheetName(sheetName) {
+      const gradeMap = { "九": 9, "八": 8, "七": 7 };
+      return gradeMap[sheetName.charAt(0)] || null;
+    }
+
+    function getClassCode(sheetName, rowClassCode) {
+      const cleanedRowCode = String(rowClassCode ?? "").trim();
+      if (cleanedRowCode) {
+        return cleanedRowCode;
+      }
+
+      const classMap = {
+        "九培": "九培",
+        "九美": "901",
+        "九體": "902",
+        "八培": "八培",
+        "八美": "801",
+        "八體": "802",
+        "七培": "七培",
+        "七美": "701",
+        "七體": "702"
+      };
+      return classMap[sheetName.replace(/題數$/, "")] || sheetName.replace(/題數$/, "");
+    }
+
+    function normalizeScore(value) {
+      if (value === null || value === undefined || value === "") {
+        return null;
+      }
+
+      const number = Number(value);
+      return Number.isFinite(number) ? number : null;
+    }
+
+    function hasStudentRowEnded(row) {
+      const firstCells = row.slice(0, 3).map((value) => String(value ?? "").trim());
+      const rowText = firstCells.join(" ");
+      const stopLabels = ["錯題數", "等級", "本頁為答對題數"];
+      return firstCells.every((value) => !value)
+        || stopLabels.some((label) => rowText.includes(label));
+    }
+
+    function totalsKey(totals) {
+      return [
+        totals.chinese,
+        totals.reading,
+        totals.listening,
+        totals.mathChoice,
+        totals.mathNonChoice,
+        totals.science,
+        totals.social
+      ].join("|");
+    }
+
+    const readerColumnAliases = {
+      studentNo: ["學號", "學生學號", "studentid", "studentno", "studentnumber"],
+      name: ["姓名", "學生姓名", "名字", "name"],
+      classCode: ["班級", "班別", "班級代碼", "class", "classcode"],
+      seatNo: ["座號", "座次", "號碼", "seat", "seatno"],
+      subject: ["科目", "測驗科目", "考科", "subject"],
+      score: ["答對題數", "答對數", "原始分數", "成績", "得分", "score", "correctcount"]
+    };
+
+    const subjectAliases = new Map([
+      ["國文", "chinese"],
+      ["國語文", "chinese"],
+      ["chinese", "chinese"],
+      ["英閱", "english_reading"],
+      ["英文閱讀", "english_reading"],
+      ["英語閱讀", "english_reading"],
+      ["englishreading", "english_reading"],
+      ["英聽", "english_listening"],
+      ["英文聽力", "english_listening"],
+      ["英語聽力", "english_listening"],
+      ["englishlistening", "english_listening"],
+      ["數選", "math_choice"],
+      ["數學選擇", "math_choice"],
+      ["數學選擇題", "math_choice"],
+      ["mathchoice", "math_choice"],
+      ["數非", "math_non_choice"],
+      ["數學非選", "math_non_choice"],
+      ["數學非選擇", "math_non_choice"],
+      ["數學非選擇題", "math_non_choice"],
+      ["mathnonchoice", "math_non_choice"],
+      ["自然", "science"],
+      ["自然科", "science"],
+      ["science", "science"],
+      ["社會", "social"],
+      ["社會科", "social"],
+      ["social", "social"]
+    ]);
+
+    const componentLabels = {
+      chinese: "國文",
+      english_reading: "英閱",
+      english_listening: "英聽",
+      math_choice: "數選",
+      math_non_choice: "數非",
+      science: "自然",
+      social: "社會"
+    };
+
+    function normalizeHeader(value) {
+      return String(value ?? "")
+        .trim()
+        .toLowerCase()
+        .replace(/[\s_\-（）()]/g, "");
+    }
+
+    function findReaderColumns(row) {
+      const normalized = row.map(normalizeHeader);
+      const columns = {};
+
+      Object.entries(readerColumnAliases).forEach(([field, aliases]) => {
+        const normalizedAliases = aliases.map(normalizeHeader);
+        columns[field] = normalized.findIndex((header) => normalizedAliases.includes(header));
+      });
+
+      return columns;
+    }
+
+    function isReaderHeader(columns) {
+      return columns.studentNo >= 0
+        && columns.name >= 0
+        && columns.classCode >= 0
+        && columns.seatNo >= 0
+        && columns.subject >= 0
+        && columns.score >= 0;
+    }
+
+    function normalizeSubject(value) {
+      const key = normalizeHeader(value);
+      return subjectAliases.get(key) || null;
+    }
+
+    function parseGradeFromReportTitle(title) {
+      const match = String(title).match(/([789七八九])年(?:級)?/);
+      if (!match) {
+        return null;
+      }
+
+      return {
+        "7": 7,
+        "8": 8,
+        "9": 9,
+        "七": 7,
+        "八": 8,
+        "九": 9
+      }[match[1]] || null;
+    }
+
+    function parseClassCodeFromReportTitle(title, grade) {
+      const text = String(title);
+      const gradeLabel = { 7: "七", 8: "八", 9: "九" }[grade] || "";
+
+      if (text.includes("培訓班")) {
+        return `${gradeLabel}培`;
+      }
+      if (text.includes("美術班")) {
+        return `${grade}01`;
+      }
+      if (text.includes("體育班")) {
+        return `${grade}02`;
+      }
+
+      const classMatch = text.match(/([789])年\s*([0-9]{2})班/);
+      return classMatch ? `${classMatch[1]}${classMatch[2]}` : "";
+    }
+
+    function parseSubjectFromReportTitle(title) {
+      const text = String(title);
+      if (text.includes("數學科") || text.includes("數學週考") || text.includes("數學模擬考")) {
+        return "math_choice";
+      }
+
+      const candidates = [
+        "英文閱讀",
+        "英語閱讀",
+        "英文聽力",
+        "英語聽力",
+        "數學選擇",
+        "數學非選",
+        "國文",
+        "國語文",
+        "自然",
+        "社會"
+      ];
+      const matched = candidates.find((candidate) => text.includes(candidate));
+      return matched ? normalizeSubject(matched) : null;
+    }
+
+    function parseExamNumberFromTitle(title) {
+      const match = String(title).match(/第([一二三四五六七八1-8])次/);
+      if (!match) {
+        return null;
+      }
+
+      return {
+        "一": 1,
+        "二": 2,
+        "三": 3,
+        "四": 4,
+        "五": 5,
+        "六": 6,
+        "七": 7,
+        "八": 8
+      }[match[1]] || Number(match[1]);
+    }
+
+    function findQuestionTotal(rows) {
+      for (const row of rows) {
+        const text = row.map((value) => String(value ?? "")).join(" ");
+        const match = text.match(/題型[^:：]*[:：]\s*(\d+)\s*題/);
+        if (match) {
+          return Number(match[1]);
+        }
+      }
+      return null;
+    }
+
+    function parseClassScoreReport(workbook) {
+      const records = [];
+      const sheets = [];
+      const warnings = [];
+      const componentTotals = {};
+
+      workbook.SheetNames.forEach((sheetName) => {
+        const rows = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], {
+          header: 1,
+          raw: true,
+          defval: null,
+          blankrows: true
+        });
+        const title = String(rows[0]?.[0] ?? "").trim();
+        const headerRowIndex = rows.findIndex((row) => {
+          const headers = (row || []).map(normalizeHeader);
+          return headers.includes("座號")
+            && headers.includes("學號")
+            && headers.includes("姓名")
+            && (headers.includes("總分") || headers.includes("單選題"));
+        });
+
+        if (headerRowIndex < 0 || !title.includes("班級成績報表")) {
+          return;
+        }
+
+        const headers = rows[headerRowIndex].map(normalizeHeader);
+        const columns = {
+          seatNo: headers.indexOf("座號"),
+          studentNo: headers.indexOf("學號"),
+          name: headers.indexOf("姓名"),
+          singleChoice: headers.indexOf("單選題"),
+          totalScore: headers.indexOf("總分")
+        };
+        const grade = parseGradeFromReportTitle(title);
+        const classCode = parseClassCodeFromReportTitle(title, grade);
+        const component = parseSubjectFromReportTitle(title);
+        const totalQuestions = findQuestionTotal(rows);
+        const examType = title.includes("週考") ? "weekly_exam" : "mock_exam";
+        const examNumber = parseExamNumberFromTitle(title);
+
+        if (!grade || !classCode) {
+          warnings.push(`工作表「${sheetName}」無法從標題判斷年級或班級。`);
+        }
+        if (!component) {
+          warnings.push(`工作表「${sheetName}」無法從標題判斷科目。`);
+        }
+        if (component && totalQuestions) {
+          componentTotals[component] = totalQuestions;
+        } else if (!totalQuestions) {
+          warnings.push(`工作表「${sheetName}」找不到題目總數。`);
+        }
+
+        let recordCount = 0;
+        for (let rowIndex = headerRowIndex + 1; rowIndex < rows.length; rowIndex += 1) {
+          const row = rows[rowIndex] || [];
+          const studentNo = String(row[columns.studentNo] ?? "").trim();
+          const name = String(row[columns.name] ?? "").trim();
+          const seatNo = String(row[columns.seatNo] ?? "").trim();
+
+          if (!studentNo && !name && !seatNo) {
+            if (recordCount > 0) {
+              break;
+            }
+            continue;
+          }
+          if (!/^\d+$/.test(studentNo) || !seatNo) {
+            if (recordCount > 0) {
+              break;
+            }
+            continue;
+          }
+
+          const scoreSource = columns.singleChoice >= 0
+            ? row[columns.singleChoice]
+            : row[columns.totalScore];
+          const score = normalizeScore(scoreSource);
+          records.push({
+            studentNo,
+            name,
+            classCode,
+            seatNo,
+            subjectText: componentLabels[component] || "",
+            component,
+            score,
+            grade,
+            totalQuestions,
+            sheetName,
+            excelRow: rowIndex + 1
+          });
+          recordCount += 1;
+
+          if (score === null) {
+            warnings.push(`「${sheetName}」第 ${rowIndex + 1} 列沒有可使用的答對題數。`);
+          }
+        }
+
+        sheets.push({
+          sheetName,
+          reportTitle: title,
+          recordCount,
+          grade,
+          classCode,
+          component,
+          totalQuestions,
+          examType,
+          examNumber
+        });
+      });
+
+      if (!records.length) {
+        return null;
+      }
+
+      return {
+        mode: "class-report",
+        records,
+        sheets,
+        warnings,
+        componentTotals,
+        examType: sheets[0]?.examType || null,
+        examNumber: sheets[0]?.examNumber || null
+      };
+    }
+
+    function getUniqueImportedStudents(records) {
+      const students = new Map();
+
+      records.forEach((record) => {
+        const key = record.studentNo || `${record.classCode}:${record.seatNo}:${record.name}`;
+        if (!students.has(key)) {
+          students.set(key, {
+            studentNo: record.studentNo,
+            name: record.name,
+            classCode: record.classCode,
+            seatNo: record.seatNo,
+            grade: record.grade || null
+          });
+        }
+      });
+
+      return [...students.values()].sort((a, b) => {
+        const classCompare = a.classCode.localeCompare(b.classCode, "zh-Hant");
+        if (classCompare !== 0) {
+          return classCompare;
+        }
+        return Number(a.seatNo || 0) - Number(b.seatNo || 0);
+      });
+    }
+
+    function renderMathNonChoiceEditor(result) {
+      const hasMathChoice = result.records.some((record) => record.component === "math_choice");
+      mathNonChoicePanel.classList.toggle("hidden", !hasMathChoice);
+      mathNonChoiceEmpty.classList.toggle("hidden", hasMathChoice);
+
+      if (!hasMathChoice) {
+        mathNonChoiceBody.innerHTML = "";
+        return;
+      }
+
+      const students = getUniqueImportedStudents(
+        result.records.filter((record) => record.component === "math_choice")
+      );
+      mathNonChoiceBody.innerHTML = students.map((student) => `
+        <tr
+          data-student-no="${escapeHtml(student.studentNo)}"
+          data-name="${escapeHtml(student.name)}"
+          data-class-code="${escapeHtml(student.classCode)}"
+          data-seat-no="${escapeHtml(student.seatNo)}"
+          data-grade="${escapeHtml(student.grade ?? "")}"
+        >
+          <td>${escapeHtml(student.studentNo)}</td>
+          <td>${escapeHtml(student.name)}</td>
+          <td>${escapeHtml(student.classCode)}</td>
+          <td>${escapeHtml(student.seatNo)}</td>
+          <td>
+            <input class="manual-score-input" type="number" min="0" step="0.5" inputmode="decimal" aria-label="${escapeHtml(student.name)}數學非選得分">
+          </td>
+          <td>
+            <label class="absent-check">
+              <input class="manual-absent-input" type="checkbox" aria-label="${escapeHtml(student.name)}數學非選缺考">
+              缺考
+            </label>
+          </td>
+        </tr>
+      `).join("");
+      mathNonChoiceStatus.textContent = `已建立 ${students.length} 位學生的數學非選補登表。`;
+    }
+
+    function parseReaderWorkbook(workbook) {
+      const records = [];
+      const sheets = [];
+      const warnings = [];
+
+      workbook.SheetNames.forEach((sheetName) => {
+        const rows = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], {
+          header: 1,
+          raw: true,
+          defval: null,
+          blankrows: false
+        });
+        let headerRowIndex = -1;
+        let columns = null;
+
+        for (let index = 0; index < Math.min(rows.length, 20); index += 1) {
+          const candidate = findReaderColumns(rows[index] || []);
+          if (isReaderHeader(candidate)) {
+            headerRowIndex = index;
+            columns = candidate;
+            break;
+          }
+        }
+
+        if (headerRowIndex < 0) {
+          return;
+        }
+
+        let sheetRecordCount = 0;
+        for (let rowIndex = headerRowIndex + 1; rowIndex < rows.length; rowIndex += 1) {
+          const row = rows[rowIndex] || [];
+          const studentNo = String(row[columns.studentNo] ?? "").trim();
+          const name = String(row[columns.name] ?? "").trim();
+          const subjectText = String(row[columns.subject] ?? "").trim();
+          const scoreText = row[columns.score];
+
+          if (!studentNo && !name && !subjectText && (scoreText === null || scoreText === "")) {
+            continue;
+          }
+
+          const component = normalizeSubject(subjectText);
+          const score = normalizeScore(scoreText);
+          if (!studentNo) {
+            warnings.push(`「${sheetName}」第 ${rowIndex + 1} 列缺少學號，無法配對學生。`);
+          }
+          if (!component) {
+            warnings.push(`「${sheetName}」第 ${rowIndex + 1} 列科目「${subjectText || "空白"}」無法辨識。`);
+          }
+          if (score === null) {
+            warnings.push(`「${sheetName}」第 ${rowIndex + 1} 列答對題數空白或不是數字。`);
+          }
+
+          records.push({
+            studentNo,
+            name,
+            classCode: String(row[columns.classCode] ?? "").trim(),
+            seatNo: String(row[columns.seatNo] ?? "").trim(),
+            subjectText,
+            component,
+            score,
+            sheetName,
+            excelRow: rowIndex + 1
+          });
+          sheetRecordCount += 1;
+        }
+
+        sheets.push({ sheetName, recordCount: sheetRecordCount });
+      });
+
+      if (!records.length) {
+        return null;
+      }
+
+      const duplicateKeys = new Set();
+      const seenKeys = new Set();
+      records.forEach((record) => {
+        const key = `${record.studentNo}::${record.component || record.subjectText}`;
+        if (seenKeys.has(key)) {
+          duplicateKeys.add(key);
+        }
+        seenKeys.add(key);
+      });
+      duplicateKeys.forEach((key) => {
+        warnings.push(`學號與科目重複：${key.replace("::", "／")}。正式匯入前需確認保留哪一筆。`);
+      });
+
+      return {
+        mode: "reader",
+        records,
+        sheets,
+        warnings
+      };
+    }
+
+    function parseScoreWorkbook(workbook) {
+      const scoreSheetNames = workbook.SheetNames.filter((name) => name.endsWith("題數"));
+      if (!scoreSheetNames.length) {
+        throw new Error("找不到名稱結尾為「題數」的工作表。");
+      }
+
+      const students = [];
+      const sheets = [];
+      const warnings = [];
+      const gradeTotals = new Map();
+
+      scoreSheetNames.forEach((sheetName) => {
+        const grade = getGradeFromSheetName(sheetName);
+        if (!grade) {
+          warnings.push(`工作表「${sheetName}」無法判斷年級，已略過。`);
+          return;
+        }
+
+        const worksheet = workbook.Sheets[sheetName];
+        const rows = XLSX.utils.sheet_to_json(worksheet, {
+          header: 1,
+          raw: true,
+          defval: null,
+          blankrows: false
+        });
+        const totalsRow = rows[3] || [];
+        const totals = {
+          chinese: normalizeScore(totalsRow[3]),
+          reading: normalizeScore(totalsRow[4]),
+          listening: normalizeScore(totalsRow[5]),
+          mathChoice: normalizeScore(totalsRow[7]),
+          mathNonChoice: normalizeScore(totalsRow[8]),
+          science: normalizeScore(totalsRow[10]),
+          social: normalizeScore(totalsRow[11])
+        };
+
+        if (Object.values(totals).some((value) => value === null || value <= 0)) {
+          throw new Error(`工作表「${sheetName}」第 4 列缺少必要的各科總題數。`);
+        }
+
+        const gradeKey = totalsKey(totals);
+        if (gradeTotals.has(grade) && gradeTotals.get(grade) !== gradeKey) {
+          throw new Error(`${grade} 年級各班的總題數不一致，請先確認 Excel 內容。`);
+        }
+        gradeTotals.set(grade, gradeKey);
+
+        let sheetStudentCount = 0;
+        for (let rowIndex = 4; rowIndex < rows.length; rowIndex += 1) {
+          const row = rows[rowIndex] || [];
+          if (hasStudentRowEnded(row)) {
+            break;
+          }
+
+          const name = String(row[2] ?? "").trim();
+          const seatNo = String(row[1] ?? "").trim();
+          const classCode = getClassCode(sheetName, row[0]);
+          if (!name && !seatNo) {
+            continue;
+          }
+
+          const student = {
+            grade,
+            classCode,
+            seatNo,
+            name,
+            chinese: normalizeScore(row[3]),
+            reading: normalizeScore(row[4]),
+            listening: normalizeScore(row[5]),
+            mathChoice: normalizeScore(row[7]),
+            mathNonChoice: normalizeScore(row[8]),
+            science: normalizeScore(row[10]),
+            social: normalizeScore(row[11]),
+            sheetName,
+            excelRow: rowIndex + 1
+          };
+          students.push(student);
+          sheetStudentCount += 1;
+
+          if (!name) {
+            warnings.push(`「${sheetName}」第 ${rowIndex + 1} 列缺少學生姓名。`);
+          }
+          if ([
+            student.chinese,
+            student.reading,
+            student.listening,
+            student.mathChoice,
+            student.mathNonChoice,
+            student.science,
+            student.social
+          ].some((value) => value === null)) {
+            warnings.push(`「${sheetName}」第 ${rowIndex + 1} 列有科目題數空白，匯入時將視為缺考。`);
+          }
+        }
+
+        sheets.push({ sheetName, grade, totals, studentCount: sheetStudentCount });
+      });
+
+      if (!students.length) {
+        throw new Error("題數工作表中找不到學生資料。");
+      }
+
+      const records = students.flatMap((student) => [
+        ["chinese", student.chinese],
+        ["english_reading", student.reading],
+        ["english_listening", student.listening],
+        ["math_choice", student.mathChoice],
+        ["math_non_choice", student.mathNonChoice],
+        ["science", student.science],
+        ["social", student.social]
+      ].map(([component, score]) => ({
+        studentNo: "",
+        name: student.name,
+        classCode: student.classCode,
+        seatNo: student.seatNo,
+        grade: student.grade,
+        subjectText: componentLabels[component],
+        component,
+        score,
+        sheetName: student.sheetName,
+        excelRow: student.excelRow
+      })));
+
+      warnings.unshift("目前使用 09. 參考相容模式；此格式沒有學號，正式匯入時無法以學號精確配對。");
+      const firstTotals = sheets[0]?.totals || {};
+      return {
+        mode: "legacy-09",
+        records,
+        students,
+        sheets,
+        warnings,
+        componentTotals: {
+          chinese: firstTotals.chinese,
+          english_reading: firstTotals.reading,
+          english_listening: firstTotals.listening,
+          math_choice: firstTotals.mathChoice,
+          math_non_choice: firstTotals.mathNonChoice,
+          science: firstTotals.science,
+          social: firstTotals.social
+        }
+      };
+    }
+
+    function renderWorkbookPreview(result, fileName) {
+      const previewRows = result.records.slice(0, 20);
+      previewTableBody.innerHTML = previewRows.map((row) => `
+        <tr>
+          <td>${escapeHtml(row.studentNo)}</td>
+          <td>${escapeHtml(row.name)}</td>
+          <td>${escapeHtml(row.classCode)}</td>
+          <td>${escapeHtml(row.seatNo)}</td>
+          <td>${escapeHtml(componentLabels[row.component] || row.subjectText)}</td>
+          <td>${escapeHtml(row.score ?? "")}</td>
+        </tr>
+      `).join("");
+
+      const classes = new Set(result.records.map((row) => row.classCode).filter(Boolean));
+      const students = new Set(result.records.map((row) => row.studentNo || `${row.classCode}:${row.seatNo}:${row.name}`));
+      sheetCount.textContent = String(result.sheets.length);
+      classCount.textContent = String(classes.size);
+      studentCount.textContent = String(students.size);
+      previewStatus.textContent = `已解析「${fileName}」，下方顯示前 ${previewRows.length} 筆，共 ${result.records.length} 筆科目成績。`;
+
+      const sheetSummary = result.sheets
+        .map((sheet) => `${sheet.sheetName}（${sheet.recordCount ?? sheet.studentCount} 筆）`)
+        .join("、");
+      const warningItems = result.warnings.length
+        ? result.warnings.slice(0, 10).map((warning) => `<li>${escapeHtml(warning)}</li>`).join("")
+        : "<li>必要欄位與各科總題數檢查正常。</li>";
+      const extraWarning = result.warnings.length > 10
+        ? `<li>另有 ${result.warnings.length - 10} 項警告未展開。</li>`
+        : "";
+
+      noticeList.innerHTML = `
+        <li>匯入模式：${
+          result.mode === "class-report"
+            ? "班級成績報表"
+            : result.mode === "reader"
+              ? "讀卡結果明細"
+              : "09. 參考相容格式"
+        }。</li>
+        ${result.examNumber ? `<li>從報表標題辨識：第 ${result.examNumber} 次${result.examType === "weekly_exam" ? "週考" : "模擬考"}。</li>` : ""}
+        <li>偵測工作表：${escapeHtml(sheetSummary)}</li>
+        ${warningItems}
+        ${extraWarning}
+        <li>${getSupabaseConfig().enabled ? "目前僅完成解析與預覽；按下「確認匯入」後才會寫入 Supabase。" : "目前為示範模式，僅完成解析與預覽，不會寫入 Supabase。"}</li>
+      `;
+      renderMathNonChoiceEditor(result);
+    }
+
+    async function refreshVisibleReports() {
+      await loadScoreReport();
+      if (!portalApp.classList.contains("hidden") && currentSession?.access_token) {
+        await loadPortalReport();
+      }
+    }
+
+    function analyzeImportIssues(result) {
+      const records = result?.records || [];
+      const errors = [];
+      const warnings = [...(result?.warnings || [])];
+      const requiredComponents = [
+        "chinese",
+        "english_reading",
+        "english_listening",
+        "math_choice",
+        "math_non_choice",
+        "science",
+        "social"
+      ];
+
+      const missingStudentNoCount = records.filter((record) => !String(record.studentNo || "").trim()).length;
+      if (missingStudentNoCount > 0) {
+        errors.push(`有 ${missingStudentNoCount} 筆資料缺少學號，正式匯入無法精確配對學生。`);
+      }
+
+      const invalidComponentCount = records.filter((record) => !requiredComponents.includes(record.component)).length;
+      if (invalidComponentCount > 0) {
+        errors.push(`有 ${invalidComponentCount} 筆資料科目無法辨識。`);
+      }
+
+      const duplicateKeys = new Map();
+      records.forEach((record) => {
+        const studentNo = String(record.studentNo || "").trim();
+        const component = String(record.component || "").trim();
+        if (!studentNo || !component) {
+          return;
+        }
+        const key = `${studentNo}::${component}`;
+        duplicateKeys.set(key, (duplicateKeys.get(key) || 0) + 1);
+      });
+      const duplicateCount = [...duplicateKeys.values()].filter((count) => count > 1).length;
+      if (duplicateCount > 0) {
+        errors.push(`有 ${duplicateCount} 組學號與科目重複，請確認不要重複匯入同一分項。`);
+      }
+
+      const totals = result?.componentTotals || {};
+      const missingTotals = [...new Set(records.map((record) => record.component))]
+        .filter((component) => requiredComponents.includes(component) && !(Number(totals[component]) > 0));
+      if (missingTotals.length > 0) {
+        errors.push(`缺少分項總題數或總分：${missingTotals.map((component) => componentLabels[component]).join("、")}。`);
+      }
+
+      const studentComponentMap = new Map();
+      records.forEach((record) => {
+        const studentKey = String(record.studentNo || "").trim() || `${record.classCode}:${record.seatNo}:${record.name}`;
+        if (!studentKey) {
+          return;
+        }
+        if (!studentComponentMap.has(studentKey)) {
+          studentComponentMap.set(studentKey, new Set());
+        }
+        if (record.component) {
+          studentComponentMap.get(studentKey).add(record.component);
+        }
+      });
+      const incompleteStudentCount = [...studentComponentMap.values()]
+        .filter((components) => requiredComponents.some((component) => !components.has(component)))
+        .length;
+      if (incompleteStudentCount > 0) {
+        warnings.push(`有 ${incompleteStudentCount} 位學生尚未具備完整七個分項；資料可分科匯入，但未完整前不會重算完整五科成績。`);
+      }
+
+      if (records.some((record) => record.component === "math_choice")
+        && !records.some((record) => record.component === "math_non_choice")) {
+        warnings.push("目前已有數學選擇成績，但尚未加入數學非選；請到「數非補登」輸入 6 分制成績。");
+      }
+
+      return { errors, warnings };
+    }
+
+    function renderImportIssues(result) {
+      if (!result) {
+        importIssueList.innerHTML = '<div class="issue-item">預覽後會顯示匯入檢核結果。</div>';
+        return { errors: [], warnings: [] };
+      }
+
+      const issues = analyzeImportIssues(result);
+      const items = [];
+      if (!issues.errors.length && !issues.warnings.length) {
+        items.push('<div class="issue-item issue-ok"><strong>檢核通過：</strong>目前沒有發現會阻擋匯入的問題。</div>');
+      }
+      issues.errors.forEach((issue) => {
+        items.push(`<div class="issue-item issue-error"><strong>需修正：</strong>${escapeHtml(issue)}</div>`);
+      });
+      issues.warnings.slice(0, 8).forEach((issue) => {
+        items.push(`<div class="issue-item issue-warning"><strong>提醒：</strong>${escapeHtml(issue)}</div>`);
+      });
+      if (issues.warnings.length > 8) {
+        items.push(`<div class="issue-item issue-warning"><strong>提醒：</strong>另有 ${issues.warnings.length - 8} 項提醒未展開。</div>`);
+      }
+      importIssueList.innerHTML = items.join("");
+      return issues;
+    }
+
+    function formatImportErrorMessage(error) {
+      const message = error?.message || String(error);
+      if (message.includes("Unmatched student numbers")) {
+        return message.replace("Unmatched student numbers:", "匯入失敗，找不到下列學號：");
+      }
+      if (message.includes("Duplicate student number and component")) {
+        return "匯入失敗：同一位學生的同一分項成績出現重複資料。";
+      }
+      if (message.includes("invalid component")) {
+        return "匯入失敗：有資料的科目代碼無法辨識。";
+      }
+      if (message.includes("Conversion rule set not found")) {
+        return "匯入失敗：找不到指定的等級換算標準，請先到「換算與積分」建立版本。";
+      }
+      if (message.includes("Point rule set not found")) {
+        return "匯入失敗：找不到指定的積分規則版本，請先到「換算與積分」建立版本。";
+      }
+      return `匯入失敗：${message}`;
+    }
+
+    function getSupabaseConfig() {
+      return {
+        enabled: enableLiveRpc.checked,
+        url: supabaseUrl.value.trim().replace(/\/$/, ""),
+        anonKey: supabaseAnonKey.value.trim(),
+        accessToken: supabaseAccessToken.value.trim()
+      };
+    }
+
+    function loadSavedSupabaseConfig() {
+      try {
+        const saved = JSON.parse(localStorage.getItem("mockExamSupabaseConfig") || "{}");
+        supabaseUrl.value = saved.url || "";
+        supabaseAnonKey.value = saved.anonKey || "";
+        useSupabaseAuth.checked = Boolean(saved.url && saved.anonKey);
+      } catch {
+        localStorage.removeItem("mockExamSupabaseConfig");
+      }
+    }
+
+    function saveSupabaseConfig() {
+      const url = supabaseUrl.value.trim().replace(/\/$/, "");
+      const anonKey = supabaseAnonKey.value.trim();
+
+      if (!url || !anonKey) {
+        throw new Error("請填寫 Supabase URL 與 anon key。");
+      }
+
+      localStorage.setItem("mockExamSupabaseConfig", JSON.stringify({ url, anonKey }));
+      useSupabaseAuth.checked = true;
+    }
+
+    function showAuthView(view) {
+      loginForm.classList.toggle("hidden", view !== "login");
+      signupForm.classList.toggle("hidden", view !== "signup");
+      resetRequestForm.classList.toggle("hidden", view !== "request-reset");
+      updatePasswordForm.classList.toggle("hidden", view !== "update-password");
+      demoAccount.classList.toggle("hidden", view !== "login");
+
+      const headings = {
+        login: ["登入系統", "請使用學校提供的帳號登入。"],
+        signup: ["建立帳號", "請使用學校登記的 Email 建立登入帳號。"],
+        "request-reset": ["帳號協助", "系統會將重設密碼連結寄到帳號登記的 Email。"],
+        "update-password": ["帳號協助", "重設連結驗證成功，請設定新的登入密碼。"]
+      };
+      const [title, hint] = headings[view] || headings.login;
+      authPanelTitle.textContent = title;
+      authPanelHint.textContent = hint;
+    }
+
+    function getPasswordResetRedirectUrl() {
+      const redirectUrl = new URL(window.location.href);
+      redirectUrl.hash = "";
+      redirectUrl.search = "";
+
+      if (!["http:", "https:"].includes(redirectUrl.protocol)) {
+        throw new Error("密碼重設信需在網站正式網址上使用，不能從本機檔案直接寄送。");
+      }
+
+      return redirectUrl.toString();
+    }
+
+    async function parseAuthResponse(response) {
+      const text = await response.text();
+      if (!text) {
+        return {};
+      }
+
+      try {
+        return JSON.parse(text);
+      } catch {
+        return { message: text };
+      }
+    }
+
+    async function requestPasswordReset(email) {
+      const config = getSupabaseConfig();
+      if (!config.url || !config.anonKey) {
+        throw new Error("尚未設定 Supabase URL 與 anon key。");
+      }
+
+      const redirectTo = getPasswordResetRedirectUrl();
+      const response = await fetch(
+        `${config.url}/auth/v1/recover?redirect_to=${encodeURIComponent(redirectTo)}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "apikey": config.anonKey,
+            "Authorization": `Bearer ${config.anonKey}`
+          },
+          body: JSON.stringify({ email })
+        }
+      );
+      const data = await parseAuthResponse(response);
+
+      if (!response.ok) {
+        throw new Error(data.error_description || data.msg || data.message || "無法寄送密碼重設信。");
+      }
+    }
+
+    async function signUpWithSupabase(displayName, email, password) {
+      const config = getSupabaseConfig();
+      if (!config.url || !config.anonKey) {
+        throw new Error("尚未設定 Supabase URL 與 anon key。");
+      }
+
+      const redirectTo = getPasswordResetRedirectUrl();
+      const response = await fetch(
+        `${config.url}/auth/v1/signup?redirect_to=${encodeURIComponent(redirectTo)}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "apikey": config.anonKey,
+            "Authorization": `Bearer ${config.anonKey}`
+          },
+          body: JSON.stringify({
+            email,
+            password,
+            data: {
+              display_name: displayName
+            }
+          })
+        }
+      );
+      const data = await parseAuthResponse(response);
+      if (!response.ok) {
+        throw new Error(data.error_description || data.msg || data.message || "建立帳號失敗。");
+      }
+      return data;
+    }
+
+    function loadRecoverySessionFromUrl() {
+      const hash = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+      const accessToken = hash.get("access_token");
+      const refreshToken = hash.get("refresh_token");
+      const type = hash.get("type");
+
+      if (type !== "recovery" || !accessToken) {
+        return false;
+      }
+
+      currentSession = {
+        access_token: accessToken,
+        refresh_token: refreshToken
+      };
+      supabaseAccessToken.value = accessToken;
+      showAuthView("update-password");
+      return true;
+    }
+
+    async function updateRecoveredPassword(password) {
+      const config = getSupabaseConfig();
+      if (!config.url || !config.anonKey || !currentSession?.access_token) {
+        throw new Error("重設連結無效或已失效，請重新申請密碼重設信。");
+      }
+
+      const response = await fetch(`${config.url}/auth/v1/user`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "apikey": config.anonKey,
+          "Authorization": `Bearer ${currentSession.access_token}`
+        },
+        body: JSON.stringify({ password })
+      });
+      const data = await parseAuthResponse(response);
+
+      if (!response.ok) {
+        throw new Error(data.error_description || data.msg || data.message || "無法更新密碼。");
+      }
+    }
+
+    async function signInWithSupabase(email, password) {
+      const config = getSupabaseConfig();
+
+      if (!config.url || !config.anonKey) {
+        throw new Error("尚未設定 Supabase URL 與 anon key。可先用示範管理員登入後設定。");
+      }
+
+      const response = await fetch(`${config.url}/auth/v1/token?grant_type=password`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "apikey": config.anonKey
+        },
+        body: JSON.stringify({ email, password })
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error_description || data.msg || data.message || "Supabase 登入失敗。");
+      }
+
+      return data;
+    }
+
+    async function fetchCurrentProfile(userId, accessToken) {
+      const config = getSupabaseConfig();
+      const response = await fetch(
+        `${config.url}/rest/v1/profiles?id=eq.${encodeURIComponent(userId)}&select=id,role,display_name,account_name,is_active`,
+        {
+          headers: {
+            "apikey": config.anonKey,
+            "Authorization": `Bearer ${accessToken}`,
+            "Accept": "application/vnd.pgrst.object+json"
+          }
+        }
+      );
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "無法讀取使用者角色。");
+      }
+
+      return data;
+    }
+
+    function enterRolePage(profile) {
+      if (!profile.is_active) {
+        throw new Error("此帳號目前已停用。");
+      }
+
+      currentProfile = profile;
+      roleInput.value = profile.role;
+
+      if (profile.role === "admin") {
+        loginShell.classList.add("hidden");
+        adminApp.classList.remove("hidden");
+        portalApp.classList.add("hidden");
+        showAdminPage("import");
+        return;
+      }
+
+      configurePortal(profile);
+      loginShell.classList.add("hidden");
+      adminApp.classList.add("hidden");
+      portalApp.classList.remove("hidden");
+      loadPortalReport().catch((error) => {
+        portalStatus.textContent = `載入成績失敗：${error.message}`;
+      });
+    }
+
+    async function signOutFromSupabase() {
+      if (!currentSession?.access_token) {
+        return;
+      }
+
+      const config = getSupabaseConfig();
+      if (!config.url || !config.anonKey) {
+        return;
+      }
+
+      await fetch(`${config.url}/auth/v1/logout`, {
+        method: "POST",
+        headers: {
+          "apikey": config.anonKey,
+          "Authorization": `Bearer ${currentSession.access_token}`
+        }
+      });
+    }
+
+    async function callSupabaseRpc(functionName, payload, forceLive = false) {
+      const config = getSupabaseConfig();
+
+      if (!config.enabled && !forceLive) {
+        return {
+          mode: "demo",
+          data: null,
+          message: "示範模式：尚未送出到 Supabase。"
+        };
+      }
+
+      if (!config.url || !config.anonKey) {
+        throw new Error("請先填寫 Supabase URL 與 anon key。");
+      }
+
+      const token = config.accessToken || config.anonKey;
+      const response = await fetch(`${config.url}/rest/v1/rpc/${functionName}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "apikey": config.anonKey,
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const text = await response.text();
+      let data = text;
+
+      try {
+        data = text ? JSON.parse(text) : null;
+      } catch {
+        data = text;
+      }
+
+      if (!response.ok) {
+        const message = typeof data === "object" && data?.message ? data.message : text;
+        throw new Error(message || `Supabase RPC failed: ${response.status}`);
+      }
+
+      return {
+        mode: "live",
+        data,
+        message: "已送出到 Supabase。"
+      };
+    }
+
+    function updateSupabaseStatus() {
+      const config = getSupabaseConfig();
+      supabaseStatus.textContent = config.enabled
+        ? "已啟用正式送出。請確認目前使用的是已登入且具 admin 角色的帳號 token。"
+        : "尚未啟用正式送出；目前所有儲存都只會在畫面示範。";
+    }
+
+    function getCurrentSiteUrl() {
+      const siteUrl = new URL(window.location.href);
+      siteUrl.hash = "";
+      siteUrl.search = "";
+      return siteUrl.toString();
+    }
+
+    function updateCurrentSiteUrl() {
+      const siteUrl = getCurrentSiteUrl();
+      currentSiteUrlInput.value = siteUrl;
+      siteUrlStatus.textContent = window.location.protocol === "file:"
+        ? "目前是本機檔案預覽；正式上線後再複製網站網址到 Supabase Auth 設定。"
+        : "請將此網址填入 Supabase Auth 的 Site URL 與 Redirect URLs。";
+    }
+
+    async function copyCurrentSiteUrl() {
+      updateCurrentSiteUrl();
+      const siteUrl = currentSiteUrlInput.value;
+      if (window.location.protocol === "file:") {
+        siteUrlStatus.textContent = "目前是本機檔案路徑，不建議貼到 Supabase；請等 GitHub Pages 或正式網址完成後再複製。";
+        return;
+      }
+
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(siteUrl);
+      } else {
+        currentSiteUrlInput.select();
+        document.execCommand("copy");
+      }
+      siteUrlStatus.textContent = "已複製目前網址，可貼到 Supabase Auth 的 Site URL 與 Redirect URLs。";
+    }
+
+    togglePassword.addEventListener("click", () => {
+      const isHidden = passwordInput.type === "password";
+      passwordInput.type = isHidden ? "text" : "password";
+      togglePassword.textContent = isHidden ? "隱藏" : "顯示";
+    });
+
+    showSignupButton.addEventListener("click", () => {
+      signupDisplayName.value = "";
+      signupEmail.value = accountInput.value.includes("@") ? accountInput.value : "";
+      signupPassword.value = "";
+      signupConfirmPassword.value = "";
+      signupMessage.className = "message";
+      signupMessage.textContent = "";
+      showAuthView("signup");
+      signupDisplayName.focus();
+    });
+
+    cancelSignupButton.addEventListener("click", () => {
+      showAuthView("login");
+      message.className = "message";
+      message.textContent = "已返回登入頁。";
+    });
+
+    showResetRequestButton.addEventListener("click", () => {
+      resetEmail.value = accountInput.value.includes("@") ? accountInput.value : "";
+      resetMessage.className = "message";
+      resetMessage.textContent = "";
+      showAuthView("request-reset");
+      resetEmail.focus();
+    });
+
+    cancelResetRequestButton.addEventListener("click", () => {
+      showAuthView("login");
+      message.className = "message";
+      message.textContent = "已返回登入頁。";
+    });
+
+    signupForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const displayName = signupDisplayName.value.trim();
+      const email = signupEmail.value.trim();
+      const password = signupPassword.value;
+      const confirmation = signupConfirmPassword.value;
+      signupMessage.className = "message";
+
+      if (!displayName) {
+        signupMessage.textContent = "請輸入姓名。";
+        signupMessage.classList.add("error");
+        return;
+      }
+      if (!email || !signupEmail.validity.valid) {
+        signupMessage.textContent = "請輸入正確的 Email。";
+        signupMessage.classList.add("error");
+        return;
+      }
+      if (password.length < 8) {
+        signupMessage.textContent = "密碼至少需要 8 個字元。";
+        signupMessage.classList.add("error");
+        return;
+      }
+      if (password !== confirmation) {
+        signupMessage.textContent = "兩次輸入的密碼不一致。";
+        signupMessage.classList.add("error");
+        return;
+      }
+
+      try {
+        signupMessage.textContent = "正在建立帳號……";
+        await signUpWithSupabase(displayName, email, password);
+        signupMessage.textContent = "帳號建立申請已送出。若系統要求 Email 驗證，請先到信箱完成驗證；之後請管理員在名冊中綁定身分。";
+        signupMessage.classList.add("success");
+        accountInput.value = email;
+        passwordInput.value = "";
+      } catch (error) {
+        signupMessage.textContent = `建立帳號失敗：${error.message}`;
+        signupMessage.classList.add("error");
+      }
+    });
+
+    resetRequestForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const email = resetEmail.value.trim();
+      resetMessage.className = "message";
+
+      if (!email || !resetEmail.validity.valid) {
+        resetMessage.textContent = "請輸入正確的 Email。";
+        resetMessage.classList.add("error");
+        return;
+      }
+
+      try {
+        resetMessage.textContent = "正在寄送密碼重設信……";
+        await requestPasswordReset(email);
+        resetMessage.textContent = "若此 Email 已建立帳號，系統會寄出密碼重設信。請同時檢查垃圾郵件匣。";
+        resetMessage.classList.add("success");
+      } catch (error) {
+        resetMessage.textContent = `寄送失敗：${error.message}`;
+        resetMessage.classList.add("error");
+      }
+    });
+
+    updatePasswordForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const password = newPassword.value;
+      const confirmation = confirmNewPassword.value;
+      updatePasswordMessage.className = "message";
+
+      if (password.length < 8) {
+        updatePasswordMessage.textContent = "新密碼至少需要 8 個字元。";
+        updatePasswordMessage.classList.add("error");
+        return;
+      }
+
+      if (password !== confirmation) {
+        updatePasswordMessage.textContent = "兩次輸入的新密碼不一致。";
+        updatePasswordMessage.classList.add("error");
+        return;
+      }
+
+      try {
+        updatePasswordMessage.textContent = "正在更新密碼……";
+        await updateRecoveredPassword(password);
+        try {
+          await signOutFromSupabase();
+        } catch {
+          // 密碼已更新完成，遠端登出失敗不影響更新結果。
+        }
+
+        currentSession = null;
+        supabaseAccessToken.value = "";
+        newPassword.value = "";
+        confirmNewPassword.value = "";
+        window.history.replaceState({}, document.title, `${window.location.pathname}${window.location.search}`);
+        showAuthView("login");
+        message.className = "message success";
+        message.textContent = "密碼已更新完成，請使用新密碼登入。";
+      } catch (error) {
+        updatePasswordMessage.textContent = `更新失敗：${error.message}`;
+        updatePasswordMessage.classList.add("error");
+      }
+    });
+
+    useSupabaseAuth.addEventListener("change", () => {
+      const useLiveAuth = useSupabaseAuth.checked;
+      accountInput.placeholder = useLiveAuth ? "例如：admin@example.com" : "例如：teacher01";
+      message.className = "message";
+      message.textContent = useLiveAuth
+        ? "正式登入時，身分會依資料庫帳號角色自動判定；下拉選單只作為操作提示。"
+        : "目前使用前端示範帳號登入。";
+    });
+
+    adminNavButtons.forEach((button) => {
+      button.addEventListener("click", async () => {
+        const target = button.dataset.adminTarget;
+        showAdminPage(target);
+        if (target === "people") {
+          try {
+            await loadPeopleData();
+          } catch (error) {
+            peopleListStatus.textContent = `載入名單失敗：${error.message}`;
+          }
+        }
+        if (target === "reports") {
+          try {
+            await loadScoreReport();
+          } catch (error) {
+            reportStatus.textContent = `載入成績失敗：${error.message}`;
+          }
+        }
+      });
+    });
+
+    loadReportButton.addEventListener("click", async () => {
+      try {
+        loadReportButton.disabled = true;
+        await loadScoreReport();
+      } catch (error) {
+        reportStatus.textContent = `查詢成績失敗：${error.message}`;
+      } finally {
+        loadReportButton.disabled = false;
+      }
+    });
+
+    reportExamSelect.addEventListener("change", () => {
+      reportClassSelect.value = "";
+    });
+
+    printReportButton.addEventListener("click", () => {
+      if (!reportTableBody.querySelector("tr") || reportStudentCount.textContent === "0") {
+        reportStatus.textContent = "目前沒有可列印的成績資料。";
+        return;
+      }
+      window.print();
+    });
+
+    printStudentReportButton.addEventListener("click", () => {
+      const row = currentReportRows[Number(reportStudentSelect.value)];
+      if (!printIndividualReport(row, currentReportExamName)) {
+        reportStatus.textContent = "請先查詢並選擇要列印的學生。";
+      }
+    });
+
+    publishExamButton.addEventListener("click", async () => {
+      const examId = reportExamSelect.value;
+      if (!examId) {
+        reportStatus.textContent = "請先選擇要發布的考試。";
+        return;
+      }
+
+      const nextPublished = publishExamButton.dataset.isPublished !== "true";
+      if (!getSupabaseConfig().enabled) {
+        publishExamButton.dataset.isPublished = String(nextPublished);
+        publishExamButton.textContent = nextPublished ? "取消發布" : "發布成績";
+        reportStatus.textContent = `示範模式：已模擬${nextPublished ? "發布" : "取消發布"}成績，尚未送至 Supabase。`;
+        return;
+      }
+
+      try {
+        publishExamButton.disabled = true;
+        await callSupabaseRpc("admin_set_exam_published", {
+          p_exam_id: examId,
+          p_is_published: nextPublished
+        });
+        await refreshVisibleReports();
+        reportStatus.textContent = nextPublished
+          ? "成績已發布，學生與相關教師現在可以查詢；查詢清單已同步更新。"
+          : "已取消發布，學生與相關教師將無法查詢這次成績；查詢清單已同步更新。";
+      } catch (error) {
+        reportStatus.textContent = `變更發布狀態失敗：${error.message}`;
+      } finally {
+        publishExamButton.disabled = false;
+      }
+    });
+
+    portalLoadButton.addEventListener("click", async () => {
+      try {
+        portalLoadButton.disabled = true;
+        await loadPortalReport();
+      } catch (error) {
+        portalStatus.textContent = `查詢成績失敗：${error.message}`;
+      } finally {
+        portalLoadButton.disabled = false;
+      }
+    });
+
+    portalPrintButton.addEventListener("click", () => {
+      if (portalStudentCount.textContent === "0") {
+        portalStatus.textContent = "目前沒有可列印的成績資料。";
+        return;
+      }
+      window.print();
+    });
+
+    portalStudentPrintButton.addEventListener("click", () => {
+      const row = currentPortalRows[Number(portalStudentSelect.value)];
+      if (!printIndividualReport(row, currentPortalExamName)) {
+        portalStatus.textContent = "請先查詢並選擇要列印的學生。";
+      }
+    });
+
+    studentYearInput.addEventListener("input", () => {
+      populateClassSelect(studentClassInput, studentYearInput.value);
+    });
+
+    teacherYearInput.addEventListener("input", () => {
+      populateClassSelect(teacherClassInput, teacherYearInput.value);
+    });
+
+    seatYearInput.addEventListener("input", () => {
+      populateClassSelect(seatClassInput, seatYearInput.value);
+    });
+
+    seatStudentSelect.addEventListener("change", applySelectedSeatStudent);
+
+    teacherRoleInput.addEventListener("change", updateTeacherSubjectVisibility);
+
+    refreshPeopleButton.addEventListener("click", async () => {
+      try {
+        refreshPeopleButton.disabled = true;
+        await loadPeopleData();
+      } catch (error) {
+        peopleListStatus.textContent = `重新整理失敗：${error.message}`;
+      } finally {
+        refreshPeopleButton.disabled = false;
+      }
+    });
+
+    previewAdvanceButton.addEventListener("click", async () => {
+      try {
+        previewAdvanceButton.disabled = true;
+        await runAdvanceSchoolYear(true);
+      } catch (error) {
+        advanceYearStatus.textContent = `預覽失敗：${error.message}`;
+      } finally {
+        previewAdvanceButton.disabled = false;
+      }
+    });
+
+    executeAdvanceButton.addEventListener("click", async () => {
+      try {
+        executeAdvanceButton.disabled = true;
+        await runAdvanceSchoolYear(false);
+      } catch (error) {
+        advanceYearStatus.textContent = `正式執行失敗：${error.message}`;
+      } finally {
+        executeAdvanceButton.disabled = false;
+      }
+    });
+
+    seatAdjustForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const payload = {
+        p_student_id: seatStudentSelect.value,
+        p_academic_year: Number(seatYearInput.value),
+        p_class_code: seatClassInput.value,
+        p_seat_no: Number(seatNoInput.value),
+        p_note: seatNoteInput.value.trim() || null,
+        p_allow_seat_conflict: allowSeatConflictInput.checked
+      };
+
+      if (!payload.p_student_id || !payload.p_class_code) {
+        seatAdjustStatus.textContent = "請選擇學生與目標班級。";
+        return;
+      }
+      if (!Number.isInteger(payload.p_academic_year) || !Number.isInteger(payload.p_seat_no) || payload.p_seat_no <= 0) {
+        seatAdjustStatus.textContent = "學年度與新座號必須是正確的正整數。";
+        return;
+      }
+
+      if (!getSupabaseConfig().enabled) {
+        seatAdjustStatus.textContent = "示範模式：已完成班級與座號調整格式檢查，尚未送至 Supabase。";
+        return;
+      }
+
+      try {
+        seatAdjustStatus.textContent = "正在套用班級與座號調整……";
+        await callSupabaseRpc("admin_update_student_class_seat", payload);
+        seatAdjustStatus.textContent = "已更新學生目前班級與座號；舊成績單快照不受影響。";
+        await loadPeopleData();
+      } catch (error) {
+        const message = error.message.includes("Seat already used by")
+          ? error.message.replace("Seat already used by", "此座號已被使用：")
+          : error.message;
+        seatAdjustStatus.textContent = `調整失敗：${message}`;
+      }
+    });
+
+    previewBatchSeatButton.addEventListener("click", () => {
+      previewBatchSeatUpdates();
+    });
+
+    previewBatchStudentButton.addEventListener("click", () => {
+      previewBatchStudents();
+    });
+
+    executeBatchStudentButton.addEventListener("click", async () => {
+      const rows = previewBatchStudents();
+      if (!rows) {
+        return;
+      }
+
+      if (!getSupabaseConfig().enabled) {
+        batchStudentStatus.textContent = `示範模式：已完成 ${rows.length} 位學生名冊格式檢查，尚未送至 Supabase。`;
+        return;
+      }
+
+      try {
+        executeBatchStudentButton.disabled = true;
+        batchStudentStatus.textContent = `正在批次建立 ${rows.length} 位學生……`;
+        let successCount = 0;
+        for (const payload of rows) {
+          await callSupabaseRpc("admin_upsert_student", payload);
+          successCount += 1;
+        }
+        batchStudentStatus.textContent = `批次學生名冊完成：已新增或更新 ${successCount} 位學生。`;
+        await loadPeopleData();
+      } catch (error) {
+        batchStudentStatus.textContent = `批次學生名冊失敗：${error.message}`;
+      } finally {
+        executeBatchStudentButton.disabled = false;
+      }
+    });
+
+    executeBatchSeatButton.addEventListener("click", async () => {
+      const updates = previewBatchSeatUpdates();
+      const academicYear = Number(batchSeatYearInput.value);
+
+      if (!updates) {
+        return;
+      }
+      if (!Number.isInteger(academicYear)) {
+        batchSeatStatus.textContent = "批次目標學年度必須是整數。";
+        return;
+      }
+      if (!getSupabaseConfig().enabled) {
+        batchSeatStatus.textContent = `示範模式：已完成 ${updates.length} 筆批次調整檢查，尚未送至 Supabase。`;
+        return;
+      }
+
+      try {
+        executeBatchSeatButton.disabled = true;
+        batchSeatStatus.textContent = "正在批次套用班級與座號……";
+        const result = await callSupabaseRpc("admin_batch_update_student_class_seats", {
+          p_academic_year: academicYear,
+          p_updates: updates,
+          p_allow_seat_conflict: batchAllowSeatConflictInput.checked
+        });
+        batchSeatStatus.textContent = `批次調整完成：已更新 ${result.data?.updated_count || 0} 位學生。`;
+        await loadPeopleData();
+      } catch (error) {
+        const message = error.message.includes("Seat already used by")
+          ? error.message.replace("Seat already used by", "座號已被使用：")
+          : error.message;
+        batchSeatStatus.textContent = `批次調整失敗：${message}`;
+      } finally {
+        executeBatchSeatButton.disabled = false;
+      }
+    });
+
+    studentEditorForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const payload = {
+        p_student_no: studentNoInput.value.trim(),
+        p_student_name: studentNameInput.value.trim(),
+        p_academic_year: Number(studentYearInput.value),
+        p_class_code: studentClassInput.value,
+        p_seat_no: Number(studentSeatInput.value),
+        p_account_email: studentAccountEmailInput.value.trim() || null
+      };
+
+      if (!payload.p_student_no || !payload.p_student_name || !payload.p_class_code) {
+        studentEditorStatus.textContent = "請填寫學號、姓名與班級。";
+        return;
+      }
+      if (!Number.isInteger(payload.p_academic_year) || !Number.isInteger(payload.p_seat_no) || payload.p_seat_no <= 0) {
+        studentEditorStatus.textContent = "學年度與座號必須是正確的整數。";
+        return;
+      }
+
+      try {
+        studentEditorStatus.textContent = "正在儲存學生資料……";
+        await callSupabaseRpc("admin_upsert_student", payload);
+        studentEditorStatus.textContent = getSupabaseConfig().enabled
+          ? "學生資料已儲存；若填寫帳號 Email，也已完成綁定。"
+          : "示範模式：學生資料格式檢查完成，尚未送至 Supabase。";
+        if (getSupabaseConfig().enabled) {
+          await loadPeopleData();
+        }
+      } catch (error) {
+        studentEditorStatus.textContent = `儲存學生失敗：${error.message}`;
+      }
+    });
+
+    teacherEditorForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const isSubjectTeacher = teacherRoleInput.value === "subject_teacher";
+      const payload = {
+        p_teacher_name: teacherNameInput.value.trim(),
+        p_email: teacherEmailInput.value.trim() || null,
+        p_phone: teacherPhoneInput.value.trim() || null,
+        p_role: teacherRoleInput.value,
+        p_academic_year: Number(teacherYearInput.value),
+        p_class_code: teacherClassInput.value,
+        p_subject: isSubjectTeacher ? teacherSubjectInput.value : null,
+        p_account_email: teacherAccountEmailInput.value.trim() || null
+      };
+
+      if (!payload.p_teacher_name || !payload.p_class_code) {
+        teacherEditorStatus.textContent = "請填寫教師姓名與任教班級。";
+        return;
+      }
+      if (!Number.isInteger(payload.p_academic_year)) {
+        teacherEditorStatus.textContent = "學年度必須是正確的整數。";
+        return;
+      }
+      if (isSubjectTeacher && !payload.p_subject) {
+        teacherEditorStatus.textContent = "任課老師必須選擇任教科目。";
+        return;
+      }
+
+      try {
+        teacherEditorStatus.textContent = "正在儲存教師資料……";
+        await callSupabaseRpc("admin_upsert_teacher", payload);
+        teacherEditorStatus.textContent = getSupabaseConfig().enabled
+          ? "教師資料與任教設定已儲存；若填寫帳號 Email，也已完成綁定。"
+          : "示範模式：教師資料格式檢查完成，尚未送至 Supabase。";
+        if (getSupabaseConfig().enabled) {
+          await loadPeopleData();
+        }
+      } catch (error) {
+        teacherEditorStatus.textContent = `儲存教師失敗：${error.message}`;
+      }
+    });
+
+    async function handlePersonStatusChange(event) {
+      const button = event.target.closest(".person-status-button");
+      if (!button) {
+        return;
+      }
+
+      try {
+        button.disabled = true;
+        await callSupabaseRpc("admin_set_person_active", {
+          p_person_type: button.dataset.personType,
+          p_person_id: button.dataset.personId,
+          p_is_active: button.dataset.nextActive === "true"
+        });
+        if (getSupabaseConfig().enabled) {
+          await loadPeopleData();
+        } else {
+          peopleListStatus.textContent = "示範模式：已完成停用／恢復資料格式檢查，尚未送至 Supabase。";
+        }
+      } catch (error) {
+        peopleListStatus.textContent = `變更狀態失敗：${error.message}`;
+      } finally {
+        button.disabled = false;
+      }
+    }
+
+    studentListBody.addEventListener("click", handlePersonStatusChange);
+    teacherListBody.addEventListener("click", handlePersonStatusChange);
+
+    saveSupabaseConfigButton.addEventListener("click", () => {
+      try {
+        saveSupabaseConfig();
+        updateSupabaseStatus();
+        supabaseStatus.textContent = "Supabase 連線設定已儲存在此瀏覽器。請登出後勾選 Supabase Auth 測試正式登入。";
+      } catch (error) {
+        supabaseStatus.textContent = `儲存連線設定失敗：${error.message}`;
+      }
+    });
+
+    runHealthCheckButton.addEventListener("click", async () => {
+      try {
+        runHealthCheckButton.disabled = true;
+        await runSystemHealthCheck();
+      } catch (error) {
+        healthCheckStatus.textContent = `系統檢查失敗：${error.message}`;
+      } finally {
+        runHealthCheckButton.disabled = false;
+      }
+    });
+
+    runDeployCheckButton.addEventListener("click", () => {
+      runDeploymentPreflightCheck();
+    });
+
+    copySiteUrlButton.addEventListener("click", async () => {
+      try {
+        await copyCurrentSiteUrl();
+      } catch (error) {
+        siteUrlStatus.textContent = `複製失敗：${error.message}`;
+      }
+    });
+
+    loginForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      const formData = new FormData(loginForm);
+      const role = String(formData.get("role") || "").trim();
+      const account = String(formData.get("account") || "").trim();
+      const password = String(formData.get("password") || "");
+      const rolePages = {
+        student: "學生個人成績頁面",
+        subject_teacher: "任課老師科目成績頁面",
+        homeroom_teacher: "導師班級總表頁面",
+        admin: "行政匯入與報表管理頁面",
+        viewer: "成績查詢頁面"
+      };
+
+      message.className = "message";
+
+      if (useSupabaseAuth.checked) {
+        if (!account || !password) {
+          message.textContent = "請填寫 Supabase 登入 Email 與密碼。";
+          message.classList.add("error");
+          return;
+        }
+
+        try {
+          message.textContent = "正在連接 Supabase 並確認帳號角色……";
+          currentSession = await signInWithSupabase(account, password);
+          supabaseAccessToken.value = currentSession.access_token || "";
+          const profile = await fetchCurrentProfile(currentSession.user.id, currentSession.access_token);
+          enterRolePage(profile);
+        } catch (error) {
+          currentSession = null;
+          supabaseAccessToken.value = "";
+          message.textContent = `登入失敗：${error.message}`;
+          message.classList.add("error");
+        }
+        return;
+      }
+
+      if (!role || !account || !password) {
+        message.textContent = "請完整填寫登入身分、帳號與密碼。";
+        message.classList.add("error");
+        return;
+      }
+
+      const isDemoAdmin = role === "admin" && account === "admin01" && password === "123456";
+      const isDemoUser = role !== "admin" && account === "teacher01" && password === "123456";
+
+      if (isDemoAdmin || isDemoUser) {
+        message.textContent = `登入成功。之後可導向${rolePages[role] || "模擬考成績轉換頁面"}。`;
+        message.classList.add("success");
+        window.setTimeout(() => {
+          if (isDemoAdmin) {
+            loginShell.classList.add("hidden");
+            adminApp.classList.remove("hidden");
+            showAdminPage("import");
+            return;
+          }
+          enterRolePage({
+            role,
+            display_name: "示範使用者",
+            account_name: account,
+            is_active: true
+          });
+        }, 350);
+        return;
+      }
+
+      message.textContent = "帳號或密碼不正確，請重新確認。";
+      message.classList.add("error");
+    });
+
+    logoutButton.addEventListener("click", async () => {
+      try {
+        await signOutFromSupabase();
+      } catch {
+        // 即使遠端登出失敗，仍清除目前頁面的登入狀態。
+      }
+
+      currentSession = null;
+      currentProfile = null;
+      supabaseAccessToken.value = "";
+      enableLiveRpc.checked = false;
+      adminApp.classList.add("hidden");
+      portalApp.classList.add("hidden");
+      loginShell.classList.remove("hidden");
+      message.className = "message";
+      message.textContent = "已返回登入頁。";
+      updateSupabaseStatus();
+    });
+
+    portalLogoutButton.addEventListener("click", async () => {
+      try {
+        await signOutFromSupabase();
+      } catch {
+        // 即使遠端登出失敗，仍清除目前頁面的登入狀態。
+      }
+
+      currentSession = null;
+      currentProfile = null;
+      supabaseAccessToken.value = "";
+      portalApp.classList.add("hidden");
+      adminApp.classList.add("hidden");
+      loginShell.classList.remove("hidden");
+      message.className = "message";
+      message.textContent = "已返回登入頁。";
+    });
+
+    excelFile.addEventListener("change", () => {
+      const fileName = excelFile.files[0]?.name || "";
+      currentParsedImport = null;
+      mathNonChoicePanel.classList.add("hidden");
+      mathNonChoiceEmpty.classList.remove("hidden");
+      mathNonChoiceBody.innerHTML = "";
+      renderImportIssues(null);
+      previewStatus.textContent = fileName
+        ? `已選擇：${fileName}。可按「預覽資料」檢查匯入摘要。`
+        : "尚未選擇檔案。請選擇 Excel 後再進行預覽。";
+    });
+
+    mathNonChoiceBody.addEventListener("change", (event) => {
+      if (!event.target.classList.contains("manual-absent-input")) {
+        return;
+      }
+
+      const row = event.target.closest("tr");
+      const scoreInput = row.querySelector(".manual-score-input");
+      scoreInput.disabled = event.target.checked;
+      if (event.target.checked) {
+        scoreInput.value = "";
+      }
+    });
+
+    mathNonChoiceTotal.addEventListener("input", () => {
+      const total = Number(mathNonChoiceTotal.value);
+      mathNonChoiceBody.querySelectorAll(".manual-score-input").forEach((input) => {
+        input.max = Number.isFinite(total) && total > 0 ? String(total) : "";
+      });
+    });
+
+    saveMathNonChoiceButton.addEventListener("click", () => {
+      if (!currentParsedImport) {
+        mathNonChoiceStatus.textContent = "請先匯入並預覽數學選擇成績。";
+        return;
+      }
+
+      const totalPoints = Number(mathNonChoiceTotal.value);
+      if (!Number.isFinite(totalPoints) || totalPoints <= 0) {
+        mathNonChoiceStatus.textContent = "數非總分必須大於 0。";
+        return;
+      }
+
+      const rows = [...mathNonChoiceBody.querySelectorAll("tr")];
+      const manualRecords = [];
+      const errors = [];
+
+      rows.forEach((row) => {
+        const scoreInput = row.querySelector(".manual-score-input");
+        const absentInput = row.querySelector(".manual-absent-input");
+        const isAbsent = absentInput.checked;
+        const hasScore = scoreInput.value.trim() !== "";
+        const score = hasScore ? Number(scoreInput.value) : null;
+        const label = `${row.dataset.classCode} ${row.dataset.seatNo} 號 ${row.dataset.name}`;
+
+        if (!isAbsent && !hasScore) {
+          errors.push(`${label}尚未輸入成績`);
+          return;
+        }
+        if (!isAbsent && (!Number.isFinite(score) || score < 0 || score > totalPoints)) {
+          errors.push(`${label}的得分需介於 0 至 ${totalPoints} 分`);
+          return;
+        }
+
+        manualRecords.push({
+          studentNo: row.dataset.studentNo,
+          name: row.dataset.name,
+          classCode: row.dataset.classCode,
+          seatNo: row.dataset.seatNo,
+          grade: row.dataset.grade ? Number(row.dataset.grade) : null,
+          subjectText: "數非",
+          component: "math_non_choice",
+          score: isAbsent ? null : score,
+          isAbsent,
+          source: "manual"
+        });
+      });
+
+      if (errors.length) {
+        mathNonChoiceStatus.textContent = `尚有 ${errors.length} 筆需要修正：${errors.slice(0, 3).join("；")}${errors.length > 3 ? "……" : ""}`;
+        return;
+      }
+
+      const manualStudentKeys = new Set(
+        manualRecords.map((record) => record.studentNo || `${record.classCode}:${record.seatNo}:${record.name}`)
+      );
+      currentParsedImport.records = currentParsedImport.records.filter((record) => {
+        if (record.component !== "math_non_choice") {
+          return true;
+        }
+        const key = record.studentNo || `${record.classCode}:${record.seatNo}:${record.name}`;
+        return !manualStudentKeys.has(key);
+      });
+      currentParsedImport.records.push(...manualRecords);
+      currentParsedImport.componentTotals = {
+        ...(currentParsedImport.componentTotals || {}),
+        math_non_choice: totalPoints
+      };
+
+      mathNonChoiceStatus.textContent = `已加入 ${manualRecords.length} 筆數學非選成績，其中 ${manualRecords.filter((record) => record.isAbsent).length} 筆缺考。`;
+      previewStatus.textContent = `目前共備妥 ${currentParsedImport.records.length} 筆科目成績，已包含手動補登的數學非選。`;
+      renderImportIssues(currentParsedImport);
+    });
+
+    previewButton.addEventListener("click", async () => {
+      const file = excelFile.files[0];
+      if (!file) {
+        previewStatus.textContent = "請先選擇要預覽的 Excel 檔案。";
+        return;
+      }
+
+      if (typeof XLSX === "undefined") {
+        previewStatus.textContent = "Excel 解析程式未載入，請確認 xlsx.full.min.js 與 HTML 位於同一資料夾。";
+        return;
+      }
+
+      try {
+        previewButton.disabled = true;
+        previewStatus.textContent = `正在解析「${file.name}」……`;
+        const workbook = XLSX.read(await file.arrayBuffer(), {
+          type: "array",
+          cellDates: true
+        });
+        const result = parseClassScoreReport(workbook)
+          || parseReaderWorkbook(workbook)
+          || parseScoreWorkbook(workbook);
+        currentParsedImport = result;
+        applyParsedExamSettings(result, file.name);
+        renderWorkbookPreview(result, file.name);
+        renderImportIssues(result);
+      } catch (error) {
+        currentParsedImport = null;
+        mathNonChoicePanel.classList.add("hidden");
+        mathNonChoiceEmpty.classList.remove("hidden");
+        mathNonChoiceBody.innerHTML = "";
+        sheetCount.textContent = "0";
+        classCount.textContent = "0";
+        studentCount.textContent = "0";
+        previewTableBody.innerHTML = `<tr><td colspan="6">${escapeHtml(error.message)}</td></tr>`;
+        noticeList.innerHTML = "<li>解析失敗，請確認讀卡檔是否包含學號、姓名、班級、座號、科目與答對題數。</li>";
+        renderImportIssues(null);
+        previewStatus.textContent = `無法預覽：${error.message}`;
+      } finally {
+        previewButton.disabled = false;
+      }
+    });
+
+    importButton.addEventListener("click", async () => {
+      try {
+        const issues = renderImportIssues(currentParsedImport);
+        if (issues.errors.length) {
+          previewStatus.textContent = `目前有 ${issues.errors.length} 項需修正問題，已停止匯入。`;
+          return;
+        }
+        const payloads = buildExamImportPayloads();
+        importButton.disabled = true;
+        previewStatus.textContent = `正在處理 ${payloads.reduce((sum, payload) => sum + payload.p_records.length, 0)} 筆科目成績……`;
+
+        const results = [];
+        for (const payload of payloads) {
+          results.push(await callSupabaseRpc("admin_import_exam_scores", payload));
+        }
+
+        if (!getSupabaseConfig().enabled) {
+          previewStatus.textContent = `示範模式：已完成 ${payloads.length} 個年級、共 ${payloads.reduce((sum, payload) => sum + payload.p_records.length, 0)} 筆成績的匯入資料組裝，尚未送至 Supabase。`;
+          return;
+        }
+
+        const importedScores = results.reduce((sum, result) => sum + Number(result.data?.score_count || 0), 0);
+        const mismatchCount = results.reduce((sum, result) => sum + Number(result.data?.name_mismatch_count || 0), 0);
+        const recalculatedCount = results.filter((result) => result.data?.recalculated).length;
+        const importSummary = `正式匯入完成：寫入 ${importedScores} 筆成績，姓名不一致 ${mismatchCount} 筆，完成重算 ${recalculatedCount} 個年級。`;
+        previewStatus.textContent = `${importSummary} 正在更新成績查詢清單……`;
+        try {
+          await refreshVisibleReports();
+          previewStatus.textContent = `${importSummary} 已同步更新成績查詢清單。`;
+        } catch (refreshError) {
+          previewStatus.textContent = `${importSummary} 但成績查詢清單更新失敗：${refreshError.message}`;
+        }
+      } catch (error) {
+        previewStatus.textContent = formatImportErrorMessage(error);
+      } finally {
+        importButton.disabled = false;
+      }
+    });
+
+    enableLiveRpc.addEventListener("change", updateSupabaseStatus);
+    supabaseUrl.addEventListener("input", updateSupabaseStatus);
+    supabaseAnonKey.addEventListener("input", updateSupabaseStatus);
+    supabaseAccessToken.addEventListener("input", updateSupabaseStatus);
+
+    saveRuleSetButton.addEventListener("click", async () => {
+      const year = newRuleYear.value || "113";
+      const grade = newRuleGrade.value === "all" ? "全年級" : `${newRuleGrade.value} 年級`;
+      const name = newRuleName.value.trim() || `${year} 模擬考換算標準`;
+      const value = name;
+      const gradeLevels = newRuleGrade.value === "all" ? [7, 8, 9] : [Number(newRuleGrade.value)];
+      const rpcPayloads = gradeLevels.map((gradeLevel) => buildConversionRuleSetPayload(gradeLevel));
+
+      try {
+        ruleSetStatus.textContent = "處理中，請稍候。";
+
+        for (const payload of rpcPayloads) {
+          await callSupabaseRpc("admin_upsert_conversion_rule_set", payload);
+        }
+
+        addOptionIfMissing(ruleSetSelect, value, `${name}（${grade}）`);
+        ruleSetStatus.innerHTML = `
+          已${getSupabaseConfig().enabled ? "送出並" : "建立示範"}換算標準：「${name}」。
+          ${getSupabaseConfig().enabled ? "正式資料已送到 Supabase。" : "正式版會呼叫 <code>admin_upsert_conversion_rule_set</code>。"}
+          <br><small>${formatRpcPreview("admin_upsert_conversion_rule_set", rpcPayloads[0]).replaceAll("\n", "<br>")}</small>
+        `;
+      } catch (error) {
+        ruleSetStatus.textContent = `儲存換算標準失敗：${error.message}`;
+      }
+    });
+
+    savePointSetButton.addEventListener("click", async () => {
+      const city = newPointCity.value.trim() || "台南市";
+      const year = newPointYear.value || "113";
+      const name = newPointName.value.trim() || `${city} ${year} 積分版`;
+      const value = name;
+      const rpcPayload = buildPointRuleSetPayload();
+
+      try {
+        pointSetStatus.textContent = "處理中，請稍候。";
+        await callSupabaseRpc("admin_upsert_point_rule_set", rpcPayload);
+
+        addOptionIfMissing(pointRuleSetSelect, value, `${name}`, { city });
+        pointSetStatus.innerHTML = `
+          已${getSupabaseConfig().enabled ? "送出並" : "建立示範"}積分版本：「${name}」。
+          ${getSupabaseConfig().enabled ? "正式資料已送到 Supabase。" : "正式版會呼叫 <code>admin_upsert_point_rule_set</code>。"}
+          <br><small>${formatRpcPreview("admin_upsert_point_rule_set", rpcPayload).replaceAll("\n", "<br>")}</small>
+        `;
+      } catch (error) {
+        pointSetStatus.textContent = `儲存積分版本失敗：${error.message}`;
+      }
+    });
+
+    loadSavedSupabaseConfig();
+    accountInput.placeholder = useSupabaseAuth.checked ? "例如：admin@example.com" : "例如：teacher01";
+    if (!loadRecoverySessionFromUrl()) {
+      showAuthView("login");
+    }
+    showAdminPage("import");
+    initializeSettingEditors();
+    populateClassSelect(studentClassInput, studentYearInput.value);
+    populateClassSelect(teacherClassInput, teacherYearInput.value);
+    populateClassSelect(seatClassInput, seatYearInput.value);
+    updateTeacherSubjectVisibility();
+    updateSupabaseStatus();
+    updateCurrentSiteUrl();
+  </script>
+</body>
+</html>
