@@ -997,7 +997,7 @@
         </div>
 
         <div class="form-group">
-          <label for="account">帳號</label>
+          <label for="account" id="accountLabel">帳號</label>
           <input id="account" name="account" type="text" autocomplete="username" placeholder="例如：teacher01" required>
         </div>
 
@@ -1863,6 +1863,7 @@
     const demoAccount = document.querySelector("#demoAccount");
     const roleInput = document.querySelector("#role");
     const accountInput = document.querySelector("#account");
+    const accountLabel = document.querySelector("#accountLabel");
     const passwordInput = document.querySelector("#password");
     const togglePassword = document.querySelector("#togglePassword");
     const useSupabaseAuth = document.querySelector("#useSupabaseAuth");
@@ -4047,6 +4048,14 @@
       authPanelHint.textContent = hint;
     }
 
+    function updateLoginModeHint() {
+      const useLiveAuth = useSupabaseAuth.checked;
+      accountLabel.textContent = useLiveAuth ? "Email" : "帳號";
+      accountInput.type = useLiveAuth ? "email" : "text";
+      accountInput.autocomplete = useLiveAuth ? "email" : "username";
+      accountInput.placeholder = useLiveAuth ? "例如：shaujiun0424+student@gmail.com" : "例如：teacher01";
+    }
+
     function getPasswordResetRedirectUrl() {
       const redirectUrl = new URL(window.location.href);
       redirectUrl.hash = "";
@@ -4500,7 +4509,7 @@
 
     useSupabaseAuth.addEventListener("change", () => {
       const useLiveAuth = useSupabaseAuth.checked;
-      accountInput.placeholder = useLiveAuth ? "例如：admin@example.com" : "例如：teacher01";
+      updateLoginModeHint();
       message.className = "message";
       message.textContent = useLiveAuth
         ? "正式登入時，身分會依資料庫帳號角色自動判定；下拉選單只作為操作提示。"
@@ -5328,7 +5337,7 @@
     });
 
     loadSavedSupabaseConfig();
-    accountInput.placeholder = useSupabaseAuth.checked ? "例如：admin@example.com" : "例如：teacher01";
+    updateLoginModeHint();
     if (!loadRecoverySessionFromUrl()) {
       showAuthView("login");
     }
