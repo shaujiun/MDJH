@@ -4189,7 +4189,14 @@
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error_description || data.msg || data.message || "Supabase 登入失敗。");
+        const authMessage = data.error_description || data.msg || data.message || "Supabase 登入失敗。";
+        if (/invalid login credentials/i.test(authMessage)) {
+          throw new Error("帳號或密碼不正確，或此 Email 尚未完成驗證。請確認使用完整登入 Email，例如 shaujiun0424+student@gmail.com。");
+        }
+        if (/email not confirmed/i.test(authMessage)) {
+          throw new Error("此 Email 尚未完成驗證，請先到信箱點擊 Supabase 驗證信。");
+        }
+        throw new Error(authMessage);
       }
 
       return data;
