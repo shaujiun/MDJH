@@ -564,6 +564,10 @@
       color: var(--text);
     }
 
+    .issue-action {
+      margin-top: 10px;
+    }
+
     .issue-error {
       border-color: #fecaca;
       background: #fef2f2;
@@ -620,6 +624,17 @@
 
     .manual-score-panel .form-group {
       max-width: 220px;
+    }
+
+    .math-exam-context {
+      margin: 0 0 16px;
+      padding: 14px 16px;
+      border: 1px solid #bfdbfe;
+      border-radius: 16px;
+      background: #eff6ff;
+      color: #1e3a8a;
+      line-height: 1.7;
+      font-weight: 700;
     }
 
     .manual-score-input {
@@ -1223,7 +1238,7 @@
             </div>
 
             <div class="form-group wide">
-              <label for="examName">考試名稱</label>
+              <label for="examName">考試名稱（系統直接代入）</label>
               <input id="examName" name="examName" type="text" value="113(1) 暑期輔導模擬考">
             </div>
 
@@ -1315,6 +1330,22 @@
 
     <section class="app-card admin-page" data-admin-page="math" aria-label="數學非選手動補登">
       <h2>數學非選手動補登</h2>
+      <p class="math-exam-context" id="mathExamContext">尚未選擇數學選擇匯入資料。</p>
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="mathExamNumber">補登第幾次考試</label>
+          <select id="mathExamNumber">
+            <option value="1">第 1 次</option>
+            <option value="2">第 2 次</option>
+            <option value="3">第 3 次</option>
+            <option value="4">第 4 次</option>
+            <option value="5">第 5 次</option>
+            <option value="6">第 6 次</option>
+            <option value="7">第 7 次</option>
+            <option value="8">第 8 次</option>
+          </select>
+        </div>
+      </div>
       <div class="manual-score-panel hidden" id="mathNonChoicePanel">
         <p class="setting-note">系統已依數學選擇讀卡名單建立學生列。請輸入實際得分，`0` 分請直接輸入 `0`；缺考請勾選缺考。</p>
         <div class="form-group">
@@ -1337,7 +1368,7 @@
           </table>
         </div>
         <div class="action-row">
-          <button class="primary-action" type="button" id="saveMathNonChoiceButton">加入待匯入成績</button>
+          <button class="primary-action" type="button" id="saveMathNonChoiceButton">加入並返回匯入確認</button>
         </div>
         <p class="setting-note" id="mathNonChoiceStatus">尚未補登數學非選成績。</p>
       </div>
@@ -1877,6 +1908,8 @@
     const noticeList = document.querySelector("#noticeList");
     const importIssueList = document.querySelector("#importIssueList");
     const mathNonChoicePanel = document.querySelector("#mathNonChoicePanel");
+    const mathExamContext = document.querySelector("#mathExamContext");
+    const mathExamNumber = document.querySelector("#mathExamNumber");
     const mathNonChoiceTotal = document.querySelector("#mathNonChoiceTotal");
     const mathNonChoiceBody = document.querySelector("#mathNonChoiceBody");
     const saveMathNonChoiceButton = document.querySelector("#saveMathNonChoiceButton");
@@ -2067,6 +2100,9 @@
       });
       adminPageTitle.textContent = pageText[selected].title;
       adminPageDescription.textContent = pageText[selected].description;
+      if (selected === "math") {
+        syncMathExamContext();
+      }
     }
 
     function populateClassSelect(selectElement, academicYear) {
@@ -2939,6 +2975,22 @@
       } else if (!examNameInput.value.trim()) {
         examNameInput.value = fileName.replace(/\.(xlsx|xls)$/i, "");
       }
+      syncMathExamContext();
+    }
+
+    function getCurrentExamSummary() {
+      const typeLabel = examTypeInput.value === "weekly_exam" ? "週考" : "模擬考";
+      const gradeLabel = gradeLevelInput.value === "all" ? "全部年級" : `${gradeLevelInput.value} 年級`;
+      return `${academicYearInput.value} 學年度第 ${semesterInput.value} 學期｜${gradeLabel}｜第 ${examNumberInput.value} 次${typeLabel}｜${examNameInput.value.trim() || "未命名考試"}`;
+    }
+
+    function syncMathExamContext() {
+      if (mathExamNumber) {
+        mathExamNumber.value = examNumberInput.value;
+      }
+      if (mathExamContext) {
+        mathExamContext.textContent = `目前補登對象：${getCurrentExamSummary()}`;
+      }
     }
 
     function getImportGradeGroups() {
@@ -3422,6 +3474,7 @@
       const hasMathChoice = result.records.some((record) => record.component === "math_choice");
       mathNonChoicePanel.classList.toggle("hidden", !hasMathChoice);
       mathNonChoiceEmpty.classList.toggle("hidden", hasMathChoice);
+      syncMathExamContext();
 
       if (!hasMathChoice) {
         mathNonChoiceBody.innerHTML = "";
@@ -3832,7 +3885,10 @@
 
       if (records.some((record) => record.component === "math_choice")
         && !records.some((record) => record.component === "math_non_choice")) {
-        warnings.push("目前已有數學選擇成績，但尚未加入數學非選；請到「數非補登」輸入 6 分制成績。");
+        warnings.push({
+          text: "目前已有數學選擇成績，但尚未加入數學非選；請到「數非補登」輸入 6 分制成績。",
+          action: "math-non-choice"
+        });
       }
 
       return { errors, warnings };
@@ -3853,7 +3909,12 @@
         items.push(`<div class="issue-item issue-error"><strong>需修正：</strong>${escapeHtml(issue)}</div>`);
       });
       issues.warnings.slice(0, 8).forEach((issue) => {
-        items.push(`<div class="issue-item issue-warning"><strong>提醒：</strong>${escapeHtml(issue)}</div>`);
+        const text = typeof issue === "string" ? issue : issue.text;
+        const action = typeof issue === "object" ? issue.action : "";
+        const actionButton = action === "math-non-choice"
+          ? '<div class="issue-action"><button class="secondary-button" type="button" data-jump-page="math">前往數非補登</button></div>'
+          : "";
+        items.push(`<div class="issue-item issue-warning"><strong>提醒：</strong>${escapeHtml(text)}${actionButton}</div>`);
       });
       if (issues.warnings.length > 8) {
         items.push(`<div class="issue-item issue-warning"><strong>提醒：</strong>另有 ${issues.warnings.length - 8} 項提醒未展開。</div>`);
@@ -4905,10 +4966,37 @@
       mathNonChoicePanel.classList.add("hidden");
       mathNonChoiceEmpty.classList.remove("hidden");
       mathNonChoiceBody.innerHTML = "";
+      syncMathExamContext();
       renderImportIssues(null);
       previewStatus.textContent = fileName
         ? `已選擇：${fileName}。可按「預覽資料」檢查匯入摘要。`
         : "尚未選擇檔案。請選擇 Excel 後再進行預覽。";
+    });
+
+    importIssueList.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-jump-page]");
+      if (!button) {
+        return;
+      }
+      syncMathExamContext();
+      showAdminPage(button.dataset.jumpPage);
+    });
+
+    [
+      academicYearInput,
+      semesterInput,
+      gradeLevelInput,
+      examTypeInput,
+      examNumberInput,
+      examNameInput
+    ].forEach((input) => {
+      input.addEventListener("change", syncMathExamContext);
+      input.addEventListener("input", syncMathExamContext);
+    });
+
+    mathExamNumber.addEventListener("change", () => {
+      examNumberInput.value = mathExamNumber.value;
+      syncMathExamContext();
     });
 
     mathNonChoiceBody.addEventListener("change", (event) => {
@@ -4999,9 +5087,11 @@
         math_non_choice: totalPoints
       };
 
-      mathNonChoiceStatus.textContent = `已加入 ${manualRecords.length} 筆數學非選成績，其中 ${manualRecords.filter((record) => record.isAbsent).length} 筆缺考。`;
-      previewStatus.textContent = `目前共備妥 ${currentParsedImport.records.length} 筆科目成績，已包含手動補登的數學非選。`;
+      const absentCount = manualRecords.filter((record) => record.isAbsent).length;
+      mathNonChoiceStatus.textContent = `已加入 ${manualRecords.length} 筆數學非選成績，其中 ${absentCount} 筆缺考；尚未正式寫入資料庫。`;
+      previewStatus.textContent = `已加入數學非選，現在共備妥 ${currentParsedImport.records.length} 筆科目成績。請按「確認匯入」正式寫入 Supabase，成績查詢才會更新。`;
       renderImportIssues(currentParsedImport);
+      showAdminPage("import");
     });
 
     previewButton.addEventListener("click", async () => {
