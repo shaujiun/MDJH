@@ -2898,11 +2898,11 @@
       }, {});
     }
 
-    function buildConversionRuleSetPayload(gradeLevel) {
+    function buildConversionRuleSetPayload(gradeLevel, examType = "mock_exam") {
       return {
         p_academic_year: Number(newRuleYear.value || 113),
         p_grade_level: Number(gradeLevel),
-        p_exam_type: "mock_exam",
+        p_exam_type: examType,
         p_version_name: newRuleName.value.trim() || `${newRuleYear.value || 113} 模擬考換算標準`,
         p_source_file_name: "網頁手動建立",
         p_rules: getRuleEditorRows()
@@ -5054,7 +5054,10 @@
       const name = newRuleName.value.trim() || `${year} 模擬考換算標準`;
       const value = name;
       const gradeLevels = newRuleGrade.value === "all" ? [7, 8, 9] : [Number(newRuleGrade.value)];
-      const rpcPayloads = gradeLevels.map((gradeLevel) => buildConversionRuleSetPayload(gradeLevel));
+      const examTypes = ["mock_exam", "weekly_exam"];
+      const rpcPayloads = gradeLevels.flatMap((gradeLevel) =>
+        examTypes.map((examType) => buildConversionRuleSetPayload(gradeLevel, examType))
+      );
 
       try {
         ruleSetStatus.textContent = "處理中，請稍候。";
@@ -5066,7 +5069,7 @@
         addOptionIfMissing(ruleSetSelect, value, `${name}（${grade}）`);
         ruleSetStatus.innerHTML = `
           已${getSupabaseConfig().enabled ? "送出並" : "建立示範"}換算標準：「${name}」。
-          ${getSupabaseConfig().enabled ? "正式資料已送到 Supabase。" : "正式版會呼叫 <code>admin_upsert_conversion_rule_set</code>。"}
+          ${getSupabaseConfig().enabled ? "正式資料已送到 Supabase，模擬考與週考會共用同一套標準。" : "正式版會呼叫 <code>admin_upsert_conversion_rule_set</code>，並同步建立模擬考與週考版本。"}
           <br><small>${formatRpcPreview("admin_upsert_conversion_rule_set", rpcPayloads[0]).replaceAll("\n", "<br>")}</small>
         `;
       } catch (error) {
