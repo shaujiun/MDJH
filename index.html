@@ -4297,6 +4297,9 @@
 
       if (!response.ok) {
         const message = typeof data === "object" && data?.message ? data.message : text;
+        if (/jwt expired|invalid jwt|token.*expired/i.test(message)) {
+          throw new Error("登入已逾時，請先登出後重新登入管理員帳號，再重新執行此操作。");
+        }
         throw new Error(message || `Supabase RPC failed: ${response.status}`);
       }
 
