@@ -3066,6 +3066,22 @@
       }));
     }
 
+    function buildManualMathNonChoicePayloads(manualRecords, totalPoints) {
+      const previousParsedImport = currentParsedImport;
+      currentParsedImport = {
+        records: manualRecords,
+        componentTotals: {
+          math_non_choice: totalPoints
+        }
+      };
+
+      try {
+        return buildExamImportPayloads();
+      } finally {
+        currentParsedImport = previousParsedImport;
+      }
+    }
+
     function formatRpcPreview(functionName, payload) {
       return `RPC：${functionName}\n${JSON.stringify(payload, null, 2)}`;
     }
@@ -5019,7 +5035,7 @@
       });
     });
 
-    saveMathNonChoiceButton.addEventListener("click", () => {
+    saveMathNonChoiceButton.addEventListener("click", async () => {
       if (!currentParsedImport) {
         mathNonChoiceStatus.textContent = "請先匯入並預覽數學選擇成績。";
         return;
@@ -5088,10 +5104,38 @@
       };
 
       const absentCount = manualRecords.filter((record) => record.isAbsent).length;
-      mathNonChoiceStatus.textContent = `已加入 ${manualRecords.length} 筆數學非選成績，其中 ${absentCount} 筆缺考；尚未正式寫入資料庫。`;
-      previewStatus.textContent = `已加入數學非選，現在共備妥 ${currentParsedImport.records.length} 筆科目成績。請按「確認匯入」正式寫入 Supabase，成績查詢才會更新。`;
       renderImportIssues(currentParsedImport);
-      showAdminPage("import");
+
+      if (!getSupabaseConfig().enabled) {
+        mathNonChoiceStatus.textContent = `示範模式：已加入 ${manualRecords.length} 筆數學非選成績，其中 ${absentCount} 筆缺考；尚未正式寫入資料庫。`;
+        previewStatus.textContent = `已加入數學非選，現在共備妥 ${currentParsedImport.records.length} 筆科目成績。請按「確認匯入」正式寫入 Supabase，成績查詢才會更新。`;
+        showAdminPage("import");
+        return;
+      }
+
+      try {
+        saveMathNonChoiceButton.disabled = true;
+        mathNonChoiceStatus.textContent = `正在正式補登 ${manualRecords.length} 筆數學非選成績……`;
+        const payloads = buildManualMathNonChoicePayloads(manualRecords, totalPoints);
+        const results = [];
+        for (const payload of payloads) {
+          results.push(await callSupabaseRpc("admin_import_exam_scores", payload));
+        }
+        const importedScores = results.reduce((sum, result) => sum + Number(result.data?.score_count || 0), 0);
+        mathNonChoiceStatus.textContent = `正式補登完成：寫入 ${importedScores} 筆數學非選成績，其中 ${absentCount} 筆缺考。`;
+        previewStatus.textContent = "數學非選已正式寫入 Supabase，正在更新成績查詢清單……";
+        try {
+          await loadScoreReport();
+          previewStatus.textContent = "數學非選已正式寫入 Supabase，成績查詢清單已更新。";
+        } catch (refreshError) {
+          previewStatus.textContent = `數學非選已正式寫入 Supabase，但成績查詢清單更新失敗：${refreshError.message}`;
+        }
+        showAdminPage("reports");
+      } catch (error) {
+        mathNonChoiceStatus.textContent = formatImportErrorMessage(error);
+      } finally {
+        saveMathNonChoiceButton.disabled = false;
+      }
     });
 
     previewButton.addEventListener("click", async () => {
