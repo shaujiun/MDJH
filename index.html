@@ -3163,7 +3163,10 @@
     }
 
     function parseGradeFromReportTitle(title) {
-      const match = String(title).match(/([789七八九])年(?:級)?/);
+      const text = String(title);
+      const match = text.match(/([789七八九])年(?:級)?/)
+        || text.match(/([789七八九])\s*(?:培|美|體)/)
+        || text.match(/\b([789])0[0-9]\b/);
       if (!match) {
         return null;
       }
@@ -3182,13 +3185,13 @@
       const text = String(title);
       const gradeLabel = { 7: "七", 8: "八", 9: "九" }[grade] || "";
 
-      if (text.includes("培訓班")) {
+      if (text.includes("培訓班") || text.includes(`${grade}培`) || text.includes(`${gradeLabel}培`)) {
         return `${gradeLabel}培`;
       }
-      if (text.includes("美術班")) {
+      if (text.includes("美術班") || text.includes(`${grade}美`) || text.includes(`${gradeLabel}美`)) {
         return `${grade}01`;
       }
-      if (text.includes("體育班")) {
+      if (text.includes("體育班") || text.includes(`${grade}體`) || text.includes(`${gradeLabel}體`)) {
         return `${grade}02`;
       }
 
@@ -3247,7 +3250,7 @@
       return null;
     }
 
-    function parseClassScoreReport(workbook) {
+    function parseClassScoreReport(workbook, fileName = "") {
       const records = [];
       const sheets = [];
       const warnings = [];
@@ -3261,6 +3264,7 @@
           blankrows: true
         });
         const title = String(rows[0]?.[0] ?? "").trim();
+        const sourceTitle = [title, sheetName, fileName].filter(Boolean).join(" ");
         const headerRowIndex = rows.findIndex((row) => {
           const headers = (row || []).map(normalizeHeader);
           return headers.includes("座號")
@@ -3269,7 +3273,7 @@
             && (headers.includes("總分") || headers.includes("單選題"));
         });
 
-        if (headerRowIndex < 0 || !title.includes("班級成績報表")) {
+        if (headerRowIndex < 0) {
           return;
         }
 
@@ -3281,12 +3285,12 @@
           singleChoice: headers.indexOf("單選題"),
           totalScore: headers.indexOf("總分")
         };
-        const grade = parseGradeFromReportTitle(title);
-        const classCode = parseClassCodeFromReportTitle(title, grade);
-        const component = parseSubjectFromReportTitle(title);
+        const grade = parseGradeFromReportTitle(sourceTitle);
+        const classCode = parseClassCodeFromReportTitle(sourceTitle, grade);
+        const component = parseSubjectFromReportTitle(sourceTitle);
         const totalQuestions = findQuestionTotal(rows);
-        const examType = title.includes("週考") ? "weekly_exam" : "mock_exam";
-        const examNumber = parseExamNumberFromTitle(title);
+        const examType = sourceTitle.includes("週考") ? "weekly_exam" : "mock_exam";
+        const examNumber = parseExamNumberFromTitle(sourceTitle);
 
         if (!grade || !classCode) {
           warnings.push(`工作表「${sheetName}」無法從標題判斷年級或班級。`);
@@ -3670,6 +3674,23 @@
           social: firstTotals.social
         }
       };
+    }
+
+    function parseImportWorkbook(workbook, fileName) {
+      const result = parseClassScoreReport(workbook, fileName)
+        || parseReaderWorkbook(workbook);
+      if (result) {
+        return result;
+      }
+
+      try {
+        return parseScoreWorkbook(workbook);
+      } catch (error) {
+        const sheetNames = workbook.SheetNames.join("、") || "無";
+        throw new Error(
+          `無法辨識 Excel 格式。已偵測工作表：${sheetNames}。請確認檔案包含「班級成績報表」欄位（座號、學號、姓名、總分或單選題），或讀卡欄位（學號、姓名、班級、座號、科目、答對題數）。若是 09. 母檔格式，工作表名稱才需要以「題數」結尾。`
+        );
+      }
     }
 
     function renderWorkbookPreview(result, fileName) {
@@ -4985,9 +5006,7 @@
           type: "array",
           cellDates: true
         });
-        const result = parseClassScoreReport(workbook)
-          || parseReaderWorkbook(workbook)
-          || parseScoreWorkbook(workbook);
+        const result = parseImportWorkbook(workbook, file.name);
         currentParsedImport = result;
         applyParsedExamSettings(result, file.name);
         renderWorkbookPreview(result, file.name);
