@@ -2696,6 +2696,31 @@
       return true;
     }
 
+    function formatExamTypeLabel(examType) {
+      return examType === "weekly_exam" ? "週考" : "模擬考";
+    }
+
+    function formatExamLabel(exam) {
+      if (!exam) {
+        return "未選擇考試";
+      }
+      const parts = [
+        `${exam.academic_year ?? "－"} 學年度`,
+        `第 ${exam.semester ?? "－"} 學期`,
+        `${exam.grade_level ?? "－"} 年級`,
+        `第 ${exam.exam_number ?? "－"} 次${formatExamTypeLabel(exam.exam_type)}`
+      ];
+      return parts.join("｜");
+    }
+
+    function formatReportTitle(exam, classCode = "") {
+      if (!exam) {
+        return "";
+      }
+      const classLabel = classCode ? `${classCode} 班` : "全部班級";
+      return `${formatExamLabel(exam)}｜${classLabel}`;
+    }
+
     window.addEventListener("afterprint", () => {
       document.body.classList.remove("printing-individual");
       individualReportSheet.classList.add("hidden");
@@ -2708,7 +2733,7 @@
       const selectedExamId = data.selected_exam_id || previousExamId || exams[0]?.id || "";
 
       reportExamSelect.innerHTML = exams.length
-        ? exams.map((exam) => `<option value="${escapeHtml(exam.id)}">${escapeHtml(exam.exam_name)}｜${exam.grade_level} 年級</option>`).join("")
+        ? exams.map((exam) => `<option value="${escapeHtml(exam.id)}">${escapeHtml(formatExamLabel(exam))}</option>`).join("")
         : '<option value="">目前沒有考試資料</option>';
       reportExamSelect.value = exams.some((exam) => exam.id === selectedExamId) ? selectedExamId : exams[0]?.id || "";
 
@@ -2742,9 +2767,10 @@
 
       const selectedExam = exams.find((exam) => exam.id === reportExamSelect.value);
       currentReportRows = rows;
-      currentReportExamName = selectedExam?.exam_name || "模擬考成績";
+      const reportTitle = formatReportTitle(selectedExam, reportClassSelect.value);
+      currentReportExamName = reportTitle || "模擬考成績";
       populateStudentReportSelect(reportStudentSelect, rows);
-      reportHeading.textContent = selectedExam ? `${selectedExam.exam_name}｜成績表` : "成績查詢與列印";
+      reportHeading.textContent = selectedExam ? `${reportTitle}｜成績表` : "成績查詢與列印";
       publishExamButton.dataset.isPublished = String(Boolean(selectedExam?.is_published));
       publishExamButton.textContent = selectedExam?.is_published ? "取消發布" : "發布成績";
       publishExamButton.disabled = !selectedExam;
@@ -2829,7 +2855,7 @@
       const selectedExamId = data.selected_exam_id || portalExamSelect.value || exams[0]?.id || "";
 
       portalExamSelect.innerHTML = exams.length
-        ? exams.map((exam) => `<option value="${escapeHtml(exam.id)}">${escapeHtml(exam.exam_name)}｜${exam.grade_level} 年級</option>`).join("")
+        ? exams.map((exam) => `<option value="${escapeHtml(exam.id)}">${escapeHtml(formatExamLabel(exam))}</option>`).join("")
         : '<option value="">目前沒有已發布的考試</option>';
       portalExamSelect.value = exams.some((exam) => exam.id === selectedExamId) ? selectedExamId : exams[0]?.id || "";
       const selectedExam = exams.find((exam) => exam.id === portalExamSelect.value);
@@ -2856,7 +2882,7 @@
 
       portalStudentCount.textContent = String(rows.length);
       currentPortalRows = rows;
-      currentPortalExamName = selectedExam?.exam_name || "模擬考成績";
+      currentPortalExamName = selectedExam ? formatReportTitle(selectedExam, "") : "模擬考成績";
       populateStudentReportSelect(portalStudentSelect, rows);
       portalClassCount.textContent = String(new Set(rows.map((row) => row.class_code).filter(Boolean)).size);
       const pointRows = rows.filter((row) => row.total_grade_points != null);
@@ -2970,12 +2996,14 @@
       if (result.examNumber) {
         examNumberInput.value = String(result.examNumber);
       }
-      if (result.sheets.length === 1 && result.sheets[0].reportTitle) {
-        examNameInput.value = result.sheets[0].reportTitle.replace(/班級成績報表$/, "");
-      } else if (!examNameInput.value.trim()) {
-        examNameInput.value = fileName.replace(/\.(xlsx|xls)$/i, "");
-      }
+      examNameInput.value = buildSystemExamName();
       syncMathExamContext();
+    }
+
+    function buildSystemExamName() {
+      const typeLabel = examTypeInput.value === "weekly_exam" ? "週考" : "模擬考";
+      const gradeLabel = gradeLevelInput.value === "all" ? "全年級" : `${gradeLevelInput.value} 年級`;
+      return `${academicYearInput.value} 學年度第 ${semesterInput.value} 學期 ${gradeLabel}第 ${examNumberInput.value} 次${typeLabel}`;
     }
 
     function getCurrentExamSummary() {
@@ -2991,6 +3019,11 @@
       if (mathExamContext) {
         mathExamContext.textContent = `目前補登對象：${getCurrentExamSummary()}`;
       }
+    }
+
+    function syncSystemExamName() {
+      examNameInput.value = buildSystemExamName();
+      syncMathExamContext();
     }
 
     function getImportGradeGroups() {
@@ -4558,6 +4591,14 @@
       }
     });
 
+    portalExamSelect.addEventListener("change", async () => {
+      try {
+        await loadPortalReport();
+      } catch (error) {
+        portalStatus.textContent = `查詢成績失敗：${error.message}`;
+      }
+    });
+
     portalPrintButton.addEventListener("click", () => {
       if (portalStudentCount.textContent === "0") {
         portalStatus.textContent = "目前沒有可列印的成績資料。";
@@ -5003,16 +5044,18 @@
       semesterInput,
       gradeLevelInput,
       examTypeInput,
-      examNumberInput,
-      examNameInput
+      examNumberInput
     ].forEach((input) => {
-      input.addEventListener("change", syncMathExamContext);
-      input.addEventListener("input", syncMathExamContext);
+      input.addEventListener("change", syncSystemExamName);
+      input.addEventListener("input", syncSystemExamName);
     });
+
+    examNameInput.addEventListener("change", syncMathExamContext);
+    examNameInput.addEventListener("input", syncMathExamContext);
 
     mathExamNumber.addEventListener("change", () => {
       examNumberInput.value = mathExamNumber.value;
-      syncMathExamContext();
+      syncSystemExamName();
     });
 
     mathNonChoiceBody.addEventListener("change", (event) => {
