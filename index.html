@@ -3858,6 +3858,7 @@
         const saved = JSON.parse(localStorage.getItem("mockExamSupabaseConfig") || "{}");
         supabaseUrl.value = saved.url || "";
         supabaseAnonKey.value = saved.anonKey || "";
+        enableLiveRpc.checked = Boolean(saved.liveRpc);
         useSupabaseAuth.checked = Boolean(saved.url && saved.anonKey);
       } catch {
         localStorage.removeItem("mockExamSupabaseConfig");
@@ -3872,7 +3873,11 @@
         throw new Error("請填寫 Supabase URL 與 anon key。");
       }
 
-      localStorage.setItem("mockExamSupabaseConfig", JSON.stringify({ url, anonKey }));
+      localStorage.setItem("mockExamSupabaseConfig", JSON.stringify({
+        url,
+        anonKey,
+        liveRpc: enableLiveRpc.checked
+      }));
       useSupabaseAuth.checked = true;
     }
 
