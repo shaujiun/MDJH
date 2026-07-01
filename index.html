@@ -1453,10 +1453,6 @@
               <input id="teacherEmailInput" type="email">
             </div>
             <div class="form-group">
-              <label for="teacherPhoneInput">電話</label>
-              <input id="teacherPhoneInput" type="text">
-            </div>
-            <div class="form-group">
               <label for="teacherRoleInput">身分</label>
               <select id="teacherRoleInput">
                 <option value="homeroom_teacher">導師</option>
@@ -1945,7 +1941,6 @@
     const teacherEditorForm = document.querySelector("#teacherEditorForm");
     const teacherNameInput = document.querySelector("#teacherNameInput");
     const teacherEmailInput = document.querySelector("#teacherEmailInput");
-    const teacherPhoneInput = document.querySelector("#teacherPhoneInput");
     const teacherRoleInput = document.querySelector("#teacherRoleInput");
     const teacherYearInput = document.querySelector("#teacherYearInput");
     const teacherClassInput = document.querySelector("#teacherClassInput");
@@ -4853,7 +4848,7 @@
       const payload = {
         p_teacher_name: teacherNameInput.value.trim(),
         p_email: teacherEmailInput.value.trim() || null,
-        p_phone: teacherPhoneInput.value.trim() || null,
+        p_phone: null,
         p_role: teacherRoleInput.value,
         p_academic_year: Number(teacherYearInput.value),
         p_class_code: teacherClassInput.value,
