@@ -863,6 +863,20 @@
         padding: 0;
       }
 
+      body.printing-admin-report > *:not(#adminApp),
+      body.printing-admin-report #portalApp {
+        display: none !important;
+      }
+
+      body.printing-portal-report > *:not(#portalApp),
+      body.printing-portal-report #adminApp {
+        display: none !important;
+      }
+
+      body.printing-portal-report #portalApp {
+        display: block !important;
+      }
+
       .app-card {
         border: 0;
         box-shadow: none;
@@ -2724,8 +2738,15 @@
 
     window.addEventListener("afterprint", () => {
       document.body.classList.remove("printing-individual");
+      document.body.classList.remove("printing-admin-report");
+      document.body.classList.remove("printing-portal-report");
       individualReportSheet.classList.add("hidden");
     });
+
+    function printCurrentTable(printingClassName) {
+      document.body.classList.add(printingClassName);
+      window.print();
+    }
 
     function renderScoreReport(data) {
       const exams = Array.isArray(data.exams) ? data.exams : [];
@@ -4557,7 +4578,7 @@
         reportStatus.textContent = "目前沒有可列印的成績資料。";
         return;
       }
-      window.print();
+      printCurrentTable("printing-admin-report");
     });
 
     printStudentReportButton.addEventListener("click", () => {
@@ -4623,7 +4644,7 @@
         portalStatus.textContent = "目前沒有可列印的成績資料。";
         return;
       }
-      window.print();
+      printCurrentTable("printing-portal-report");
     });
 
     portalStudentPrintButton.addEventListener("click", () => {
