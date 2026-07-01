@@ -2856,8 +2856,8 @@
     function configurePortal(profile) {
       const settings = {
         student: ["學生專區", "我的模擬考成績", "只顯示自己的歷次成績與排名。"],
-        homeroom_teacher: ["導師專區", "班級模擬考成績", "顯示目前導師班級的完整五科成績。"],
-        subject_teacher: ["任課老師專區", "任教科目成績", "只顯示任教班級及任教科目的成績。"],
+        homeroom_teacher: ["教師成績查詢專區", "任教與導師班成績", "依目前任教設定顯示可查看的班級與科目。"],
+        subject_teacher: ["教師成績查詢專區", "任教與導師班成績", "依目前任教設定顯示可查看的班級與科目。"],
         viewer: ["成績查詢專區", "已發布成績查詢", "顯示系統已發布的模擬考成績。"]
       };
       const [badge, title, description] = settings[profile.role] || settings.viewer;
