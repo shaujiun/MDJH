@@ -2037,6 +2037,13 @@
     let currentPortalRows = [];
     let currentPortalReportData = null;
     let currentPortalExamName = "";
+    const scoreSubjects = [
+      { key: "chinese", label: "國文" },
+      { key: "english", label: "英文" },
+      { key: "math", label: "數學" },
+      { key: "science", label: "自然" },
+      { key: "social", label: "社會" }
+    ];
     let classCatalog = [
       { academic_year: 113, grade_level: 9, class_code: "九培", class_name: "九年級培訓班" },
       { academic_year: 113, grade_level: 9, class_code: "901", class_name: "九年級美術班" },
@@ -2873,7 +2880,7 @@
     }
 
     function visibleSubjectLabels(row) {
-      return subjects
+      return scoreSubjects
         .filter((subject) => row[`${subject.key}_grade`] != null || row[`${subject.key}_percent`] != null || row[`${subject.key}_points`] != null)
         .map((subject) => subject.label);
     }
