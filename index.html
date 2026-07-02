@@ -1775,6 +1775,12 @@
             <option value="">尚未載入考試</option>
           </select>
         </div>
+        <div class="form-group">
+          <label for="portalScopeSelect">顯示範圍</label>
+          <select id="portalScopeSelect">
+            <option value="">全部可查看資料</option>
+          </select>
+        </div>
         <button class="primary-action" type="button" id="portalLoadButton">查詢成績</button>
         <button class="secondary-button" type="button" id="portalPrintButton">列印目前表格</button>
       </div>
@@ -1885,6 +1891,7 @@
     const portalDescription = document.querySelector("#portalDescription");
     const portalLogoutButton = document.querySelector("#portalLogoutButton");
     const portalExamSelect = document.querySelector("#portalExamSelect");
+    const portalScopeSelect = document.querySelector("#portalScopeSelect");
     const portalLoadButton = document.querySelector("#portalLoadButton");
     const portalPrintButton = document.querySelector("#portalPrintButton");
     const portalStudentSelect = document.querySelector("#portalStudentSelect");
@@ -2028,6 +2035,7 @@
     let currentReportRows = [];
     let currentReportExamName = "";
     let currentPortalRows = [];
+    let currentPortalReportData = null;
     let currentPortalExamName = "";
     let classCatalog = [
       { academic_year: 113, grade_level: 9, class_code: "九培", class_name: "九年級培訓班" },
@@ -2864,9 +2872,60 @@
       portalDescription.textContent = `${profile.display_name || profile.account_name || "使用者"}｜${description}`;
     }
 
+    function visibleSubjectLabels(row) {
+      return subjects
+        .filter((subject) => row[`${subject.key}_grade`] != null || row[`${subject.key}_percent`] != null || row[`${subject.key}_points`] != null)
+        .map((subject) => subject.label);
+    }
+
+    function populatePortalScopeSelect(rows, preferredValue = "") {
+      const groups = new Map();
+      rows.forEach((row) => {
+        const classCode = row.class_code || "未設定班級";
+        if (!groups.has(classCode)) {
+          groups.set(classCode, {
+            classCode,
+            hasFullScores: false,
+            subjects: new Set()
+          });
+        }
+        const group = groups.get(classCode);
+        if (row.total_grade_points != null || row.class_grade_rank != null || row.school_grade_rank != null || row.a_count != null) {
+          group.hasFullScores = true;
+        }
+        visibleSubjectLabels(row).forEach((label) => group.subjects.add(label));
+      });
+
+      const options = Array.from(groups.values())
+        .sort((a, b) => a.classCode.localeCompare(b.classCode, "zh-Hant"))
+        .map((group) => {
+          const detail = group.hasFullScores ? "完整成績" : Array.from(group.subjects).join("、") || "可查看科目";
+          return {
+            value: group.classCode,
+            label: `${group.classCode}｜${detail}`
+          };
+        });
+
+      portalScopeSelect.innerHTML = [
+        '<option value="">全部可查看資料</option>',
+        ...options.map((option) => `<option value="${escapeHtml(option.value)}">${escapeHtml(option.label)}</option>`)
+      ].join("");
+      portalScopeSelect.value = options.some((option) => option.value === preferredValue) ? preferredValue : "";
+    }
+
+    function filterPortalRows(rows) {
+      const selectedScope = portalScopeSelect.value;
+      if (!selectedScope) return rows;
+      return rows.filter((row) => (row.class_code || "未設定班級") === selectedScope);
+    }
+
     function renderPortalReport(data) {
+      currentPortalReportData = data;
       const exams = Array.isArray(data.exams) ? data.exams : [];
-      const rows = Array.isArray(data.rows) ? data.rows : [];
+      const allRows = Array.isArray(data.rows) ? data.rows : [];
+      const previousScope = portalScopeSelect.value;
+      populatePortalScopeSelect(allRows, previousScope);
+      const rows = filterPortalRows(allRows);
       const selectedExamId = data.selected_exam_id || portalExamSelect.value || exams[0]?.id || "";
 
       portalExamSelect.innerHTML = exams.length
@@ -2921,7 +2980,7 @@
         p_exam_id: selectedExamId && !selectedExamId.startsWith("demo-") ? selectedExamId : null
       }, true);
       renderPortalReport(result.data || {});
-      portalStatus.textContent = `查詢完成，共顯示 ${result.data?.rows?.length || 0} 位學生。`;
+      portalStatus.textContent = `查詢完成，目前顯示 ${currentPortalRows.length} 位學生。`;
     }
 
     function addOptionIfMissing(selectElement, value, label, data = {}) {
@@ -4629,6 +4688,13 @@
         await loadPortalReport();
       } catch (error) {
         portalStatus.textContent = `查詢成績失敗：${error.message}`;
+      }
+    });
+
+    portalScopeSelect.addEventListener("change", () => {
+      if (currentPortalReportData) {
+        renderPortalReport(currentPortalReportData);
+        portalStatus.textContent = `已切換顯示範圍，目前顯示 ${currentPortalRows.length} 位學生。`;
       }
     });
 
