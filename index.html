@@ -2775,9 +2775,11 @@
       reportExamSelect.value = exams.some((exam) => exam.id === selectedExamId) ? selectedExamId : exams[0]?.id || "";
 
       const incomingClassCodes = [...new Set(sourceRows.map((row) => row.class_code).filter(Boolean))].sort();
-      if (!previousClassCode || currentReportClassCodes.length === 0) {
-        currentReportClassCodes = incomingClassCodes;
-      } else if (previousClassCode && !currentReportClassCodes.includes(previousClassCode)) {
+      const isAllClassQuery = !previousClassCode;
+      if (isAllClassQuery || currentReportClassCodes.length === 0) {
+        currentReportClassCodes = Array.from(new Set([...currentReportClassCodes, ...incomingClassCodes])).sort();
+      }
+      if (previousClassCode && !currentReportClassCodes.includes(previousClassCode)) {
         currentReportClassCodes = [...currentReportClassCodes, previousClassCode].sort();
       }
       const classCodes = currentReportClassCodes.length ? currentReportClassCodes : incomingClassCodes;
