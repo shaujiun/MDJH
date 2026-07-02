@@ -2843,7 +2843,7 @@
       const selectedExamId = reportExamSelect.value;
       const result = await callSupabaseRpc("admin_get_score_report", {
         p_exam_id: selectedExamId && !selectedExamId.startsWith("demo-") ? selectedExamId : null,
-        p_class_code: reportClassSelect.value || null
+        p_class_code: null
       });
       renderScoreReport(result.data || {});
       reportStatus.textContent = `查詢完成，目前顯示 ${currentReportRows.length} 位學生。`;
