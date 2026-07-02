@@ -2033,6 +2033,8 @@
     let currentProfile = null;
     let currentParsedImport = null;
     let currentReportRows = [];
+    let currentScoreReportData = null;
+    let currentReportClassCodes = [];
     let currentReportExamName = "";
     let currentPortalRows = [];
     let currentPortalReportData = null;
@@ -2757,18 +2759,28 @@
     }
 
     function renderScoreReport(data) {
+      currentScoreReportData = data;
       const exams = Array.isArray(data.exams) ? data.exams : [];
-      const rows = Array.isArray(data.rows) ? data.rows : [];
+      const sourceRows = Array.isArray(data.rows) ? data.rows : [];
       const previousExamId = reportExamSelect.value;
+      const previousClassCode = reportClassSelect.value;
       const selectedExamId = data.selected_exam_id || previousExamId || exams[0]?.id || "";
+      const rows = previousClassCode
+        ? sourceRows.filter((row) => row.class_code === previousClassCode)
+        : sourceRows;
 
       reportExamSelect.innerHTML = exams.length
         ? exams.map((exam) => `<option value="${escapeHtml(exam.id)}">${escapeHtml(formatExamLabel(exam))}</option>`).join("")
         : '<option value="">目前沒有考試資料</option>';
       reportExamSelect.value = exams.some((exam) => exam.id === selectedExamId) ? selectedExamId : exams[0]?.id || "";
 
-      const classCodes = [...new Set(rows.map((row) => row.class_code).filter(Boolean))].sort();
-      const previousClassCode = reportClassSelect.value;
+      const incomingClassCodes = [...new Set(sourceRows.map((row) => row.class_code).filter(Boolean))].sort();
+      if (!previousClassCode || currentReportClassCodes.length === 0) {
+        currentReportClassCodes = incomingClassCodes;
+      } else if (previousClassCode && !currentReportClassCodes.includes(previousClassCode)) {
+        currentReportClassCodes = [...currentReportClassCodes, previousClassCode].sort();
+      }
+      const classCodes = currentReportClassCodes.length ? currentReportClassCodes : incomingClassCodes;
       reportClassSelect.innerHTML = '<option value="">全部班級</option>'
         + classCodes.map((classCode) => `<option value="${escapeHtml(classCode)}">${escapeHtml(classCode)}</option>`).join("");
       if (classCodes.includes(previousClassCode)) {
@@ -2832,7 +2844,7 @@
         p_class_code: reportClassSelect.value || null
       });
       renderScoreReport(result.data || {});
-      reportStatus.textContent = `查詢完成，共 ${result.data?.rows?.length || 0} 位學生。`;
+      reportStatus.textContent = `查詢完成，目前顯示 ${currentReportRows.length} 位學生。`;
     }
 
     function getDemoPortalData(role) {
@@ -4631,6 +4643,18 @@
 
     reportExamSelect.addEventListener("change", () => {
       reportClassSelect.value = "";
+      currentReportClassCodes = [];
+    });
+
+    reportClassSelect.addEventListener("change", async () => {
+      try {
+        loadReportButton.disabled = true;
+        await loadScoreReport();
+      } catch (error) {
+        reportStatus.textContent = `查詢成績失敗：${error.message}`;
+      } finally {
+        loadReportButton.disabled = false;
+      }
     });
 
     printReportButton.addEventListener("click", () => {
