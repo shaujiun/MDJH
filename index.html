@@ -2979,8 +2979,14 @@
       const result = await callSupabaseRpc("get_role_score_report", {
         p_exam_id: selectedExamId && !selectedExamId.startsWith("demo-") ? selectedExamId : null
       }, true);
-      renderPortalReport(result.data || {});
-      portalStatus.textContent = `查詢完成，目前顯示 ${currentPortalRows.length} 位學生。`;
+      const reportData = result.data || {};
+      renderPortalReport(reportData);
+      const examCount = Array.isArray(reportData.exams) ? reportData.exams.length : 0;
+      const rawRowCount = Array.isArray(reportData.rows) ? reportData.rows.length : 0;
+      const debugText = reportData.debug
+        ? `｜角色：${reportData.role || "未回傳"}｜Email：${reportData.debug.login_email || "未回傳"}｜考試：${examCount}｜原始列：${rawRowCount}`
+        : `｜角色：${reportData.role || "未回傳"}｜考試：${examCount}｜原始列：${rawRowCount}`;
+      portalStatus.textContent = `查詢完成，目前顯示 ${currentPortalRows.length} 位學生${debugText}。`;
     }
 
     function addOptionIfMissing(selectElement, value, label, data = {}) {
