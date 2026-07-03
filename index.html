@@ -2831,10 +2831,6 @@
       reportStatus.textContent = "正在載入成績資料……";
       if (!getSupabaseConfig().enabled) {
         const data = getDemoReportData();
-        const selectedClass = reportClassSelect.value;
-        if (selectedClass) {
-          data.rows = data.rows.filter((row) => row.class_code === selectedClass);
-        }
         renderScoreReport(data);
         reportStatus.textContent = "目前為示範模式；表格使用範例資料，尚未讀取 Supabase。";
         return;
@@ -4646,17 +4642,18 @@
     reportExamSelect.addEventListener("change", () => {
       reportClassSelect.value = "";
       currentReportClassCodes = [];
+      currentScoreReportData = null;
     });
 
-    reportClassSelect.addEventListener("change", async () => {
-      try {
-        loadReportButton.disabled = true;
-        await loadScoreReport();
-      } catch (error) {
-        reportStatus.textContent = `查詢成績失敗：${error.message}`;
-      } finally {
-        loadReportButton.disabled = false;
+    reportClassSelect.addEventListener("change", () => {
+      if (currentScoreReportData) {
+        renderScoreReport(currentScoreReportData);
+        reportStatus.textContent = `已切換班級，目前顯示 ${currentReportRows.length} 位學生。`;
+        return;
       }
+      loadScoreReport().catch((error) => {
+        reportStatus.textContent = `查詢成績失敗：${error.message}`;
+      });
     });
 
     printReportButton.addEventListener("click", () => {
