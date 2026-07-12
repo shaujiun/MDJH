@@ -1426,12 +1426,15 @@
 
           <div class="manual-score-panel">
             <h3>批次建立學生名冊</h3>
-            <p class="setting-note">可從 Excel 複製貼上，每列格式：學號,姓名,學年度,班級,座號,登入 Email。Email 可留空。</p>
+            <p class="setting-note">可從 Excel 複製貼上，每列格式：學號,班級,座號,姓名,登入 Email。Email 可留空；學年度使用上方欄位。</p>
+            <div class="action-row">
+              <a class="secondary-button" href="學生座號批次匯入範本.xlsx" download>下載空白 Excel 範本</a>
+            </div>
             <div class="form-group wide">
               <label for="batchStudentTextarea">批次學生資料</label>
               <textarea id="batchStudentTextarea" rows="6" placeholder="例如：
-1130901,王小明,113,九培,1,student01@example.com
-1130902,李小華,113,九培,2,"></textarea>
+1130901,九培,1,王小明,student01@example.com
+1130902,九培,2,李小華,"></textarea>
             </div>
             <div class="action-row">
               <button class="secondary-button" type="button" id="previewBatchStudentButton">預覽學生名冊</button>
@@ -1527,7 +1530,10 @@
 
         <div class="manual-score-panel">
           <h3>批次調整</h3>
-          <p class="setting-note">可從 Excel 複製貼上，每列格式：學號,班級,座號,原因。也支援用 Tab 分隔。</p>
+          <p class="setting-note">可從 Excel 複製貼上，每列格式：學號,班級,座號,姓名,異動原因。姓名僅供核對，也支援用 Tab 分隔。</p>
+          <div class="action-row">
+            <a class="secondary-button" href="學生座號批次匯入範本.xlsx" download>下載空白 Excel 範本</a>
+          </div>
           <div class="form-grid">
             <div class="form-group">
               <label for="batchSeatYearInput">批次目標學年度</label>
@@ -1540,8 +1546,8 @@
             <div class="form-group wide">
               <label for="batchSeatTextarea">批次內容</label>
               <textarea id="batchSeatTextarea" rows="6" placeholder="例如：
-1130901,九培,1,加入培訓班
-1130902,九培,2,加入培訓班"></textarea>
+1130901,九培,1,王小明,插入新生座號後移
+1130902,九培,2,李小華,插入新生座號後移"></textarea>
             </div>
           </div>
           <div class="action-row">
@@ -2241,7 +2247,11 @@
 
       lines.forEach((line, index) => {
         const columns = line.split(/\t|,/).map((value) => value.trim());
-        const [studentNo, classCode, seatNoText, note = ""] = columns;
+        const [studentNo, classCode, seatNoText, nameOrNote = "", extraNote = ""] = columns;
+        if (index === 0 && studentNo === "學號" && classCode === "班級") {
+          return;
+        }
+        const note = extraNote || nameOrNote || "";
         const seatNo = Number(seatNoText);
 
         if (!studentNo || !classCode || !seatNoText) {
@@ -2293,15 +2303,19 @@
 
       lines.forEach((line, index) => {
         const columns = line.split(/\t|,/).map((value) => value.trim());
-        const [studentNo, studentName, yearText, classCode, seatText, accountEmail = ""] = columns;
-        if (index === 0 && studentNo === "學號" && studentName === "姓名") {
+        if (index === 0 && columns[0] === "學號") {
           return;
         }
+        const isNewOrder = columns.length >= 4 && !/^\d{3}$/.test(columns[2] || "");
+        const [studentNo, classCode, seatText, studentName, accountEmail = ""] = isNewOrder
+          ? columns
+          : [columns[0], columns[3], columns[4], columns[1], columns[5] || ""];
+        const yearText = isNewOrder ? studentYearInput.value : columns[2];
         const academicYear = Number(yearText);
         const seatNo = Number(seatText);
 
         if (!studentNo || !studentName || !yearText || !classCode || !seatText) {
-          errors.push(`第 ${index + 1} 列缺少學號、姓名、學年度、班級或座號。`);
+          errors.push(`第 ${index + 1} 列缺少學號、班級、座號或姓名；請確認上方學年度也已填寫。`);
           return;
         }
         if (!Number.isInteger(academicYear)) {
