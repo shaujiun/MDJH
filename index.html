@@ -1390,6 +1390,50 @@
     </section>
 
     <section class="admin-page" data-admin-page="people" aria-label="人員與帳號管理">
+      <section class="app-card" style="margin-bottom: 22px;">
+        <h2>班級建立</h2>
+        <p class="hint">匯入新學年度學生名冊前，可先建立該學年度班級。不會執行學籍升級，也不會影響舊成績快照。</p>
+        <div class="report-filter-row">
+          <div class="form-group">
+            <label for="classYearInput">學年度</label>
+            <input id="classYearInput" type="number" value="114" min="100" max="130">
+          </div>
+          <button class="primary-action" type="button" id="seedStandardClassesButton">建立三個年段常用班級</button>
+        </div>
+        <form id="classEditorForm" novalidate>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="classGradeInput">年級</label>
+              <select id="classGradeInput">
+                <option value="9">九年級</option>
+                <option value="8">八年級</option>
+                <option value="7">七年級</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="classTypeInput">班級類型</label>
+              <select id="classTypeInput">
+                <option value="培訓班">培訓班</option>
+                <option value="美術班">美術班</option>
+                <option value="體育班">體育班</option>
+                <option value="其他">其他</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="classCodeInput">班級代碼</label>
+              <input id="classCodeInput" type="text" value="九培" required>
+            </div>
+            <div class="form-group">
+              <label for="classNameInput">班級名稱</label>
+              <input id="classNameInput" type="text" value="九年級培訓班">
+            </div>
+          </div>
+          <div class="action-row">
+            <button class="secondary-button" type="submit">新增或更新單一班級</button>
+          </div>
+        </form>
+        <p class="setting-note" id="classEditorStatus">若要測試 114 學年度新生，請先建立 114 學年度班級。</p>
+      </section>
       <div class="settings-grid">
         <form class="app-card" id="studentEditorForm" novalidate>
           <h2>學生名冊</h2>
@@ -1943,6 +1987,14 @@
     const saveMathNonChoiceButton = document.querySelector("#saveMathNonChoiceButton");
     const mathNonChoiceStatus = document.querySelector("#mathNonChoiceStatus");
     const mathNonChoiceEmpty = document.querySelector("#mathNonChoiceEmpty");
+    const classYearInput = document.querySelector("#classYearInput");
+    const seedStandardClassesButton = document.querySelector("#seedStandardClassesButton");
+    const classEditorForm = document.querySelector("#classEditorForm");
+    const classGradeInput = document.querySelector("#classGradeInput");
+    const classTypeInput = document.querySelector("#classTypeInput");
+    const classCodeInput = document.querySelector("#classCodeInput");
+    const classNameInput = document.querySelector("#classNameInput");
+    const classEditorStatus = document.querySelector("#classEditorStatus");
     const studentEditorForm = document.querySelector("#studentEditorForm");
     const studentNoInput = document.querySelector("#studentNoInput");
     const studentNameInput = document.querySelector("#studentNameInput");
@@ -2069,6 +2121,22 @@
       { academic_year: 113, grade_level: 7, class_code: "701", class_name: "七年級美術班" },
       { academic_year: 113, grade_level: 7, class_code: "702", class_name: "七年級體育班" }
     ];
+    const classTypeLabels = {
+      training: "培訓班",
+      art: "美術班",
+      sports: "體育班"
+    };
+    const standardClassTemplates = [
+      { grade_level: 9, class_code: "九培", class_name: "九年級培訓班", class_type: classTypeLabels.training },
+      { grade_level: 9, class_code: "901", class_name: "九年級美術班", class_type: classTypeLabels.art },
+      { grade_level: 9, class_code: "902", class_name: "九年級體育班", class_type: classTypeLabels.sports },
+      { grade_level: 8, class_code: "八培", class_name: "八年級培訓班", class_type: classTypeLabels.training },
+      { grade_level: 8, class_code: "801", class_name: "八年級美術班", class_type: classTypeLabels.art },
+      { grade_level: 8, class_code: "802", class_name: "八年級體育班", class_type: classTypeLabels.sports },
+      { grade_level: 7, class_code: "七培", class_name: "七年級培訓班", class_type: classTypeLabels.training },
+      { grade_level: 7, class_code: "701", class_name: "七年級美術班", class_type: classTypeLabels.art },
+      { grade_level: 7, class_code: "702", class_name: "七年級體育班", class_type: classTypeLabels.sports }
+    ];
 
     const gradeRows = [
       { grade: "A++", chinese: 40, english: 98.14, math: 93.2, science: 48, social: 52, points: 7 },
@@ -2154,6 +2222,125 @@
       if (classes.some((item) => item.class_code === selectedValue)) {
         selectElement.value = selectedValue;
       }
+    }
+
+    function getStandardClassTemplate(gradeLevel, classType) {
+      return standardClassTemplates.find((item) =>
+        Number(item.grade_level) === Number(gradeLevel) && item.class_type === classType
+      ) || null;
+    }
+
+    function syncClassFormDefaults() {
+      const template = getStandardClassTemplate(classGradeInput.value, classTypeInput.value);
+      if (!template) {
+        return;
+      }
+      classCodeInput.value = template.class_code;
+      classNameInput.value = template.class_name;
+    }
+
+    function upsertLocalClassCatalog(item) {
+      const normalized = {
+        academic_year: Number(item.academic_year),
+        grade_level: Number(item.grade_level),
+        class_code: String(item.class_code || "").trim(),
+        class_name: String(item.class_name || item.class_code || "").trim(),
+        class_type: item.class_type || ""
+      };
+      if (!normalized.academic_year || !normalized.grade_level || !normalized.class_code) {
+        return;
+      }
+
+      const existingIndex = classCatalog.findIndex((classItem) =>
+        Number(classItem.academic_year) === normalized.academic_year
+          && classItem.class_code === normalized.class_code
+      );
+      if (existingIndex >= 0) {
+        classCatalog[existingIndex] = { ...classCatalog[existingIndex], ...normalized };
+      } else {
+        classCatalog.push(normalized);
+      }
+      classCatalog.sort((a, b) =>
+        Number(a.academic_year) - Number(b.academic_year)
+          || Number(b.grade_level) - Number(a.grade_level)
+          || String(a.class_code).localeCompare(String(b.class_code), "zh-Hant", { numeric: true })
+      );
+    }
+
+    function refreshClassSelects() {
+      populateClassSelect(studentClassInput, studentYearInput.value);
+      populateClassSelect(teacherClassInput, teacherYearInput.value);
+      populateClassSelect(seatClassInput, seatYearInput.value);
+    }
+
+    function buildClassPayload() {
+      const academicYear = Number(classYearInput.value);
+      const gradeLevel = Number(classGradeInput.value);
+      const classCode = classCodeInput.value.trim();
+      const className = classNameInput.value.trim() || classCode;
+      const classType = classTypeInput.value === "其他" ? "" : classTypeInput.value;
+
+      if (!Number.isInteger(academicYear)) {
+        throw new Error("學年度必須是整數。");
+      }
+      if (!Number.isInteger(gradeLevel) || gradeLevel < 7 || gradeLevel > 9) {
+        throw new Error("年級必須是 7、8 或 9。");
+      }
+      if (!classCode) {
+        throw new Error("請輸入班級代碼。");
+      }
+
+      return {
+        p_academic_year: academicYear,
+        p_grade_level: gradeLevel,
+        p_class_code: classCode,
+        p_class_name: className,
+        p_class_type: classType || null
+      };
+    }
+
+    async function seedStandardClasses() {
+      const academicYear = Number(classYearInput.value);
+      if (!Number.isInteger(academicYear)) {
+        throw new Error("學年度必須是整數。");
+      }
+
+      if (!getSupabaseConfig().enabled) {
+        standardClassTemplates.forEach((item) => upsertLocalClassCatalog({
+          ...item,
+          academic_year: academicYear
+        }));
+        refreshClassSelects();
+        classEditorStatus.textContent = `示範模式：已建立 ${academicYear} 學年度常用班級。正式資料尚未送出。`;
+        return;
+      }
+
+      const result = await callSupabaseRpc("admin_seed_standard_classes", {
+        p_academic_year: academicYear
+      });
+      await loadPeopleData();
+      classEditorStatus.textContent = `已建立或更新 ${result.data?.academic_year || academicYear} 學年度 ${result.data?.class_count || 0} 個常用班級。`;
+    }
+
+    async function upsertClassFromForm() {
+      const payload = buildClassPayload();
+
+      if (!getSupabaseConfig().enabled) {
+        upsertLocalClassCatalog({
+          academic_year: payload.p_academic_year,
+          grade_level: payload.p_grade_level,
+          class_code: payload.p_class_code,
+          class_name: payload.p_class_name,
+          class_type: payload.p_class_type || ""
+        });
+        refreshClassSelects();
+        classEditorStatus.textContent = `示範模式：已建立 ${payload.p_academic_year} 學年度 ${payload.p_class_code}。正式資料尚未送出。`;
+        return;
+      }
+
+      const result = await callSupabaseRpc("admin_upsert_class", payload);
+      await loadPeopleData();
+      classEditorStatus.textContent = `已建立或更新 ${result.data?.academic_year || payload.p_academic_year} 學年度 ${result.data?.class_code || payload.p_class_code}。`;
     }
 
     function updateTeacherSubjectVisibility() {
@@ -4777,6 +4964,35 @@
       }
     });
 
+    classGradeInput.addEventListener("change", syncClassFormDefaults);
+
+    classTypeInput.addEventListener("change", syncClassFormDefaults);
+
+    seedStandardClassesButton.addEventListener("click", async () => {
+      try {
+        seedStandardClassesButton.disabled = true;
+        classEditorStatus.textContent = "正在建立常用班級……";
+        await seedStandardClasses();
+      } catch (error) {
+        classEditorStatus.textContent = `建立常用班級失敗：${error.message}`;
+      } finally {
+        seedStandardClassesButton.disabled = false;
+      }
+    });
+
+    classEditorForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      try {
+        classEditorForm.querySelector("button[type='submit']").disabled = true;
+        classEditorStatus.textContent = "正在儲存班級……";
+        await upsertClassFromForm();
+      } catch (error) {
+        classEditorStatus.textContent = `儲存班級失敗：${error.message}`;
+      } finally {
+        classEditorForm.querySelector("button[type='submit']").disabled = false;
+      }
+    });
+
     studentYearInput.addEventListener("input", () => {
       populateClassSelect(studentClassInput, studentYearInput.value);
     });
@@ -5607,6 +5823,7 @@
     }
     showAdminPage("import");
     initializeSettingEditors();
+    syncClassFormDefaults();
     populateClassSelect(studentClassInput, studentYearInput.value);
     populateClassSelect(teacherClassInput, teacherYearInput.value);
     populateClassSelect(seatClassInput, seatYearInput.value);
