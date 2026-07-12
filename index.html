@@ -2103,6 +2103,17 @@
     let currentPortalRows = [];
     let currentPortalReportData = null;
     let currentPortalExamName = "";
+    let conversionRuleOptions = [
+      { academic_year: 113, grade_level: 7, exam_type: "mock_exam", version_name: "09檔預設換算標準" },
+      { academic_year: 113, grade_level: 8, exam_type: "mock_exam", version_name: "09檔預設換算標準" },
+      { academic_year: 113, grade_level: 9, exam_type: "mock_exam", version_name: "09檔預設換算標準" },
+      { academic_year: 113, grade_level: 7, exam_type: "weekly_exam", version_name: "09檔預設換算標準" },
+      { academic_year: 113, grade_level: 8, exam_type: "weekly_exam", version_name: "09檔預設換算標準" },
+      { academic_year: 113, grade_level: 9, exam_type: "weekly_exam", version_name: "09檔預設換算標準" }
+    ];
+    let pointRuleOptions = [
+      { academic_year: 113, city_name: "台南市", version_name: "預設積分版" }
+    ];
     const scoreSubjects = [
       { key: "chinese", label: "國文" },
       { key: "english", label: "英文" },
@@ -3233,6 +3244,100 @@
       });
       selectElement.appendChild(option);
       selectElement.value = value;
+    }
+
+    function getSelectedImportGrades() {
+      if (gradeLevelInput.value === "all") {
+        return [7, 8, 9];
+      }
+      const grade = Number(gradeLevelInput.value);
+      return Number.isInteger(grade) ? [grade] : [];
+    }
+
+    function gradeOptionLabel(grades) {
+      return grades.length === 3 ? "全年級" : grades.map((grade) => `${grade} 年級`).join("、");
+    }
+
+    function examTypeLabel(examType) {
+      return examType === "weekly_exam" ? "週考" : "模擬考";
+    }
+
+    function renderImportRuleOptions() {
+      const selectedRule = ruleSetSelect.value;
+      const selectedPointRule = pointRuleSetSelect.value;
+      const year = Number(academicYearInput.value);
+      const examType = examTypeInput.value;
+      const targetGrades = getSelectedImportGrades();
+      const targetGradeSet = new Set(targetGrades);
+      const conversionGroups = new Map();
+
+      conversionRuleOptions
+        .filter((item) =>
+          Number(item.academic_year) === year
+            && item.exam_type === examType
+            && targetGradeSet.has(Number(item.grade_level))
+        )
+        .forEach((item) => {
+          const key = item.version_name;
+          const existing = conversionGroups.get(key) || {
+            version_name: item.version_name,
+            academic_year: item.academic_year,
+            exam_type: item.exam_type,
+            grades: []
+          };
+          existing.grades.push(Number(item.grade_level));
+          conversionGroups.set(key, existing);
+        });
+
+      const conversionItems = [...conversionGroups.values()]
+        .filter((item) => targetGrades.every((grade) => item.grades.includes(grade)))
+        .sort((a, b) => a.version_name.localeCompare(b.version_name, "zh-Hant", { numeric: true }));
+
+      ruleSetSelect.innerHTML = conversionItems.length
+        ? conversionItems.map((item) => `
+          <option value="${escapeHtml(item.version_name)}">
+            ${escapeHtml(`${item.academic_year}｜${gradeOptionLabel(targetGrades)}｜${examTypeLabel(item.exam_type)}｜${item.version_name}`)}
+          </option>
+        `).join("")
+        : '<option value="">此學年度、年級與考試類型尚無換算標準</option>';
+      if (conversionItems.some((item) => item.version_name === selectedRule)) {
+        ruleSetSelect.value = selectedRule;
+      }
+
+      const pointItems = pointRuleOptions
+        .filter((item) => Number(item.academic_year) === year)
+        .sort((a, b) =>
+          String(a.city_name).localeCompare(String(b.city_name), "zh-Hant")
+            || String(a.version_name).localeCompare(String(b.version_name), "zh-Hant", { numeric: true })
+        );
+
+      pointRuleSetSelect.innerHTML = pointItems.length
+        ? pointItems.map((item) => `
+          <option value="${escapeHtml(item.version_name)}" data-city="${escapeHtml(item.city_name || "台南市")}">
+            ${escapeHtml(`${item.city_name || "台南市"}｜${item.academic_year}｜${item.version_name}`)}
+          </option>
+        `).join("")
+        : '<option value="">此學年度尚無積分規則版本</option>';
+      if (pointItems.some((item) => item.version_name === selectedPointRule)) {
+        pointRuleSetSelect.value = selectedPointRule;
+      }
+    }
+
+    async function loadImportRuleOptions() {
+      if (!getSupabaseConfig().enabled) {
+        renderImportRuleOptions();
+        return;
+      }
+
+      const result = await callSupabaseRpc("admin_list_rule_options", {});
+      const data = result.data || {};
+      if (Array.isArray(data.conversion_rule_sets)) {
+        conversionRuleOptions = data.conversion_rule_sets;
+      }
+      if (Array.isArray(data.point_rule_sets)) {
+        pointRuleOptions = data.point_rule_sets;
+      }
+      renderImportRuleOptions();
     }
 
     function getRuleEditorRows() {
@@ -4549,6 +4654,9 @@
         adminApp.classList.remove("hidden");
         portalApp.classList.add("hidden");
         showAdminPage("import");
+        loadImportRuleOptions().catch((error) => {
+          previewStatus.textContent = `規則清單載入失敗：${error.message}`;
+        });
         return;
       }
 
@@ -5453,6 +5561,7 @@
             loginShell.classList.add("hidden");
             adminApp.classList.remove("hidden");
             showAdminPage("import");
+            renderImportRuleOptions();
             return;
           }
           enterRolePage({
@@ -5535,6 +5644,15 @@
     ].forEach((input) => {
       input.addEventListener("change", syncSystemExamName);
       input.addEventListener("input", syncSystemExamName);
+    });
+
+    [
+      academicYearInput,
+      gradeLevelInput,
+      examTypeInput
+    ].forEach((input) => {
+      input.addEventListener("change", renderImportRuleOptions);
+      input.addEventListener("input", renderImportRuleOptions);
     });
 
     examNameInput.addEventListener("change", syncMathExamContext);
@@ -5783,7 +5901,26 @@
           await callSupabaseRpc("admin_upsert_conversion_rule_set", payload);
         }
 
-        addOptionIfMissing(ruleSetSelect, value, `${name}（${grade}）`);
+        if (getSupabaseConfig().enabled) {
+          await loadImportRuleOptions();
+        } else {
+          rpcPayloads.forEach((payload) => {
+            conversionRuleOptions = conversionRuleOptions.filter((item) =>
+              !(Number(item.academic_year) === Number(payload.p_academic_year)
+                && Number(item.grade_level) === Number(payload.p_grade_level)
+                && item.exam_type === payload.p_exam_type
+                && item.version_name === payload.p_version_name)
+            );
+            conversionRuleOptions.push({
+              academic_year: payload.p_academic_year,
+              grade_level: payload.p_grade_level,
+              exam_type: payload.p_exam_type,
+              version_name: payload.p_version_name,
+              source_file_name: payload.p_source_file_name
+            });
+          });
+          renderImportRuleOptions();
+        }
         ruleSetStatus.innerHTML = `
           已${getSupabaseConfig().enabled ? "送出並" : "建立示範"}換算標準：「${name}」。
           ${getSupabaseConfig().enabled ? "正式資料已送到 Supabase，模擬考與週考會共用同一套標準。" : "正式版會呼叫 <code>admin_upsert_conversion_rule_set</code>，並同步建立模擬考與週考版本。"}
@@ -5805,7 +5942,22 @@
         pointSetStatus.textContent = "處理中，請稍候。";
         await callSupabaseRpc("admin_upsert_point_rule_set", rpcPayload);
 
-        addOptionIfMissing(pointRuleSetSelect, value, `${name}`, { city });
+        if (getSupabaseConfig().enabled) {
+          await loadImportRuleOptions();
+        } else {
+          pointRuleOptions = pointRuleOptions.filter((item) =>
+            !(Number(item.academic_year) === Number(rpcPayload.p_academic_year)
+              && item.city_name === rpcPayload.p_city_name
+              && item.version_name === rpcPayload.p_version_name)
+          );
+          pointRuleOptions.push({
+            academic_year: rpcPayload.p_academic_year,
+            city_name: rpcPayload.p_city_name,
+            version_name: rpcPayload.p_version_name,
+            description: rpcPayload.p_description
+          });
+          renderImportRuleOptions();
+        }
         pointSetStatus.innerHTML = `
           已${getSupabaseConfig().enabled ? "送出並" : "建立示範"}積分版本：「${name}」。
           ${getSupabaseConfig().enabled ? "正式資料已送到 Supabase。" : "正式版會呼叫 <code>admin_upsert_point_rule_set</code>。"}
@@ -5824,6 +5976,7 @@
     showAdminPage("import");
     initializeSettingEditors();
     syncClassFormDefaults();
+    renderImportRuleOptions();
     populateClassSelect(studentClassInput, studentYearInput.value);
     populateClassSelect(teacherClassInput, teacherYearInput.value);
     populateClassSelect(seatClassInput, seatYearInput.value);
