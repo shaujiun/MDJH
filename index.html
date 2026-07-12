@@ -5130,7 +5130,6 @@
       currentSession = null;
       currentProfile = null;
       supabaseAccessToken.value = "";
-      enableLiveRpc.checked = false;
       adminApp.classList.add("hidden");
       portalApp.classList.add("hidden");
       loginShell.classList.remove("hidden");
@@ -5373,14 +5372,14 @@
         importButton.disabled = true;
         previewStatus.textContent = `正在處理 ${payloads.reduce((sum, payload) => sum + payload.p_records.length, 0)} 筆科目成績……`;
 
-        const results = [];
-        for (const payload of payloads) {
-          results.push(await callSupabaseRpc("admin_import_exam_scores", payload));
-        }
-
         if (!getSupabaseConfig().enabled) {
           previewStatus.textContent = `示範模式：已完成 ${payloads.length} 個年級、共 ${payloads.reduce((sum, payload) => sum + payload.p_records.length, 0)} 筆成績的匯入資料組裝，尚未送至 Supabase。`;
           return;
+        }
+
+        const results = [];
+        for (const payload of payloads) {
+          results.push(await callSupabaseRpc("admin_import_exam_scores", payload));
         }
 
         const importedScores = results.reduce((sum, result) => sum + Number(result.data?.score_count || 0), 0);
@@ -5403,7 +5402,16 @@
       }
     });
 
-    enableLiveRpc.addEventListener("change", updateSupabaseStatus);
+    enableLiveRpc.addEventListener("change", () => {
+      updateSupabaseStatus();
+      if (supabaseUrl.value.trim() && supabaseAnonKey.value.trim()) {
+        try {
+          saveSupabaseConfig();
+        } catch {
+          // 等使用者補齊 URL 與 anon key 後，再由「儲存連線設定」保存。
+        }
+      }
+    });
     supabaseUrl.addEventListener("input", updateSupabaseStatus);
     supabaseAnonKey.addEventListener("input", updateSupabaseStatus);
     supabaseAccessToken.addEventListener("input", updateSupabaseStatus);
