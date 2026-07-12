@@ -2836,6 +2836,17 @@
       reportStatus.textContent = `查詢完成，目前顯示 ${currentReportRows.length} 位學生。`;
     }
 
+    async function publishImportedExams(results) {
+      const examIds = [...new Set(results.map((result) => result.data?.exam_id).filter(Boolean))];
+      for (const examId of examIds) {
+        await callSupabaseRpc("admin_set_exam_published", {
+          p_exam_id: examId,
+          p_is_published: true
+        });
+      }
+      return examIds.length;
+    }
+
     function getDemoPortalData(role) {
       const data = getDemoReportData();
       data.role = role;
@@ -5292,6 +5303,7 @@
         for (const payload of payloads) {
           results.push(await callSupabaseRpc("admin_import_exam_scores", payload));
         }
+        await publishImportedExams(results);
         const importedScores = results.reduce((sum, result) => sum + Number(result.data?.score_count || 0), 0);
         mathNonChoiceStatus.textContent = `正式補登完成：寫入 ${importedScores} 筆數學非選成績，其中 ${absentCount} 筆缺考。`;
         previewStatus.textContent = "數學非選已正式寫入 Supabase，正在更新成績查詢清單……";
@@ -5374,7 +5386,9 @@
         const importedScores = results.reduce((sum, result) => sum + Number(result.data?.score_count || 0), 0);
         const mismatchCount = results.reduce((sum, result) => sum + Number(result.data?.name_mismatch_count || 0), 0);
         const recalculatedCount = results.filter((result) => result.data?.recalculated).length;
-        const importSummary = `正式匯入完成：寫入 ${importedScores} 筆成績，姓名不一致 ${mismatchCount} 筆，完成重算 ${recalculatedCount} 個年級。`;
+        const publishedCount = await publishImportedExams(results);
+        const publishSummary = publishedCount ? `，已發布 ${publishedCount} 個考試` : "";
+        const importSummary = `正式匯入完成：寫入 ${importedScores} 筆成績，姓名不一致 ${mismatchCount} 筆，完成重算 ${recalculatedCount} 個年級${publishSummary}。`;
         previewStatus.textContent = `${importSummary} 正在更新成績查詢清單……`;
         try {
           await refreshVisibleReports();
