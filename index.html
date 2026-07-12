@@ -1428,7 +1428,7 @@
             <h3>批次建立學生名冊</h3>
             <p class="setting-note">可從 Excel 複製貼上，每列格式：學號,班級,座號,姓名,登入 Email。Email 可留空；學年度使用上方欄位。</p>
             <div class="action-row">
-              <a class="secondary-button" href="student-seat-batch-template.xlsx" download="學生座號批次匯入範本.xlsx">下載空白 Excel 範本</a>
+              <button class="secondary-button download-seat-template-button" type="button">下載空白 Excel 範本</button>
             </div>
             <div class="form-group wide">
               <label for="batchStudentTextarea">批次學生資料</label>
@@ -1532,7 +1532,7 @@
           <h3>批次調整</h3>
           <p class="setting-note">可從 Excel 複製貼上，每列格式：學號,班級,座號,姓名,異動原因。姓名僅供核對，也支援用 Tab 分隔。</p>
           <div class="action-row">
-            <a class="secondary-button" href="student-seat-batch-template.xlsx" download="學生座號批次匯入範本.xlsx">下載空白 Excel 範本</a>
+            <button class="secondary-button download-seat-template-button" type="button">下載空白 Excel 範本</button>
           </div>
           <div class="form-grid">
             <div class="form-group">
@@ -5025,6 +5025,30 @@
         button.disabled = false;
       }
     }
+
+    function downloadStudentSeatTemplate() {
+      if (typeof XLSX === "undefined") {
+        alert("Excel 解析程式未載入，請確認 xlsx.full.min.js 與 index.html 位於同一資料夾。");
+        return;
+      }
+
+      const workbook = XLSX.utils.book_new();
+      const studentSheet = XLSX.utils.aoa_to_sheet([
+        ["學號", "班級", "座號", "姓名", "登入 Email"]
+      ]);
+      const seatSheet = XLSX.utils.aoa_to_sheet([
+        ["學號", "班級", "座號", "姓名", "異動原因"]
+      ]);
+      studentSheet["!cols"] = [{ wch: 14 }, { wch: 12 }, { wch: 8 }, { wch: 12 }, { wch: 24 }];
+      seatSheet["!cols"] = [{ wch: 14 }, { wch: 12 }, { wch: 8 }, { wch: 12 }, { wch: 24 }];
+      XLSX.utils.book_append_sheet(workbook, studentSheet, "新增學生名冊");
+      XLSX.utils.book_append_sheet(workbook, seatSheet, "班級座號調整");
+      XLSX.writeFile(workbook, "學生座號批次匯入範本.xlsx");
+    }
+
+    document.querySelectorAll(".download-seat-template-button").forEach((button) => {
+      button.addEventListener("click", downloadStudentSeatTemplate);
+    });
 
     studentListBody.addEventListener("click", handlePersonStatusChange);
     teacherListBody.addEventListener("click", handlePersonStatusChange);
