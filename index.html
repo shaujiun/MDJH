@@ -2512,18 +2512,28 @@
           return;
         }
         const hasYearColumn = columns.length >= 5 && /^\d{3}$/.test(columns[1] || "");
+        const hasYearButMissingSeat = columns.length === 4 && /^\d{3}$/.test(columns[1] || "");
         const isNewOrder = columns.length >= 4 && !/^\d{3}$/.test(columns[2] || "");
         const [studentNo, yearFromRow, classCode, seatText, studentName, accountEmail = ""] = hasYearColumn
           ? columns
-          : (isNewOrder
-            ? [columns[0], "", columns[1], columns[2], columns[3], columns[4] || ""]
-            : [columns[0], columns[2], columns[3], columns[4], columns[1], columns[5] || ""]);
+          : (hasYearButMissingSeat
+            ? [columns[0], columns[1], columns[2], "", columns[3], ""]
+            : (isNewOrder
+              ? [columns[0], "", columns[1], columns[2], columns[3], columns[4] || ""]
+              : [columns[0], columns[2], columns[3], columns[4], columns[1], columns[5] || ""]));
         const yearText = yearFromRow || studentYearInput.value;
         const academicYear = Number(yearText);
         const seatNo = Number(seatText);
 
-        if (!studentNo || !studentName || !yearText || !classCode || !seatText) {
-          errors.push(`第 ${index + 1} 列缺少學號、學年度、班級、座號或姓名；若該列未填學年度，請確認上方學年度已填寫。`);
+        const missingFields = [];
+        if (!studentNo) missingFields.push("學號");
+        if (!yearText) missingFields.push("學年度");
+        if (!classCode) missingFields.push("班級");
+        if (!seatText) missingFields.push("座號");
+        if (!studentName) missingFields.push("姓名");
+        if (missingFields.length) {
+          const yearHint = missingFields.includes("學年度") ? "；若該列未填學年度，請確認上方學年度已填寫" : "";
+          errors.push(`第 ${index + 1} 列缺少${missingFields.join("、")}${yearHint}。`);
           return;
         }
         if (!Number.isInteger(academicYear)) {
@@ -2532,6 +2542,13 @@
         }
         if (!Number.isInteger(seatNo) || seatNo <= 0) {
           errors.push(`第 ${index + 1} 列座號不是正整數。`);
+          return;
+        }
+        const classExists = classCatalog.some((item) =>
+          Number(item.academic_year) === academicYear && item.class_code === classCode
+        );
+        if (!classExists) {
+          errors.push(`第 ${index + 1} 列找不到 ${academicYear} 學年度「${classCode}」班級，請先建立班級或修正班級名稱。`);
           return;
         }
 
