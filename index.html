@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
@@ -1429,6 +1429,8 @@
             <p class="setting-note">可從 Excel 複製貼上，每列格式：學號,班級,座號,姓名,登入 Email。Email 可留空；學年度使用上方欄位。</p>
             <div class="action-row">
               <button class="secondary-button download-seat-template-button" type="button">下載空白 Excel 範本</button>
+              <button class="secondary-button" type="button" id="uploadBatchStudentButton">上傳 Excel 帶入資料</button>
+              <input id="batchStudentFileInput" class="hidden" type="file" accept=".xlsx,.xls">
             </div>
             <div class="form-group wide">
               <label for="batchStudentTextarea">批次學生資料</label>
@@ -1533,6 +1535,8 @@
           <p class="setting-note">可從 Excel 複製貼上，每列格式：學號,班級,座號,姓名,異動原因。姓名僅供核對，也支援用 Tab 分隔。</p>
           <div class="action-row">
             <button class="secondary-button download-seat-template-button" type="button">下載空白 Excel 範本</button>
+            <button class="secondary-button" type="button" id="uploadBatchSeatButton">上傳 Excel 帶入資料</button>
+            <input id="batchSeatFileInput" class="hidden" type="file" accept=".xlsx,.xls">
           </div>
           <div class="form-grid">
             <div class="form-group">
@@ -1948,6 +1952,8 @@
     const studentAccountEmailInput = document.querySelector("#studentAccountEmailInput");
     const studentEditorStatus = document.querySelector("#studentEditorStatus");
     const batchStudentTextarea = document.querySelector("#batchStudentTextarea");
+    const uploadBatchStudentButton = document.querySelector("#uploadBatchStudentButton");
+    const batchStudentFileInput = document.querySelector("#batchStudentFileInput");
     const previewBatchStudentButton = document.querySelector("#previewBatchStudentButton");
     const executeBatchStudentButton = document.querySelector("#executeBatchStudentButton");
     const batchStudentStatus = document.querySelector("#batchStudentStatus");
@@ -2038,6 +2044,7 @@
     let currentSession = null;
     let currentProfile = null;
     let currentParsedImport = null;
+    const STUDENT_SEAT_TEMPLATE_BASE64 = "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";
     let currentReportRows = [];
     let currentScoreReportData = null;
     let currentReportExamName = "";
@@ -5026,30 +5033,115 @@
       }
     }
 
+    function base64ToBlob(base64, mimeType) {
+      const binary = atob(base64);
+      const bytes = new Uint8Array(binary.length);
+      for (let index = 0; index < binary.length; index += 1) {
+        bytes[index] = binary.charCodeAt(index);
+      }
+      return new Blob([bytes], { type: mimeType });
+    }
+
+    function downloadBlob(blob, fileName) {
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }
+
     function downloadStudentSeatTemplate() {
+      const blob = base64ToBlob(
+        STUDENT_SEAT_TEMPLATE_BASE64,
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      );
+      downloadBlob(blob, "學生座號批次匯入範本.xlsx");
+    }
+
+    function getWorkbookSheet(workbook, preferredName, fallbackIndex) {
+      const sheetName = workbook.SheetNames.includes(preferredName)
+        ? preferredName
+        : workbook.SheetNames[fallbackIndex] || workbook.SheetNames[0];
+      return sheetName ? workbook.Sheets[sheetName] : null;
+    }
+
+    function worksheetRowsToTextarea(sheet, maxColumns) {
+      const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, blankrows: false, defval: "" });
+      return rows
+        .filter((row) => row.some((value) => String(value).trim() !== ""))
+        .filter((row, index) => !(index === 0 && String(row[0]).trim() === "學號"))
+        .map((row) => row.slice(0, maxColumns).map((value) => String(value ?? "").trim()).join("\t"))
+        .join("\n");
+    }
+
+    async function importBatchSheetToTextarea(file, preferredName, fallbackIndex, textarea, statusElement, label, maxColumns) {
+      if (!file) {
+        return;
+      }
       if (typeof XLSX === "undefined") {
-        alert("Excel 解析程式未載入，請確認 xlsx.full.min.js 與 index.html 位於同一資料夾。");
+        statusElement.textContent = "Excel 解析程式未載入，請確認 xlsx.full.min.js 與 index.html 位於同一資料夾。";
         return;
       }
 
-      const workbook = XLSX.utils.book_new();
-      const studentSheet = XLSX.utils.aoa_to_sheet([
-        ["學號", "班級", "座號", "姓名", "登入 Email"]
-      ]);
-      const seatSheet = XLSX.utils.aoa_to_sheet([
-        ["學號", "班級", "座號", "姓名", "異動原因"]
-      ]);
-      studentSheet["!cols"] = [{ wch: 14 }, { wch: 12 }, { wch: 8 }, { wch: 12 }, { wch: 24 }];
-      seatSheet["!cols"] = [{ wch: 14 }, { wch: 12 }, { wch: 8 }, { wch: 12 }, { wch: 24 }];
-      XLSX.utils.book_append_sheet(workbook, studentSheet, "新增學生名冊");
-      XLSX.utils.book_append_sheet(workbook, seatSheet, "班級座號調整");
-      XLSX.writeFile(workbook, "學生座號批次匯入範本.xlsx");
+      try {
+        const workbook = XLSX.read(await file.arrayBuffer(), { type: "array", cellDates: true });
+        const sheet = getWorkbookSheet(workbook, preferredName, fallbackIndex);
+        if (!sheet) {
+          statusElement.textContent = "無法讀取「" + label + "」工作表。";
+          return;
+        }
+        const content = worksheetRowsToTextarea(sheet, maxColumns);
+        if (!content) {
+          statusElement.textContent = "「" + label + "」工作表沒有可帶入的資料列。";
+          return;
+        }
+        textarea.value = content;
+        statusElement.textContent = "已從「" + label + "」工作表帶入資料，請先預覽確認。";
+      } catch (error) {
+        statusElement.textContent = "讀取 Excel 失敗：" + error.message;
+      }
     }
 
     document.querySelectorAll(".download-seat-template-button").forEach((button) => {
       button.addEventListener("click", downloadStudentSeatTemplate);
     });
 
+    uploadBatchStudentButton.addEventListener("click", () => {
+      batchStudentFileInput.click();
+    });
+
+    batchStudentFileInput.addEventListener("change", async () => {
+      await importBatchSheetToTextarea(
+        batchStudentFileInput.files[0],
+        "新增學生名冊",
+        0,
+        batchStudentTextarea,
+        batchStudentStatus,
+        "新增學生名冊",
+        5
+      );
+      batchStudentFileInput.value = "";
+    });
+
+    uploadBatchSeatButton.addEventListener("click", () => {
+      batchSeatFileInput.click();
+    });
+
+    batchSeatFileInput.addEventListener("change", async () => {
+      await importBatchSheetToTextarea(
+        batchSeatFileInput.files[0],
+        "班級座號調整",
+        1,
+        batchSeatTextarea,
+        batchSeatStatus,
+        "班級座號調整",
+        5
+      );
+      batchSeatFileInput.value = "";
+    });
     studentListBody.addEventListener("click", handlePersonStatusChange);
     teacherListBody.addEventListener("click", handlePersonStatusChange);
 
