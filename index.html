@@ -25,6 +25,8 @@
 
     * {
       box-sizing: border-box;
+      print-color-adjust: exact;
+      -webkit-print-color-adjust: exact;
     }
 
     body {
@@ -800,7 +802,7 @@
     .bar-row,
     .distribution-row {
       display: grid;
-      grid-template-columns: 52px minmax(0, 1fr) 58px;
+      grid-template-columns: 52px minmax(0, 1fr) 42px;
       gap: 10px;
       align-items: center;
       font-size: 14px;
@@ -842,73 +844,198 @@
       white-space: nowrap;
     }
 
-    .grade-a { background: var(--primary-dark); }
-    .grade-b { background: var(--primary); }
-    .grade-c { background: #f59e0b; }
+    .grade-legend {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin: -4px 0 12px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .grade-legend span {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .grade-legend i {
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+    }
+
+    .grade-a-pp { background: #064e3b; }
+    .grade-a-p { background: #0f766e; }
+    .grade-a { background: #22c55e; }
+    .grade-b-pp { background: #2563eb; }
+    .grade-b-p { background: #7c3aed; }
+    .grade-b { background: #f97316; }
+    .grade-c { background: #dc2626; }
     .grade-absent { background: #64748b; }
+
+    .score-cell.near-a {
+      background: #dcfce7;
+      color: #14532d;
+    }
+
+    .score-cell.near-bpp {
+      background: #fef3c7;
+      color: #78350f;
+    }
+
+    .score-cell.near-a small,
+    .score-cell.near-bpp small {
+      color: inherit;
+    }
+
+    .print-only {
+      display: none;
+    }
 
     .individual-report-sheet {
       width: min(820px, 100%);
       margin: 0 auto;
-      padding: 36px;
-      border: 1px solid var(--line);
-      border-radius: 22px;
+      padding: 0;
+      border: 0;
+      border-radius: 0;
       background: #ffffff;
     }
 
+    .individual-report-page {
+      display: grid;
+      height: 281mm;
+      grid-template-rows: 1fr 1fr;
+      gap: 0;
+      page-break-after: always;
+    }
+
+    .individual-report-page:last-child {
+      page-break-after: auto;
+    }
+
+    .individual-report-card {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 28mm;
+      gap: 8mm;
+      min-height: 138mm;
+      padding: 8mm 6mm;
+      border-bottom: 1px dashed #94a3b8;
+    }
+
+    .individual-report-page .individual-report-card:nth-child(2) {
+      border-bottom: 0;
+    }
+
+    .individual-report-main {
+      min-width: 0;
+    }
+
     .individual-report-header {
-      padding-bottom: 18px;
-      border-bottom: 3px solid var(--primary);
-      text-align: center;
+      padding-bottom: 5px;
+      border-bottom: 2px solid var(--primary);
+      text-align: left;
     }
 
     .individual-report-header h1 {
-      margin: 0 0 8px;
-      font-size: 28px;
+      margin: 0 0 3px;
+      font-size: 18px;
+    }
+
+    .individual-report-header p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.4;
     }
 
     .individual-student-info,
     .individual-summary-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 12px;
-      margin: 20px 0;
+      gap: 5px;
+      margin: 6px 0;
     }
 
     .individual-info-item {
-      padding: 12px;
+      padding: 5px 6px;
       border: 1px solid var(--line);
-      border-radius: 12px;
+      border-radius: 6px;
       background: #f8fafc;
+      font-size: 12px;
+      line-height: 1.35;
     }
 
     .individual-info-item span {
       display: block;
-      margin-bottom: 5px;
+      margin-bottom: 1px;
       color: var(--muted);
-      font-size: 12px;
+      font-size: 10px;
     }
 
     .individual-score-table {
       min-width: 0;
+      font-size: 11px;
+    }
+
+    .individual-score-table th,
+    .individual-score-table td {
+      padding: 5px 6px;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .individual-grade-distribution {
+      margin-top: 6px;
+    }
+
+    .individual-grade-distribution h3 {
+      margin: 0 0 4px;
+      font-size: 12px;
+    }
+
+    .individual-signature {
+      display: grid;
+      grid-template-rows: 1fr 30mm;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .signature-box {
+      padding: 6px;
+      border: 1px solid #94a3b8;
+      border-radius: 6px;
+      background: #ffffff;
     }
 
     .individual-report-note {
-      margin-top: 22px;
+      margin-top: 6px;
       color: var(--muted);
-      font-size: 12px;
+      font-size: 10px;
       text-align: center;
     }
 
     @media print {
+      @page {
+        size: A4 portrait;
+        margin: 8mm;
+      }
+
       body {
         background: #ffffff;
+        padding: 0;
       }
 
       .admin-sidebar,
       .app-header,
       .report-actions,
       .report-filter-row,
+      .report-intro,
+      .report-average-points,
+      #reportStatus,
+      #portalStatus,
       .admin-page:not([data-admin-page="reports"]) {
         display: none !important;
       }
@@ -940,6 +1067,72 @@
         padding: 0;
       }
 
+      .print-only {
+        display: block;
+      }
+
+      .report-summary {
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 6px;
+        margin: 0 0 8px;
+      }
+
+      .report-summary .summary-item {
+        padding: 6px 8px;
+        border-radius: 0;
+      }
+
+      .report-summary .summary-item strong {
+        display: inline;
+        margin-right: 6px;
+        font-size: 16px;
+      }
+
+      .analysis-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+        margin: 8px 0;
+      }
+
+      .analysis-card {
+        padding: 8px;
+        border-radius: 0;
+      }
+
+      .analysis-card h3 {
+        margin-bottom: 6px;
+        font-size: 12px;
+      }
+
+      .bar-chart {
+        gap: 6px;
+      }
+
+      .bar-row,
+      .distribution-row {
+        grid-template-columns: 36px minmax(0, 1fr) 32px;
+        gap: 5px;
+        font-size: 10px;
+      }
+
+      .distribution-row {
+        grid-template-columns: 36px minmax(0, 1fr);
+      }
+
+      .bar-track {
+        height: 12px;
+      }
+
+      .distribution-track {
+        min-height: 16px;
+        border-radius: 0;
+      }
+
+      .distribution-segment {
+        font-size: 9px;
+      }
+
       table {
         min-width: 0;
         font-size: 10px;
@@ -960,6 +1153,14 @@
         padding: 0;
         border: 0;
         border-radius: 0;
+      }
+
+      body.printing-individual .individual-report-sheet {
+        font-family: "Microsoft JhengHei", "Noto Sans TC", system-ui, sans-serif;
+      }
+
+      body.printing-individual table {
+        font-size: 10px;
       }
     }
 
@@ -1712,7 +1913,7 @@
 
     <section class="app-card admin-page" data-admin-page="reports" aria-label="成績查詢與列印">
       <h2 id="reportHeading">成績查詢與列印</h2>
-      <p class="hint">選擇考試與班級後，可檢視五科等級、百分制、積分及班級與年級排名。</p>
+      <p class="hint report-intro">選擇考試與班級後，可檢視五科等級、百分制、積分及班級與年級排名。</p>
       <div class="report-filter-row">
         <div class="form-group">
           <label for="reportExamSelect">考試</label>
@@ -1732,16 +1933,16 @@
       </div>
       <div class="report-filter-row" style="margin-top: 14px;">
         <div class="form-group">
-          <label for="reportStudentSelect">個人成績單學生</label>
+          <label for="reportStudentSelect">個人成績單範圍</label>
           <select id="reportStudentSelect"><option value="">請先查詢成績</option></select>
         </div>
-        <button class="secondary-button" type="button" id="printStudentReportButton">列印個人成績單</button>
+        <button class="secondary-button" type="button" id="printStudentReportButton">列印全年級個人成績單</button>
       </div>
 
       <div class="summary-grid report-summary">
         <div class="summary-item"><strong id="reportStudentCount">0</strong><span>學生人數</span></div>
         <div class="summary-item"><strong id="reportClassCount">0</strong><span>班級數</span></div>
-        <div class="summary-item"><strong id="reportAveragePoints">0</strong><span>平均總積分</span></div>
+        <div class="summary-item report-average-points"><strong id="reportAveragePoints">0</strong><span>平均總積分</span></div>
       </div>
 
       <div class="analysis-grid">
@@ -1900,16 +2101,16 @@
       </div>
       <div class="report-filter-row" style="margin-top: 14px;">
         <div class="form-group">
-          <label for="portalStudentSelect">個人成績單學生</label>
+          <label for="portalStudentSelect">個人成績單範圍</label>
           <select id="portalStudentSelect"><option value="">請先查詢成績</option></select>
         </div>
-        <button class="secondary-button" type="button" id="portalStudentPrintButton">列印個人成績單</button>
+        <button class="secondary-button" type="button" id="portalStudentPrintButton">列印目前可查看個人成績單</button>
       </div>
 
       <div class="summary-grid report-summary">
         <div class="summary-item"><strong id="portalStudentCount">0</strong><span>顯示學生</span></div>
         <div class="summary-item"><strong id="portalClassCount">0</strong><span>班級數</span></div>
-        <div class="summary-item"><strong id="portalAveragePoints">－</strong><span>平均總積分</span></div>
+        <div class="summary-item report-average-points"><strong id="portalAveragePoints">－</strong><span>平均總積分</span></div>
       </div>
 
       <div class="analysis-grid">
@@ -2158,6 +2359,7 @@
     let currentParsedImport = null;
     const STUDENT_SEAT_TEMPLATE_BASE64 = "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";
     let currentReportRows = [];
+    let currentReportAllRows = [];
     let currentScoreReportData = null;
     let currentReportExamName = "";
     let currentPortalRows = [];
@@ -2876,24 +3078,71 @@
       };
     }
 
-    function formatScoreCell(grade, percent) {
+    const reportSubjects = [
+      { key: "chinese", label: "國文", oneQuestionPercent: 100 / 42 },
+      { key: "english", label: "英文", oneQuestionPercent: 80 / 43 },
+      { key: "math", label: "數學", oneQuestionPercent: 3.4 },
+      { key: "science", label: "自然", oneQuestionPercent: 100 / 54 },
+      { key: "social", label: "社會", oneQuestionPercent: 100 / 63 }
+    ];
+
+    const gradeOrder = ["A++", "A+", "A", "B++", "B+", "B", "C"];
+    const gradeColorClass = {
+      "A++": "grade-a-pp",
+      "A+": "grade-a-p",
+      A: "grade-a",
+      "B++": "grade-b-pp",
+      "B+": "grade-b-p",
+      B: "grade-b",
+      C: "grade-c",
+      absent: "grade-absent"
+    };
+
+    function getThresholdPercent(subjectKey, grade) {
+      const row = gradeRows.find((item) => item.grade === grade);
+      if (!row || row[subjectKey] == null) {
+        return null;
+      }
+      if (subjectKey === "english" || subjectKey === "math") {
+        return Number(row[subjectKey]);
+      }
+      const subject = reportSubjects.find((item) => item.key === subjectKey);
+      return subject?.oneQuestionPercent ? Number(row[subjectKey]) * subject.oneQuestionPercent : null;
+    }
+
+    function getNearThresholdClass(subjectKey, grade, percent) {
+      if (percent == null || grade == null || grade === "absent") {
+        return "";
+      }
+      const value = Number(percent);
+      if (!Number.isFinite(value)) {
+        return "";
+      }
+      const subject = reportSubjects.find((item) => item.key === subjectKey);
+      const tolerance = subject?.oneQuestionPercent || 0;
+      const targetA = getThresholdPercent(subjectKey, "A");
+      const targetBpp = getThresholdPercent(subjectKey, "B++");
+      if (targetA != null && value < targetA && targetA - value <= tolerance + 0.01) {
+        return "near-a";
+      }
+      if (targetBpp != null && value < targetBpp && targetBpp - value <= tolerance + 0.01) {
+        return "near-bpp";
+      }
+      return "";
+    }
+
+    function formatScoreCell(subjectKey, grade, percent) {
       if (grade == null && percent == null) {
         return '<td class="score-cell"><strong>－</strong><small>－</small></td>';
       }
       const gradeText = grade === "absent" ? "缺考" : grade;
-      return `<td class="score-cell"><strong>${escapeHtml(gradeText || "缺考")}</strong><small>${percent == null ? "－" : escapeHtml(Number(percent).toFixed(2))}</small></td>`;
+      const nearClass = getNearThresholdClass(subjectKey, grade, percent);
+      const nearLabel = nearClass === "near-a" ? "差 1 題達 A" : nearClass === "near-bpp" ? "差 1 題達 B++" : "";
+      return `<td class="score-cell ${nearClass}" title="${escapeHtml(nearLabel)}"><strong>${escapeHtml(gradeText || "缺考")}</strong><small>${percent == null ? "－" : escapeHtml(Number(percent).toFixed(2))}</small></td>`;
     }
 
     function renderAnalysisCharts(rows, averageContainer, gradeContainer) {
-      const subjects = [
-        { key: "chinese", label: "國文" },
-        { key: "english", label: "英文" },
-        { key: "math", label: "數學" },
-        { key: "science", label: "自然" },
-        { key: "social", label: "社會" }
-      ];
-
-      const subjectStats = subjects.map((subject) => {
+      const subjectStats = reportSubjects.map((subject) => {
         const percentValues = rows
           .map((row) => row[`${subject.key}_percent`])
           .filter((value) => value != null && Number.isFinite(Number(value)))
@@ -2901,15 +3150,12 @@
         const grades = rows
           .map((row) => row[`${subject.key}_grade`])
           .filter((grade) => grade != null);
-        const distribution = { A: 0, B: 0, C: 0, absent: 0 };
+        const distribution = Object.fromEntries([...gradeOrder, "absent"].map((grade) => [grade, 0]));
 
         grades.forEach((grade) => {
-          if (String(grade).startsWith("A")) {
-            distribution.A += 1;
-          } else if (String(grade).startsWith("B")) {
-            distribution.B += 1;
-          } else if (grade === "C") {
-            distribution.C += 1;
+          const key = String(grade);
+          if (Object.prototype.hasOwnProperty.call(distribution, key)) {
+            distribution[key] += 1;
           } else {
             distribution.absent += 1;
           }
@@ -2941,78 +3187,133 @@
         : '<p class="setting-note">目前沒有可計算的百分制成績。</p>';
 
       gradeContainer.innerHTML = subjectStats.length
-        ? subjectStats.map((subject) => {
+        ? `
+          <div class="grade-legend">
+            ${gradeOrder.map((grade) => `<span><i class="${gradeColorClass[grade]}"></i>${grade}</span>`).join("")}
+          </div>
+          ${subjectStats.map((subject) => {
           const total = subject.gradeCount || 1;
-          const segments = [
-            ["A", subject.distribution.A, "grade-a"],
-            ["B", subject.distribution.B, "grade-b"],
-            ["C", subject.distribution.C, "grade-c"],
-            ["缺", subject.distribution.absent, "grade-absent"]
-          ].filter(([, count]) => count > 0);
+          const segments = gradeOrder
+            .map((grade) => [grade, subject.distribution[grade], gradeColorClass[grade]])
+            .filter(([, count]) => count > 0);
           return `
             <div class="distribution-row">
               <span>${subject.label}</span>
               <div class="distribution-track">
                 ${segments.map(([label, count, className]) => `
-                  <span class="distribution-segment ${className}" style="width: ${(count / total) * 100}%" title="${label}：${count} 人">${label} ${count}</span>
+                  <span class="distribution-segment ${className}" style="width: ${(count / total) * 100}%" title="${label}：${count} 人">${count}</span>
                 `).join("")}
               </div>
             </div>
           `;
-        }).join("")
+        }).join("")}
+        `
         : '<p class="setting-note">目前沒有可計算的等級資料。</p>';
     }
 
     function populateStudentReportSelect(selectElement, rows) {
       selectElement.innerHTML = rows.length
-        ? rows.map((row, index) => `<option value="${index}">${escapeHtml(row.class_code || "－")} ${escapeHtml(row.seat_no ?? "－")} 號｜${escapeHtml(row.student_name || row.student_no || "－")}</option>`).join("")
+        ? `<option value="all">本次考試全部學生，共 ${rows.length} 人</option>`
         : '<option value="">目前沒有學生資料</option>';
     }
 
-    function printIndividualReport(row, examName) {
-      if (!row) {
+    function buildGradeDistributionTable(rows) {
+      const header = gradeOrder.map((grade) => `<th>${grade}</th>`).join("");
+      const body = reportSubjects.map((subject) => {
+        const counts = Object.fromEntries(gradeOrder.map((grade) => [grade, 0]));
+        rows.forEach((row) => {
+          const grade = row[`${subject.key}_grade`];
+          if (Object.prototype.hasOwnProperty.call(counts, grade)) {
+            counts[grade] += 1;
+          }
+        });
+        return `
+          <tr>
+            <td>${subject.label}</td>
+            ${gradeOrder.map((grade) => `<td>${counts[grade] || ""}</td>`).join("")}
+          </tr>
+        `;
+      }).join("");
+      return `
+        <table class="individual-score-table">
+          <thead><tr><th>科目</th>${header}</tr></thead>
+          <tbody>${body}</tbody>
+        </table>
+      `;
+    }
+
+    function buildIndividualReportCard(row, examName, distributionHtml) {
+      const gradeCells = reportSubjects.map((subject) => {
+        const grade = row[`${subject.key}_grade`];
+        return `<td>${escapeHtml(grade === "absent" ? "缺考" : grade || "－")}</td>`;
+      }).join("");
+      const percentCells = reportSubjects.map((subject) => {
+        const percent = row[`${subject.key}_percent`];
+        return `<td>${percent == null ? "－" : escapeHtml(Number(percent).toFixed(2))}</td>`;
+      }).join("");
+
+      return `
+        <article class="individual-report-card">
+          <div class="individual-report-main">
+            <header class="individual-report-header">
+              <h1>麻豆國中模擬考個人成績單</h1>
+              <p>${escapeHtml(examName || "模擬考成績")}</p>
+            </header>
+            <div class="individual-student-info">
+              <div class="individual-info-item"><span>班級</span><strong>${escapeHtml(row.class_code || "－")}</strong></div>
+              <div class="individual-info-item"><span>座號</span><strong>${escapeHtml(row.seat_no ?? "－")}</strong></div>
+              <div class="individual-info-item"><span>姓名</span><strong>${escapeHtml(row.student_name || "－")}</strong></div>
+              <div class="individual-info-item"><span>學號</span><strong>${escapeHtml(row.student_no || "－")}</strong></div>
+            </div>
+            <table class="individual-score-table">
+              <thead>
+                <tr><th>項目</th>${reportSubjects.map((subject) => `<th>${subject.label}</th>`).join("")}</tr>
+              </thead>
+              <tbody>
+                <tr><td>等級</td>${gradeCells}</tr>
+                <tr><td>百分制</td>${percentCells}</tr>
+              </tbody>
+            </table>
+            <div class="individual-summary-grid">
+              <div class="individual-info-item"><span>總積分</span><strong>${escapeHtml(row.total_grade_points ?? "－")}</strong></div>
+              <div class="individual-info-item"><span>積分班排／校排</span><strong>${escapeHtml(row.class_grade_rank ?? "－")}／${escapeHtml(row.school_grade_rank ?? "－")}</strong></div>
+              <div class="individual-info-item"><span>百分制總分</span><strong>${escapeHtml(row.total_percent_score ?? "－")}</strong></div>
+              <div class="individual-info-item"><span>百分班排／校排</span><strong>${escapeHtml(row.class_percent_rank ?? "－")}／${escapeHtml(row.school_percent_rank ?? "－")}</strong></div>
+            </div>
+            <section class="individual-grade-distribution">
+              <h3>本次考試等級人數分布</h3>
+              ${distributionHtml}
+            </section>
+            <p class="individual-report-note">本成績單依考試當時的學生資料與換算規則產生。</p>
+          </div>
+          <aside class="individual-signature">
+            <div class="signature-box">家長意見</div>
+            <div class="signature-box">家長簽名</div>
+          </aside>
+        </article>
+      `;
+    }
+
+    function printIndividualReports(rows, examName) {
+      if (!Array.isArray(rows) || rows.length === 0) {
         return false;
       }
-
-      const subjects = [
-        { key: "chinese", label: "國文" },
-        { key: "english", label: "英文" },
-        { key: "math", label: "數學" },
-        { key: "science", label: "自然" },
-        { key: "social", label: "社會" }
-      ].filter((subject) => row[`${subject.key}_grade`] != null || row[`${subject.key}_percent`] != null);
-
-      individualReportTitle.textContent = "模擬考個人成績單";
-      individualReportExam.textContent = examName || "模擬考成績";
-      individualStudentInfo.innerHTML = `
-        <div class="individual-info-item"><span>班級</span><strong>${escapeHtml(row.class_code || "－")}</strong></div>
-        <div class="individual-info-item"><span>座號</span><strong>${escapeHtml(row.seat_no ?? "－")}</strong></div>
-        <div class="individual-info-item"><span>姓名</span><strong>${escapeHtml(row.student_name || "－")}</strong></div>
-        <div class="individual-info-item"><span>學號</span><strong>${escapeHtml(row.student_no || "－")}</strong></div>
-      `;
-      individualScoreBody.innerHTML = subjects.length
-        ? subjects.map((subject) => {
-          const grade = row[`${subject.key}_grade`];
-          const percent = row[`${subject.key}_percent`];
-          const points = row[`${subject.key}_points`];
-          return `
-            <tr>
-              <td>${subject.label}</td>
-              <td>${escapeHtml(grade === "absent" ? "缺考" : grade || "－")}</td>
-              <td>${percent == null ? "－" : escapeHtml(Number(percent).toFixed(2))}</td>
-              <td>${escapeHtml(points ?? "－")}</td>
-            </tr>
-          `;
-        }).join("")
-        : '<tr><td colspan="4">目前沒有可列印的科目成績。</td></tr>';
-      individualSummaryGrid.innerHTML = `
-        <div class="individual-info-item"><span>A／B 個數</span><strong>${escapeHtml(row.a_count ?? "－")}／${escapeHtml(row.b_count ?? "－")}</strong></div>
-        <div class="individual-info-item"><span>總積分</span><strong>${escapeHtml(row.total_grade_points ?? "－")}</strong></div>
-        <div class="individual-info-item"><span>積分班排／校排</span><strong>${escapeHtml(row.class_grade_rank ?? "－")}／${escapeHtml(row.school_grade_rank ?? "－")}</strong></div>
-        <div class="individual-info-item"><span>百分制總分</span><strong>${escapeHtml(row.total_percent_score ?? "－")}</strong></div>
-        <div class="individual-info-item"><span>百分班排／校排</span><strong>${escapeHtml(row.class_percent_rank ?? "－")}／${escapeHtml(row.school_percent_rank ?? "－")}</strong></div>
-      `;
-
+      const sortedRows = [...rows].sort((a, b) =>
+        String(a.class_code || "").localeCompare(String(b.class_code || ""), "zh-Hant")
+        || Number(a.seat_no || 0) - Number(b.seat_no || 0)
+        || String(a.student_no || "").localeCompare(String(b.student_no || ""))
+      );
+      const distributionHtml = buildGradeDistributionTable(sortedRows);
+      const pages = [];
+      for (let index = 0; index < sortedRows.length; index += 2) {
+        pages.push(`
+          <section class="individual-report-page">
+            ${buildIndividualReportCard(sortedRows[index], examName, distributionHtml)}
+            ${sortedRows[index + 1] ? buildIndividualReportCard(sortedRows[index + 1], examName, distributionHtml) : '<article class="individual-report-card"></article>'}
+          </section>
+        `);
+      }
+      individualReportSheet.innerHTML = pages.join("");
       individualReportSheet.classList.remove("hidden");
       document.body.classList.add("printing-individual");
       window.print();
@@ -3085,11 +3386,11 @@
             <td>${escapeHtml(row.class_code || "－")}</td>
             <td>${escapeHtml(row.seat_no ?? "－")}</td>
             <td>${escapeHtml(row.student_name || row.student_no || "－")}</td>
-            ${formatScoreCell(row.chinese_grade, row.chinese_percent)}
-            ${formatScoreCell(row.english_grade, row.english_percent)}
-            ${formatScoreCell(row.math_grade, row.math_percent)}
-            ${formatScoreCell(row.science_grade, row.science_percent)}
-            ${formatScoreCell(row.social_grade, row.social_percent)}
+            ${formatScoreCell("chinese", row.chinese_grade, row.chinese_percent)}
+            ${formatScoreCell("english", row.english_grade, row.english_percent)}
+            ${formatScoreCell("math", row.math_grade, row.math_percent)}
+            ${formatScoreCell("science", row.science_grade, row.science_percent)}
+            ${formatScoreCell("social", row.social_grade, row.social_percent)}
             <td>${escapeHtml(row.a_count ?? 0)}／${escapeHtml(row.b_count ?? 0)}</td>
             <td>${escapeHtml(row.total_grade_points ?? 0)}</td>
             <td>${escapeHtml(row.class_grade_rank ?? "－")}／${escapeHtml(row.school_grade_rank ?? "－")}</td>
@@ -3101,9 +3402,10 @@
 
       const selectedExam = exams.find((exam) => exam.id === reportExamSelect.value);
       currentReportRows = rows;
+      currentReportAllRows = sourceRows;
       const reportTitle = formatReportTitle(selectedExam, reportClassSelect.value);
       currentReportExamName = reportTitle || "模擬考成績";
-      populateStudentReportSelect(reportStudentSelect, rows);
+      populateStudentReportSelect(reportStudentSelect, sourceRows);
       reportHeading.textContent = selectedExam ? `${reportTitle}｜成績表` : "成績查詢與列印";
       publishExamButton.dataset.isPublished = String(Boolean(selectedExam?.is_published));
       publishExamButton.textContent = selectedExam?.is_published ? "取消發布" : "發布成績";
@@ -3258,11 +3560,11 @@
             <td>${escapeHtml(row.class_code || "－")}</td>
             <td>${escapeHtml(row.seat_no ?? "－")}</td>
             <td>${escapeHtml(row.student_name || row.student_no || "－")}</td>
-            ${formatScoreCell(row.chinese_grade, row.chinese_percent)}
-            ${formatScoreCell(row.english_grade, row.english_percent)}
-            ${formatScoreCell(row.math_grade, row.math_percent)}
-            ${formatScoreCell(row.science_grade, row.science_percent)}
-            ${formatScoreCell(row.social_grade, row.social_percent)}
+            ${formatScoreCell("chinese", row.chinese_grade, row.chinese_percent)}
+            ${formatScoreCell("english", row.english_grade, row.english_percent)}
+            ${formatScoreCell("math", row.math_grade, row.math_percent)}
+            ${formatScoreCell("science", row.science_grade, row.science_percent)}
+            ${formatScoreCell("social", row.social_grade, row.social_percent)}
             <td>${row.a_count == null ? "－" : `${escapeHtml(row.a_count)}／${escapeHtml(row.b_count ?? 0)}`}</td>
             <td>${escapeHtml(row.total_grade_points ?? "－")}</td>
             <td>${escapeHtml(row.class_grade_rank ?? "－")}／${escapeHtml(row.school_grade_rank ?? "－")}</td>
@@ -5070,9 +5372,8 @@
     });
 
     printStudentReportButton.addEventListener("click", () => {
-      const row = currentReportRows[Number(reportStudentSelect.value)];
-      if (!printIndividualReport(row, currentReportExamName)) {
-        reportStatus.textContent = "請先查詢並選擇要列印的學生。";
+      if (!printIndividualReports(currentReportAllRows, currentReportExamName)) {
+        reportStatus.textContent = "請先查詢成績，系統會列印同一年級同一次考試的所有學生。";
       }
     });
 
@@ -5143,9 +5444,8 @@
     });
 
     portalStudentPrintButton.addEventListener("click", () => {
-      const row = currentPortalRows[Number(portalStudentSelect.value)];
-      if (!printIndividualReport(row, currentPortalExamName)) {
-        portalStatus.textContent = "請先查詢並選擇要列印的學生。";
+      if (!printIndividualReports(currentPortalRows, currentPortalExamName)) {
+        portalStatus.textContent = "請先查詢成績，系統會列印目前可查看學生的個人成績單。";
       }
     });
 
