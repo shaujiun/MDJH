@@ -6,16 +6,20 @@
   <title>模擬考成績系統｜登入</title>
   <style>
     :root {
-      --primary: #2563eb;
-      --primary-dark: #1d4ed8;
-      --primary-light: #dbeafe;
-      --text: #172033;
-      --muted: #667085;
-      --line: #d9e2ef;
-      --danger: #dc2626;
-      --success: #15803d;
+      --primary: #0f766e;
+      --primary-dark: #0f4c3a;
+      --primary-light: #d8f3e8;
+      --accent: #b45309;
+      --accent-light: #fef3c7;
+      --surface: #f7faf7;
+      --panel: #ffffff;
+      --text: #1d2b24;
+      --muted: #66756d;
+      --line: #d8e2dc;
+      --danger: #b91c1c;
+      --success: #0f766e;
       --card: rgba(255, 255, 255, 0.92);
-      --shadow: 0 24px 70px rgba(15, 23, 42, 0.18);
+      --shadow: 0 18px 52px rgba(15, 23, 42, 0.14);
       font-family: "Microsoft JhengHei", "Noto Sans TC", system-ui, sans-serif;
     }
 
@@ -28,8 +32,9 @@
       margin: 0;
       color: var(--text);
       background:
-        radial-gradient(circle at top left, rgba(37, 99, 235, 0.24), transparent 34rem),
-        linear-gradient(135deg, #f8fbff 0%, #eef4ff 48%, #e0ecff 100%);
+        radial-gradient(circle at top left, rgba(180, 83, 9, 0.16), transparent 31rem),
+        radial-gradient(circle at bottom right, rgba(15, 118, 110, 0.14), transparent 34rem),
+        linear-gradient(135deg, #fbfaf5 0%, #eef6ef 52%, #e5f1ea 100%);
       display: grid;
       place-items: center;
       padding: 32px 18px;
@@ -51,7 +56,7 @@
       position: relative;
       padding: 56px;
       background:
-        linear-gradient(150deg, rgba(37, 99, 235, 0.95), rgba(30, 64, 175, 0.92)),
+        linear-gradient(150deg, rgba(15, 76, 58, 0.97), rgba(15, 118, 110, 0.92) 58%, rgba(180, 83, 9, 0.88)),
         url("data:image/svg+xml,%3Csvg width='160' height='160' viewBox='0 0 160 160' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='rgba(255,255,255,0.16)' stroke-width='2'%3E%3Cpath d='M20 40h120M20 80h120M20 120h120M40 20v120M80 20v120M120 20v120'/%3E%3C/g%3E%3C/svg%3E");
       color: #ffffff;
       display: flex;
@@ -68,6 +73,28 @@
       border: 1px solid rgba(255, 255, 255, 0.28);
       font-size: 14px;
       letter-spacing: 0.08em;
+    }
+
+    .school-brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .school-mark {
+      display: grid;
+      width: 56px;
+      height: 56px;
+      flex: 0 0 auto;
+      place-items: center;
+      border: 2px solid rgba(255, 255, 255, 0.72);
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.13);
+      color: #fff7ed;
+      font-size: 18px;
+      font-weight: 900;
+      letter-spacing: 0;
+      box-shadow: inset 0 0 0 6px rgba(255, 255, 255, 0.08);
     }
 
     .intro-panel h1 {
@@ -129,14 +156,16 @@
       display: block;
       margin-bottom: 8px;
       font-weight: 700;
+      color: #344054;
+      font-size: 14px;
     }
 
     input,
     select {
       width: 100%;
-      height: 50px;
+      height: 46px;
       border: 1px solid var(--line);
-      border-radius: 14px;
+      border-radius: 10px;
       padding: 0 15px;
       color: var(--text);
       background: #ffffff;
@@ -148,7 +177,7 @@
     input:focus,
     select:focus {
       border-color: var(--primary);
-      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.14);
+      box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.14);
     }
 
     .password-row {
@@ -231,7 +260,7 @@
       min-height: 48px;
       margin-top: 12px;
       border: 1px solid var(--line);
-      border-radius: 16px;
+      border-radius: 12px;
       color: var(--primary-dark);
       background: #ffffff;
       font: inherit;
@@ -243,14 +272,14 @@
       width: 100%;
       min-height: 52px;
       border: 0;
-      border-radius: 16px;
+      border-radius: 12px;
       background: var(--primary);
       color: #ffffff;
       font: inherit;
       font-weight: 800;
       letter-spacing: 0.04em;
       cursor: pointer;
-      box-shadow: 0 14px 24px rgba(37, 99, 235, 0.24);
+      box-shadow: 0 14px 24px rgba(15, 118, 110, 0.18);
       transition: transform 0.2s ease, background 0.2s ease;
     }
 
@@ -277,7 +306,7 @@
     .demo-account {
       margin-top: 30px;
       padding: 16px;
-      border-radius: 18px;
+      border-radius: 14px;
       background: #f8fafc;
       border: 1px solid var(--line);
       color: var(--muted);
@@ -294,35 +323,34 @@
     }
 
     .admin-app {
-      width: min(1380px, 100%);
+      width: min(1440px, 100%);
     }
 
     .portal-app {
-      width: min(1380px, 100%);
+      width: min(1280px, 100%);
       display: grid;
       gap: 22px;
     }
 
     .admin-layout {
       display: grid;
-      grid-template-columns: 230px minmax(0, 1fr);
-      gap: 24px;
+      grid-template-columns: 216px minmax(0, 1fr);
+      gap: 18px;
       align-items: start;
     }
 
     .admin-sidebar {
       position: sticky;
       top: 24px;
-      padding: 22px 16px;
-      border: 1px solid rgba(255, 255, 255, 0.72);
-      border-radius: 26px;
-      background: var(--card);
-      box-shadow: 0 18px 52px rgba(15, 23, 42, 0.12);
-      backdrop-filter: blur(18px);
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.96);
+      box-shadow: 0 14px 34px rgba(15, 23, 42, 0.1);
     }
 
     .admin-sidebar-title {
-      margin: 0 8px 16px;
+      margin: 0 8px 12px;
       color: var(--muted);
       font-size: 13px;
       font-weight: 800;
@@ -331,14 +359,14 @@
 
     .admin-nav {
       display: grid;
-      gap: 8px;
+      gap: 6px;
     }
 
     .admin-nav-button {
       width: 100%;
       border: 0;
-      border-radius: 14px;
-      padding: 13px 14px;
+      border-radius: 10px;
+      padding: 11px 12px;
       color: var(--text);
       background: transparent;
       font: inherit;
@@ -348,19 +376,19 @@
     }
 
     .admin-nav-button:hover {
-      background: #f1f5f9;
+      background: #edf7f2;
     }
 
     .admin-nav-button.active {
       color: #ffffff;
-      background: var(--primary);
-      box-shadow: 0 10px 20px rgba(37, 99, 235, 0.2);
+      background: var(--primary-dark);
+      box-shadow: none;
     }
 
     .admin-main {
       min-width: 0;
       display: grid;
-      gap: 22px;
+      gap: 18px;
     }
 
     .admin-page {
@@ -377,15 +405,14 @@
 
     .app-header,
     .app-card {
-      background: var(--card);
-      border: 1px solid rgba(255, 255, 255, 0.72);
-      border-radius: 26px;
-      box-shadow: 0 18px 52px rgba(15, 23, 42, 0.12);
-      backdrop-filter: blur(18px);
+      background: rgba(255, 255, 255, 0.96);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
     }
 
     .app-header {
-      padding: 28px 32px;
+      padding: 22px 26px;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -393,8 +420,8 @@
     }
 
     .app-header h1 {
-      margin: 0 0 8px;
-      font-size: clamp(26px, 4vw, 38px);
+      margin: 10px 0 6px;
+      font-size: clamp(24px, 3vw, 34px);
     }
 
     .app-header p {
@@ -403,10 +430,17 @@
       line-height: 1.7;
     }
 
+    .app-header .system-badge {
+      background: #ecfdf5;
+      border-color: #99f6e4;
+      color: var(--accent);
+      letter-spacing: 0.04em;
+    }
+
     .logout-button,
     .secondary-button {
       border: 1px solid var(--line);
-      border-radius: 14px;
+      border-radius: 10px;
       background: #ffffff;
       color: var(--primary-dark);
       padding: 11px 16px;
@@ -415,25 +449,45 @@
       cursor: pointer;
     }
 
+    .logout-button:hover,
+    .secondary-button:hover {
+      background: #f8fafc;
+      border-color: #b8c7dc;
+    }
+
+    .primary-action:hover {
+      background: var(--primary-dark);
+    }
+
     .app-grid {
-      display: grid;
       grid-template-columns: 0.95fr 1.05fr;
-      gap: 22px;
+      gap: 18px;
     }
 
     .app-card {
-      padding: 28px;
+      padding: 24px;
     }
 
     .app-card h2 {
-      margin: 0 0 18px;
-      font-size: 24px;
+      margin: 0 0 16px;
+      font-size: 22px;
+      line-height: 1.35;
+    }
+
+    .app-card h3 {
+      margin: 0 0 14px;
+      font-size: 18px;
+      line-height: 1.4;
+    }
+
+    .admin-page > .app-card + .app-card {
+      margin-top: 18px !important;
     }
 
     .form-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 16px;
+      gap: 14px;
     }
 
     .form-grid .wide {
@@ -441,10 +495,11 @@
     }
 
     .file-drop {
-      border: 2px dashed #b8c7dc;
-      border-radius: 20px;
-      background: #f8fbff;
-      padding: 22px;
+      margin-top: 18px;
+      border: 1px dashed #9fb4cf;
+      border-radius: 14px;
+      background: var(--surface);
+      padding: 18px;
       text-align: center;
       color: var(--muted);
     }
@@ -458,14 +513,14 @@
 
     .action-row {
       display: flex;
-      gap: 12px;
+      gap: 10px;
       flex-wrap: wrap;
-      margin-top: 20px;
+      margin-top: 16px;
     }
 
     .primary-action {
       border: 0;
-      border-radius: 14px;
+      border-radius: 10px;
       background: var(--primary);
       color: #ffffff;
       padding: 12px 18px;
@@ -484,14 +539,14 @@
     .summary-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-      margin-bottom: 18px;
+      gap: 10px;
+      margin-bottom: 16px;
     }
 
     .summary-item {
-      padding: 16px;
-      border-radius: 18px;
-      background: #f8fafc;
+      padding: 14px;
+      border-radius: 12px;
+      background: var(--surface);
       border: 1px solid var(--line);
     }
 
@@ -509,7 +564,8 @@
     .preview-table-wrap {
       overflow-x: auto;
       border: 1px solid var(--line);
-      border-radius: 18px;
+      border-radius: 12px;
+      background: #ffffff;
     }
 
     table {
@@ -528,7 +584,7 @@
     }
 
     th {
-      background: #eff6ff;
+      background: #eef7f0;
       color: var(--primary-dark);
       font-size: 14px;
     }
@@ -589,13 +645,13 @@
     .settings-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 22px;
+      gap: 18px;
     }
 
     .mini-table-wrap {
       overflow-x: auto;
       border: 1px solid var(--line);
-      border-radius: 16px;
+      border-radius: 12px;
       margin-top: 12px;
     }
 
@@ -611,15 +667,11 @@
     }
 
     .manual-score-panel {
-      margin-top: 22px;
-      padding: 18px;
+      margin-top: 18px;
+      padding: 16px;
       border: 1px solid var(--line);
-      border-radius: 18px;
-      background: #f8fbff;
-    }
-
-    .manual-score-panel h3 {
-      margin: 0 0 8px;
+      border-radius: 14px;
+      background: var(--surface);
     }
 
     .manual-score-panel .form-group {
@@ -629,10 +681,10 @@
     .math-exam-context {
       margin: 0 0 16px;
       padding: 14px 16px;
-      border: 1px solid #bfdbfe;
-      border-radius: 16px;
-      background: #eff6ff;
-      color: #1e3a8a;
+      border: 1px solid #b7dfd2;
+      border-radius: 12px;
+      background: #edf8f4;
+      color: var(--primary-dark);
       line-height: 1.7;
       font-weight: 700;
     }
@@ -663,14 +715,19 @@
       font-size: 14px;
     }
 
+    .hint {
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
     .connection-card {
-      padding: 22px 28px;
+      padding: 24px;
     }
 
     .connection-row {
       display: grid;
       grid-template-columns: 1.1fr 1.1fr 1.1fr auto;
-      gap: 14px;
+      gap: 12px;
       align-items: end;
     }
 
@@ -698,7 +755,7 @@
     .report-filter-row {
       display: grid;
       grid-template-columns: 1.5fr 0.8fr auto auto;
-      gap: 14px;
+      gap: 12px;
       align-items: end;
     }
 
@@ -719,15 +776,15 @@
     .analysis-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 18px;
-      margin: 22px 0;
+      gap: 16px;
+      margin: 18px 0;
     }
 
     .analysis-card {
-      padding: 20px;
+      padding: 18px;
       border: 1px solid var(--line);
-      border-radius: 18px;
-      background: #f8fbff;
+      border-radius: 14px;
+      background: var(--surface);
     }
 
     .analysis-card h3 {
@@ -765,7 +822,7 @@
       height: 100%;
       min-width: 2px;
       border-radius: inherit;
-      background: linear-gradient(90deg, #2563eb, #38bdf8);
+      background: linear-gradient(90deg, var(--primary-dark), var(--primary), #d97706);
     }
 
     .distribution-track {
@@ -785,8 +842,8 @@
       white-space: nowrap;
     }
 
-    .grade-a { background: #2563eb; }
-    .grade-b { background: #0f9f6e; }
+    .grade-a { background: var(--primary-dark); }
+    .grade-b { background: var(--primary); }
     .grade-c { background: #f59e0b; }
     .grade-absent { background: #64748b; }
 
@@ -978,7 +1035,10 @@
   <main class="login-shell">
     <section class="intro-panel" aria-label="系統介紹">
       <div>
-        <div class="system-badge">模擬考成績系統</div>
+        <div class="school-brand">
+          <div class="school-mark" aria-hidden="true">麻中</div>
+          <div class="system-badge">麻豆國中｜模擬考成績系統</div>
+        </div>
         <h1>成績轉換與列印管理平台</h1>
         <p>
           提供模擬考成績換算、學生資料查詢、成績單列印與班級報表整理，
