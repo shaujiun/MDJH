@@ -1370,11 +1370,6 @@
         <div class="message" id="updatePasswordMessage" role="status" aria-live="polite"></div>
       </form>
 
-      <div class="demo-account" id="demoAccount">
-        <strong>示範管理員：</strong> admin01／123456<br>
-        <strong>示範教師：</strong> teacher01／123456<br>
-        正式使用前，建議改成連接 Supabase 或學校內部帳號系統。
-      </div>
     </section>
   </main>
 
@@ -4964,7 +4959,7 @@
       const config = getSupabaseConfig();
 
       if (!config.url || !config.anonKey) {
-        throw new Error("尚未設定 Supabase URL 與 anon key。可先用示範管理員登入後設定。");
+        throw new Error("尚未設定 Supabase URL 與 anon key。請先到系統連線頁完成設定。");
       }
 
       const response = await fetch(`${config.url}/auth/v1/token?grant_type=password`, {
