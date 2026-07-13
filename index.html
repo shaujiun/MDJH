@@ -827,53 +827,35 @@
       background: linear-gradient(90deg, var(--primary-dark), var(--primary), #d97706);
     }
 
-    .distribution-track {
-      display: flex;
-      min-height: 28px;
+    .grade-distribution-table {
+      width: 100%;
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      border-spacing: 0;
+      border-collapse: separate;
       overflow: hidden;
-      border-radius: 9px;
-      background: #e2e8f0;
+      background: #ffffff;
+      font-size: 13px;
     }
 
-    .distribution-segment {
-      display: grid;
-      min-width: 0;
-      place-items: center;
-      color: #ffffff;
-      font-size: 11px;
+    .grade-distribution-table th,
+    .grade-distribution-table td {
+      padding: 7px 6px;
+      text-align: center;
       white-space: nowrap;
     }
 
-    .grade-legend {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin: -4px 0 12px;
-      color: var(--muted);
-      font-size: 12px;
+    .grade-distribution-table th:first-child,
+    .grade-distribution-table td:first-child {
+      color: var(--primary-dark);
+      font-weight: 900;
+      text-align: left;
+    }
+
+    .grade-distribution-table tbody td:not(:first-child) {
       font-weight: 800;
     }
-
-    .grade-legend span {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-    }
-
-    .grade-legend i {
-      width: 12px;
-      height: 12px;
-      border-radius: 3px;
-    }
-
-    .grade-a-pp { background: #0f4c3a; }
-    .grade-a-p { background: #0f766e; }
-    .grade-a { background: #99f6e4; color: #134e4a; }
-    .grade-b-pp { background: #92400e; }
-    .grade-b-p { background: #b45309; }
-    .grade-b { background: #fde68a; color: #78350f; }
-    .grade-c { background: #94a3a0; color: #0f2f2a; }
-    .grade-absent { background: #64748b; }
 
     .score-cell.near-a {
       background: #dcfce7;
@@ -1130,13 +1112,13 @@
         height: 12px;
       }
 
-      .distribution-track {
-        min-height: 16px;
-        border-radius: 8px;
+      .grade-distribution-table {
+        font-size: 10px;
       }
 
-      .distribution-segment {
-        font-size: 9px;
+      .grade-distribution-table th,
+      .grade-distribution-table td {
+        padding: 4px 5px;
       }
 
       table {
@@ -3117,17 +3099,6 @@
     ];
 
     const gradeOrder = ["A++", "A+", "A", "B++", "B+", "B", "C"];
-    const gradeColorClass = {
-      "A++": "grade-a-pp",
-      "A+": "grade-a-p",
-      A: "grade-a",
-      "B++": "grade-b-pp",
-      "B+": "grade-b-p",
-      B: "grade-b",
-      C: "grade-c",
-      absent: "grade-absent"
-    };
-
     function getThresholdPercent(subjectKey, grade) {
       const row = gradeRows.find((item) => item.grade === grade);
       if (!row || row[subjectKey] == null) {
@@ -3218,25 +3189,19 @@
 
       gradeContainer.innerHTML = subjectStats.length
         ? `
-          <div class="grade-legend">
-            ${gradeOrder.map((grade) => `<span><i class="${gradeColorClass[grade]}"></i>${grade}</span>`).join("")}
-          </div>
-          ${subjectStats.map((subject) => {
-          const total = subject.gradeCount || 1;
-          const segments = gradeOrder
-            .map((grade) => [grade, subject.distribution[grade], gradeColorClass[grade]])
-            .filter(([, count]) => count > 0);
-          return `
-            <div class="distribution-row">
-              <span>${subject.label}</span>
-              <div class="distribution-track">
-                ${segments.map(([label, count, className]) => `
-                  <span class="distribution-segment ${className}" style="width: ${(count / total) * 100}%" title="${label}：${count} 人">${count}</span>
-                `).join("")}
-              </div>
-            </div>
-          `;
-        }).join("")}
+          <table class="grade-distribution-table">
+            <thead>
+              <tr><th>科目</th>${gradeOrder.map((grade) => `<th>${grade}</th>`).join("")}</tr>
+            </thead>
+            <tbody>
+              ${subjectStats.map((subject) => `
+                <tr>
+                  <td>${subject.label}</td>
+                  ${gradeOrder.map((grade) => `<td>${subject.distribution[grade] || ""}</td>`).join("")}
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
         `
         : '<p class="setting-note">目前沒有可計算的等級資料。</p>';
     }
