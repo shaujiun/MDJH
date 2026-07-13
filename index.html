@@ -866,12 +866,12 @@
       border-radius: 3px;
     }
 
-    .grade-a-pp { background: #064e3b; }
-    .grade-a-p { background: #0f766e; }
-    .grade-a { background: #22c55e; }
-    .grade-b-pp { background: #2563eb; }
-    .grade-b-p { background: #7c3aed; }
-    .grade-b { background: #f97316; }
+    .grade-a-pp { background: #14532d; }
+    .grade-a-p { background: #16a34a; }
+    .grade-a { background: #86efac; color: #14532d; }
+    .grade-b-pp { background: #1d4ed8; }
+    .grade-b-p { background: #60a5fa; color: #0f172a; }
+    .grade-b { background: #bfdbfe; color: #1e3a8a; }
     .grade-c { background: #dc2626; }
     .grade-absent { background: #64748b; }
 
@@ -976,6 +976,11 @@
 
     .individual-score-table {
       min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      border-spacing: 0;
+      border-collapse: separate;
+      overflow: hidden;
       font-size: 11px;
     }
 
@@ -1073,14 +1078,14 @@
 
       .report-summary {
         display: grid !important;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 6px;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 6px !important;
         margin: 0 0 8px;
       }
 
       .report-summary .summary-item {
         padding: 6px 8px;
-        border-radius: 0;
+        border-radius: 8px;
       }
 
       .report-summary .summary-item strong {
@@ -1090,14 +1095,15 @@
       }
 
       .analysis-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 8px;
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 8px !important;
         margin: 8px 0;
       }
 
       .analysis-card {
         padding: 8px;
-        border-radius: 0;
+        border-radius: 8px;
       }
 
       .analysis-card h3 {
@@ -1126,7 +1132,7 @@
 
       .distribution-track {
         min-height: 16px;
-        border-radius: 0;
+        border-radius: 8px;
       }
 
       .distribution-segment {
@@ -1152,7 +1158,7 @@
         width: 100%;
         padding: 0;
         border: 0;
-        border-radius: 0;
+        border-radius: 8px;
       }
 
       body.printing-individual .individual-report-sheet {
@@ -1228,6 +1234,30 @@
       .form-options {
         align-items: flex-start;
         flex-direction: column;
+      }
+    }
+
+    @media print {
+      body.printing-admin-report .report-summary,
+      body.printing-portal-report .report-summary {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+      }
+
+      body.printing-admin-report .analysis-grid,
+      body.printing-portal-report .analysis-grid {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+      }
+
+      body.printing-admin-report .report-summary .summary-item,
+      body.printing-portal-report .report-summary .summary-item,
+      body.printing-admin-report .analysis-card,
+      body.printing-portal-report .analysis-card,
+      body.printing-individual .individual-score-table,
+      body.printing-individual .individual-info-item,
+      body.printing-individual .signature-box {
+        border-radius: 8px !important;
       }
     }
   </style>
@@ -3218,25 +3248,22 @@
     }
 
     function buildGradeDistributionTable(rows) {
-      const header = gradeOrder.map((grade) => `<th>${grade}</th>`).join("");
-      const body = reportSubjects.map((subject) => {
-        const counts = Object.fromEntries(gradeOrder.map((grade) => [grade, 0]));
-        rows.forEach((row) => {
-          const grade = row[`${subject.key}_grade`];
-          if (Object.prototype.hasOwnProperty.call(counts, grade)) {
-            counts[grade] += 1;
-          }
-        });
+      const header = reportSubjects.map((subject) => `<th>${subject.label}</th>`).join("");
+      const body = gradeOrder.map((grade) => {
+        const cells = reportSubjects.map((subject) => {
+          const count = rows.reduce((total, row) => total + (row[`${subject.key}_grade`] === grade ? 1 : 0), 0);
+          return `<td>${count || ""}</td>`;
+        }).join("");
         return `
           <tr>
-            <td>${subject.label}</td>
-            ${gradeOrder.map((grade) => `<td>${counts[grade] || ""}</td>`).join("")}
+            <td>${grade}</td>
+            ${cells}
           </tr>
         `;
       }).join("");
       return `
-        <table class="individual-score-table">
-          <thead><tr><th>科目</th>${header}</tr></thead>
+        <table class="individual-score-table individual-distribution-table">
+          <thead><tr><th>等級</th>${header}</tr></thead>
           <tbody>${body}</tbody>
         </table>
       `;
