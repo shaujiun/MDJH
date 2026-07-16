@@ -56,6 +56,7 @@
 
     .intro-panel {
       position: relative;
+      min-width: 0;
       padding: 56px;
       background:
         linear-gradient(150deg, rgba(15, 76, 58, 0.97), rgba(15, 118, 110, 0.92) 58%, rgba(180, 83, 9, 0.88)),
@@ -83,20 +84,13 @@
       gap: 14px;
     }
 
-    .school-mark {
-      display: grid;
-      width: 56px;
-      height: 56px;
+    .school-emblem {
+      display: block;
+      width: 96px;
+      height: 76px;
       flex: 0 0 auto;
-      place-items: center;
-      border: 2px solid rgba(255, 255, 255, 0.72);
-      border-radius: 50%;
-      background: rgba(255, 255, 255, 0.13);
-      color: #fff7ed;
-      font-size: 18px;
-      font-weight: 900;
-      letter-spacing: 0;
-      box-shadow: inset 0 0 0 6px rgba(255, 255, 255, 0.08);
+      object-fit: contain;
+      filter: drop-shadow(0 7px 14px rgba(0, 0, 0, 0.24));
     }
 
     .intro-panel h1 {
@@ -133,6 +127,7 @@
     }
 
     .login-panel {
+      min-width: 0;
       padding: 56px;
       display: flex;
       flex-direction: column;
@@ -1198,6 +1193,23 @@
         padding: 36px 24px;
       }
 
+      .school-brand {
+        flex-wrap: wrap;
+      }
+
+      .school-emblem {
+        width: 86px;
+        height: 68px;
+      }
+
+      .system-badge {
+        max-width: 100%;
+      }
+
+      .intro-panel h1 {
+        overflow-wrap: anywhere;
+      }
+
       .summary-grid,
       .form-grid,
       .settings-grid,
@@ -1213,6 +1225,41 @@
     }
 
     @media (max-width: 520px) {
+      body {
+        padding: 0;
+        overflow-x: hidden;
+      }
+
+      .login-shell {
+        width: 100%;
+        border-radius: 0;
+      }
+
+      .intro-panel,
+      .login-panel {
+        padding: 32px 24px;
+      }
+
+      .school-brand {
+        gap: 10px;
+      }
+
+      .system-badge {
+        font-size: 13px;
+        letter-spacing: 0;
+        white-space: normal;
+      }
+
+      .intro-panel h1 {
+        font-size: 32px;
+        line-height: 1.22;
+        word-break: break-all;
+      }
+
+      .intro-panel p {
+        font-size: 16px;
+      }
+
       .form-options {
         align-items: flex-start;
         flex-direction: column;
@@ -1249,7 +1296,7 @@
     <section class="intro-panel" aria-label="系統介紹">
       <div>
         <div class="school-brand">
-          <div class="school-mark" aria-hidden="true">麻中</div>
+          <img class="school-emblem" src="assets/mdjh-emblem.svg" alt="麻豆國中校徽">
           <div class="system-badge">麻豆國中｜模擬考成績系統</div>
         </div>
         <h1>成績轉換與列印管理平台</h1>
