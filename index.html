@@ -2402,6 +2402,11 @@
     const runDeployCheckButton = document.querySelector("#runDeployCheckButton");
     const deployCheckBody = document.querySelector("#deployCheckBody");
     const deployCheckStatus = document.querySelector("#deployCheckStatus");
+    const defaultSupabaseConfig = {
+      url: "https://ksczjwtdvvmdrpzaggfo.supabase.co",
+      anonKey: "sb_publishable_6bUZRrxIJHLVe0gUE6u07w_-7tz9zYs",
+      liveRpc: true
+    };
     const newRuleYear = document.querySelector("#newRuleYear");
     const newRuleGrade = document.querySelector("#newRuleGrade");
     const newRuleName = document.querySelector("#newRuleName");
@@ -4815,11 +4820,18 @@
       return `匯入失敗：${message}`;
     }
 
+    function normalizeSupabaseUrl(value) {
+      return String(value || "")
+        .trim()
+        .replace(/\/rest\/v1\/?$/i, "")
+        .replace(/\/$/, "");
+    }
+
     function getSupabaseConfig() {
       return {
         enabled: enableLiveRpc.checked,
-        url: supabaseUrl.value.trim().replace(/\/$/, ""),
-        anonKey: supabaseAnonKey.value.trim(),
+        url: normalizeSupabaseUrl(supabaseUrl.value || defaultSupabaseConfig.url),
+        anonKey: supabaseAnonKey.value.trim() || defaultSupabaseConfig.anonKey,
         accessToken: supabaseAccessToken.value.trim()
       };
     }
@@ -4827,18 +4839,22 @@
     function loadSavedSupabaseConfig() {
       try {
         const saved = JSON.parse(localStorage.getItem("mockExamSupabaseConfig") || "{}");
-        supabaseUrl.value = saved.url || "";
-        supabaseAnonKey.value = saved.anonKey || "";
-        enableLiveRpc.checked = Boolean(saved.liveRpc);
-        useSupabaseAuth.checked = Boolean(saved.url && saved.anonKey);
+        supabaseUrl.value = normalizeSupabaseUrl(saved.url || defaultSupabaseConfig.url);
+        supabaseAnonKey.value = saved.anonKey || defaultSupabaseConfig.anonKey;
+        enableLiveRpc.checked = saved.liveRpc == null ? defaultSupabaseConfig.liveRpc : Boolean(saved.liveRpc);
+        useSupabaseAuth.checked = Boolean(supabaseUrl.value && supabaseAnonKey.value);
       } catch {
         localStorage.removeItem("mockExamSupabaseConfig");
+        supabaseUrl.value = defaultSupabaseConfig.url;
+        supabaseAnonKey.value = defaultSupabaseConfig.anonKey;
+        enableLiveRpc.checked = defaultSupabaseConfig.liveRpc;
+        useSupabaseAuth.checked = true;
       }
     }
 
     function saveSupabaseConfig() {
-      const url = supabaseUrl.value.trim().replace(/\/$/, "");
-      const anonKey = supabaseAnonKey.value.trim();
+      const url = normalizeSupabaseUrl(supabaseUrl.value || defaultSupabaseConfig.url);
+      const anonKey = supabaseAnonKey.value.trim() || defaultSupabaseConfig.anonKey;
 
       if (!url || !anonKey) {
         throw new Error("請填寫 Supabase URL 與 anon key。");
