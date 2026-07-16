@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 440" role="img" aria-labelledby="title desc">
+  <title id="title">麻豆國中校徽</title>
+  <desc id="desc">綠色倒三角形校徽，上方白字中國豆麻，中間紅白果實，下方藍色枝葉與白色波紋。</desc>
+  <defs>
+    <filter id="softShadow" x="-8%" y="-8%" width="116%" height="116%">
+      <feDropShadow dx="0" dy="8" stdDeviation="7" flood-color="#022c22" flood-opacity="0.24"/>
+    </filter>
+  </defs>
+  <rect width="560" height="440" fill="none"/>
+  <g filter="url(#softShadow)">
+    <path d="M24 16h512L280 424Z" fill="#ffffff"/>
+    <path d="M45 28h470L280 402Z" fill="#07823e"/>
+    <path d="M24 16h512L280 424Z" fill="none" stroke="#0b0f0d" stroke-width="2"/>
+    <path d="M45 28h470L280 402Z" fill="none" stroke="#ffffff" stroke-width="3"/>
+  </g>
+  <g fill="#ffffff" font-family="DFKai-SB, BiauKai, KaiTi, 'Microsoft JhengHei', serif" font-size="72" font-weight="800">
+    <text x="114" y="92">中</text>
+    <text x="208" y="92">國</text>
+    <text x="316" y="92">豆</text>
+    <text x="411" y="92">麻</text>
+  </g>
+  <g stroke="#e22a25" stroke-width="7">
+    <circle cx="213" cy="153" r="31" fill="#ffffff"/>
+    <circle cx="255" cy="141" r="35" fill="#ffffff"/>
+    <circle cx="300" cy="137" r="36" fill="#ffffff"/>
+    <circle cx="344" cy="154" r="32" fill="#ffffff"/>
+  </g>
+  <g fill="none" stroke="#42aee8" stroke-width="8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M171 204c28 68 184 68 218 0"/>
+    <path d="M188 215l-19-20M205 228l-28-9M224 239l-32 2M246 247l-30 12M272 251l-24 21"/>
+    <path d="M372 215l19-20M354 228l28-9M335 239l32 2M314 247l30 12M288 251l24 21"/>
+    <path d="M176 231l-21 3M199 249l-19 12M225 262l-12 20M253 269l-5 23M280 271v23"/>
+    <path d="M384 231l21 3M361 249l19 12M335 262l12 20M307 269l5 23"/>
+  </g>
+  <path d="M219 331c23 8 38-3 60-3 22 0 35 11 62 3" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round"/>
+</svg>
