@@ -1315,7 +1315,7 @@
 
     <section class="login-panel" aria-label="登入表單">
       <h2 id="authPanelTitle">登入系統</h2>
-      <p class="hint" id="authPanelHint">請使用學校提供的帳號登入。此頁目前是前端示範，可再串接正式資料庫。</p>
+      <p class="hint" id="authPanelHint">請使用學校提供的 Email 帳號登入。管理員完成身分綁定後，即可使用正式資料庫功能。</p>
 
       <form id="loginForm" novalidate>
         <div class="form-group">
@@ -1446,7 +1446,7 @@
 
     <section class="app-card connection-card admin-page" data-admin-page="connection" aria-label="Supabase 連線設定">
       <h2>Supabase 連線設定</h2>
-      <p class="hint">目前預設為示範模式。未來建立 Supabase 專案並登入後，可填入設定再勾選「正式送出 RPC」。</p>
+      <p class="hint">目前已內建 Supabase 連線設定。管理員登入後，可確認「正式送出 RPC」已勾選，再執行匯入、名冊與換算設定。</p>
       <div class="connection-row">
         <div class="form-group">
           <label for="supabaseUrl">Supabase URL</label>
@@ -2039,7 +2039,7 @@
 
     <section class="app-card admin-page" data-admin-page="rules" aria-label="標準與積分設定">
       <h2>標準與積分設定</h2>
-      <p class="hint">管理員可先建立或調整版本，再於匯入模擬考時選用。正式版會寫入 `conversion_rule_sets`、`conversion_rules`、`point_rule_sets` 與 `grade_points`。</p>
+      <p class="hint">管理員可先建立或調整版本，再於匯入模擬考時選用。儲存時會寫入 Supabase 的 conversion_rule_sets、conversion_rules、point_rule_sets 與 grade_points。</p>
 
       <div class="settings-grid">
         <form id="ruleEditorForm" novalidate>
@@ -2076,14 +2076,71 @@
                   <th>社會題數</th>
                 </tr>
               </thead>
-              <tbody id="ruleEditorBody"></tbody>
+              <tbody id="ruleEditorBody">
+                <tr>
+                  <td>A++</td>
+                  <td><input type="number" step="0.01" data-rule-grade="A++" data-rule-field="chinese" value="40"></td>
+                  <td><input type="number" step="0.01" data-rule-grade="A++" data-rule-field="english" value="98.14"></td>
+                  <td><input type="number" step="0.01" data-rule-grade="A++" data-rule-field="math" value="93.2"></td>
+                  <td><input type="number" step="0.01" data-rule-grade="A++" data-rule-field="science" value="48"></td>
+                  <td><input type="number" step="0.01" data-rule-grade="A++" data-rule-field="social" value="52"></td>
+                </tr>
+                <tr>
+                  <td>A+</td>
+                  <td><input type="number" step="0.01" data-rule-grade="A+" data-rule-field="chinese" value="39"></td>
+                  <td><input type="number" step="0.01" data-rule-grade="A+" data-rule-field="english" value="96.23"></td>
+                  <td><input type="number" step="0.01" data-rule-grade="A+" data-rule-field="math" value="86.4"></td>
+                  <td><input type="number" step="0.01" data-rule-grade="A+" data-rule-field="science" value="47"></td>
+                  <td><input type="number" step="0.01" data-rule-grade="A+" data-rule-field="social" value="50"></td>
+                </tr>
+                <tr>
+                  <td>A</td>
+                  <td><input type="number" step="0.01" data-rule-grade="A" data-rule-field="chinese" value="37"></td>
+                  <td><input type="number" step="0.01" data-rule-grade="A" data-rule-field="english" value="90.7"></td>
+                  <td><input type="number" step="0.01" data-rule-grade="A" data-rule-field="math" value="76.4"></td>
+                  <td><input type="number" step="0.01" data-rule-grade="A" data-rule-field="science" value="44"></td>
+                  <td><input type="number" step="0.01" data-rule-grade="A" data-rule-field="social" value="48"></td>
+                </tr>
+                <tr>
+                  <td>B++</td>
+                  <td><input type="number" step="0.01" data-rule-grade="B++" data-rule-field="chinese" value="33"></td>
+                  <td><input type="number" step="0.01" data-rule-grade="B++" data-rule-field="english" value="82.3"></td>
+                  <td><input type="number" step="0.01" data-rule-grade="B++" data-rule-field="math" value="66.2"></td>
+                  <td><input type="number" step="0.01" data-rule-grade="B++" data-rule-field="science" value="37"></td>
+                  <td><input type="number" step="0.01" data-rule-grade="B++" data-rule-field="social" value="42"></td>
+                </tr>
+                <tr>
+                  <td>B+</td>
+                  <td><input type="number" step="0.01" data-rule-grade="B+" data-rule-field="chinese" value="30"></td>
+                  <td><input type="number" step="0.01" data-rule-grade="B+" data-rule-field="english" value="70.01"></td>
+                  <td><input type="number" step="0.01" data-rule-grade="B+" data-rule-field="math" value="56.9"></td>
+                  <td><input type="number" step="0.01" data-rule-grade="B+" data-rule-field="science" value="30"></td>
+                  <td><input type="number" step="0.01" data-rule-grade="B+" data-rule-field="social" value="36"></td>
+                </tr>
+                <tr>
+                  <td>B</td>
+                  <td><input type="number" step="0.01" data-rule-grade="B" data-rule-field="chinese" value="18"></td>
+                  <td><input type="number" step="0.01" data-rule-grade="B" data-rule-field="english" value="38.43"></td>
+                  <td><input type="number" step="0.01" data-rule-grade="B" data-rule-field="math" value="38.1"></td>
+                  <td><input type="number" step="0.01" data-rule-grade="B" data-rule-field="science" value="19"></td>
+                  <td><input type="number" step="0.01" data-rule-grade="B" data-rule-field="social" value="21"></td>
+                </tr>
+                <tr>
+                  <td>C</td>
+                  <td><input type="number" step="0.01" data-rule-grade="C" data-rule-field="chinese" value="1"></td>
+                  <td><input type="number" step="0.01" data-rule-grade="C" data-rule-field="english" value="0.01"></td>
+                  <td><input type="number" step="0.01" data-rule-grade="C" data-rule-field="math" value="0.01"></td>
+                  <td><input type="number" step="0.01" data-rule-grade="C" data-rule-field="science" value="1"></td>
+                  <td><input type="number" step="0.01" data-rule-grade="C" data-rule-field="social" value="1"></td>
+                </tr>
+              </tbody>
             </table>
           </div>
 
           <div class="action-row">
             <button class="primary-action" type="button" id="saveRuleSetButton">儲存換算標準</button>
           </div>
-          <p class="setting-note" id="ruleSetStatus">目前為畫面示範，儲存後會先加入上方「等級換算標準」下拉選單。</p>
+          <p class="setting-note" id="ruleSetStatus">已設定 Supabase 連線時，儲存後會正式寫入資料庫，並加入匯入頁的「等級換算標準」下拉選單。</p>
         </form>
 
         <form id="pointEditorForm" novalidate>
@@ -2111,14 +2168,22 @@
                   <th>積分</th>
                 </tr>
               </thead>
-              <tbody id="pointEditorBody"></tbody>
+              <tbody id="pointEditorBody">
+                <tr><td>A++</td><td><input type="number" step="1" min="0" data-point-grade="A++" value="7"></td></tr>
+                <tr><td>A+</td><td><input type="number" step="1" min="0" data-point-grade="A+" value="6"></td></tr>
+                <tr><td>A</td><td><input type="number" step="1" min="0" data-point-grade="A" value="5"></td></tr>
+                <tr><td>B++</td><td><input type="number" step="1" min="0" data-point-grade="B++" value="4"></td></tr>
+                <tr><td>B+</td><td><input type="number" step="1" min="0" data-point-grade="B+" value="3"></td></tr>
+                <tr><td>B</td><td><input type="number" step="1" min="0" data-point-grade="B" value="2"></td></tr>
+                <tr><td>C</td><td><input type="number" step="1" min="0" data-point-grade="C" value="1"></td></tr>
+              </tbody>
             </table>
           </div>
 
           <div class="action-row">
             <button class="primary-action" type="button" id="savePointSetButton">儲存積分版本</button>
           </div>
-          <p class="setting-note" id="pointSetStatus">目前為畫面示範，儲存後會先加入上方「積分規則版本」下拉選單。</p>
+          <p class="setting-note" id="pointSetStatus">已設定 Supabase 連線時，儲存後會正式寫入資料庫，並加入匯入頁的「積分規則版本」下拉選單。</p>
         </form>
       </div>
     </section>
