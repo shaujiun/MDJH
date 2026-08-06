@@ -1356,7 +1356,7 @@
 
         <p class="password-help">
           第一次使用可
-          <button class="text-button" type="button" id="showSignupButton">建立帳號</button>；
+          <button class="text-button" type="button" id="showSignupButton">建立帳號／設定學生密碼</button>；
           忘記密碼時，可
           <button class="text-button" type="button" id="showResetRequestButton">寄送重設信</button>；
           如無法收信，請聯絡註冊組長協助重設。
@@ -1368,14 +1368,28 @@
 
       <form class="recovery-panel hidden" id="signupForm" novalidate>
         <h3>建立帳號</h3>
-        <p class="hint">請使用學校登記的 Email 建立帳號。帳號建立後，需由管理員在名冊中綁定身分。</p>
-        <div class="form-group">
-          <label for="signupDisplayName">姓名</label>
-          <input id="signupDisplayName" name="signupDisplayName" type="text" autocomplete="name" placeholder="例如：王小明" required>
+        <p class="hint" id="signupModeHint"></p>
+        <div id="signupStudentFields">
+          <div class="form-group">
+            <label for="signupStudentNo">學號</label>
+            <input id="signupStudentNo" type="text" autocomplete="username" placeholder="請輸入學號">
+          </div>
+          <div class="form-group">
+            <label for="signupRegistrationCode">一次性註冊碼</label>
+            <input id="signupRegistrationCode" type="text" autocomplete="one-time-code" maxlength="10" placeholder="由管理員提供">
+          </div>
+          <div class="form-group">
+            <label for="signupContactEmail">聯絡 Email（選填、不驗證）</label>
+            <input id="signupContactEmail" type="email" autocomplete="email" placeholder="只作聯絡用途">
+          </div>
         </div>
-        <div class="form-group">
+        <div class="form-group" id="signupTeacherNameGroup">
+          <label for="signupDisplayName">姓名</label>
+          <input id="signupDisplayName" name="signupDisplayName" type="text" autocomplete="name" placeholder="例如：王小明">
+        </div>
+        <div class="form-group" id="signupTeacherEmailGroup">
           <label for="signupEmail">Email</label>
-          <input id="signupEmail" name="signupEmail" type="email" autocomplete="email" placeholder="例如：student@example.com" required>
+          <input id="signupEmail" name="signupEmail" type="email" autocomplete="email" placeholder="例如：teacher@example.com">
         </div>
         <div class="form-group">
           <label for="signupPassword">密碼</label>
@@ -1774,18 +1788,19 @@
               <input id="studentSeatInput" type="number" min="1">
             </div>
             <div class="form-group">
-              <label for="studentAccountEmailInput">登入 Email（選填）</label>
-              <input id="studentAccountEmailInput" type="email" placeholder="需為已註冊帳號">
+              <label for="studentAccountEmailInput">聯絡 Email（選填）</label>
+              <input id="studentAccountEmailInput" type="email" placeholder="不作登入或密碼重設">
             </div>
           </div>
           <div class="action-row">
             <button class="primary-action" type="submit">儲存學生</button>
+            <button class="secondary-button" type="button" id="issueStudentRegistrationCodeButton">產生／重設註冊碼</button>
           </div>
-          <p class="setting-note" id="studentEditorStatus">可先建立名冊，之後再綁定學生已註冊的 Email 帳號。</p>
+          <p class="setting-note" id="studentEditorStatus">先儲存學生名冊，再產生一次性註冊碼交給學生。</p>
 
           <div class="manual-score-panel">
             <h3>批次建立學生名冊</h3>
-            <p class="setting-note">可從 Excel 複製貼上，每列格式：學號,學年度,班級,座號,姓名,登入 Email。Email 可留空；若未填學年度，才使用上方欄位。</p>
+            <p class="setting-note">可從 Excel 複製貼上，每列格式：學號,學年度,班級,座號,姓名,聯絡 Email。Email 可留空；若未填學年度，才使用上方欄位。</p>
             <div class="action-row">
               <button class="secondary-button download-seat-template-button" type="button">下載空白 Excel 範本</button>
               <button class="secondary-button" type="button" id="uploadBatchStudentButton">上傳學生名冊 Excel</button>
@@ -1834,11 +1849,16 @@
             <div class="form-group" id="teacherSubjectGroup">
               <label for="teacherSubjectInput">任教科目</label>
               <select id="teacherSubjectInput">
+                <option value="none">無任教</option>
                 <option value="chinese">國文</option>
-                <option value="english">英文</option>
+                <option value="english">英語</option>
+                <option value="english_listening">英聽</option>
                 <option value="math">數學</option>
-                <option value="science">自然</option>
-                <option value="social">社會</option>
+                <option value="physics">理化</option>
+                <option value="biology">生物</option>
+                <option value="history">歷史</option>
+                <option value="geography">地理</option>
+                <option value="civics">公民</option>
               </select>
             </div>
             <div class="form-group">
@@ -2298,6 +2318,13 @@
     const updatePasswordForm = document.querySelector("#updatePasswordForm");
     const signupDisplayName = document.querySelector("#signupDisplayName");
     const signupEmail = document.querySelector("#signupEmail");
+    const signupModeHint = document.querySelector("#signupModeHint");
+    const signupStudentFields = document.querySelector("#signupStudentFields");
+    const signupStudentNo = document.querySelector("#signupStudentNo");
+    const signupRegistrationCode = document.querySelector("#signupRegistrationCode");
+    const signupContactEmail = document.querySelector("#signupContactEmail");
+    const signupTeacherNameGroup = document.querySelector("#signupTeacherNameGroup");
+    const signupTeacherEmailGroup = document.querySelector("#signupTeacherEmailGroup");
     const signupPassword = document.querySelector("#signupPassword");
     const signupConfirmPassword = document.querySelector("#signupConfirmPassword");
     const resetEmail = document.querySelector("#resetEmail");
@@ -2382,6 +2409,7 @@
     const studentClassInput = document.querySelector("#studentClassInput");
     const studentSeatInput = document.querySelector("#studentSeatInput");
     const studentAccountEmailInput = document.querySelector("#studentAccountEmailInput");
+    const issueStudentRegistrationCodeButton = document.querySelector("#issueStudentRegistrationCodeButton");
     const studentEditorStatus = document.querySelector("#studentEditorStatus");
     const batchStudentTextarea = document.querySelector("#batchStudentTextarea");
     const uploadBatchStudentButton = document.querySelector("#uploadBatchStudentButton");
@@ -2756,12 +2784,31 @@
 
     function subjectLabel(subject) {
       return {
+        none: "無任教",
         chinese: "國文",
-        english: "英文",
+        english: "英語",
+        english_listening: "英聽",
         math: "數學",
-        science: "自然",
-        social: "社會"
+        physics: "理化",
+        biology: "生物",
+        history: "歷史",
+        geography: "地理",
+        civics: "公民"
       }[subject] || "－";
+    }
+
+    function teacherAssignmentsLabel(teacher) {
+      if (!Array.isArray(teacher.assignments) || teacher.assignments.length === 0) {
+        return teacher.assignments_label || `${teacher.class_code || "－"} ${roleLabel(teacher.role)} ${subjectLabel(teacher.subject)}`;
+      }
+
+      return teacher.assignments.map((assignment) => {
+        const classCode = assignment.class_code || assignment.class_name || "－";
+        if (assignment.role === "homeroom_teacher") {
+          return `${classCode}：導師`;
+        }
+        return `${classCode}：${subjectLabel(assignment.subject)}任課`;
+      }).join("、");
     }
 
     function renderPeopleLists(data) {
@@ -2789,7 +2836,7 @@
         ? teachers.map((teacher) => `
           <tr>
             <td>${escapeHtml(teacher.teacher_name)}</td>
-            <td>${escapeHtml(teacher.assignments_label || `${teacher.class_code || "－"} ${roleLabel(teacher.role)} ${subjectLabel(teacher.subject)}`)}</td>
+            <td>${escapeHtml(teacherAssignmentsLabel(teacher))}</td>
             <td>${escapeHtml(teacher.account_email || "未綁定")}</td>
             <td>${teacher.is_active ? "啟用" : "停用"}</td>
             <td><button class="secondary-button person-status-button" type="button" data-person-type="teacher" data-person-id="${escapeHtml(teacher.id)}" data-next-active="${String(!teacher.is_active)}">${teacher.is_active ? "停用" : "恢復"}</button></td>
@@ -2944,7 +2991,8 @@
           p_academic_year: academicYear,
           p_class_code: classCode,
           p_seat_no: seatNo,
-          p_account_email: accountEmail || null
+          p_account_email: null,
+          contact_email: accountEmail || null
         });
       });
 
@@ -4942,7 +4990,7 @@
 
       const headings = {
         login: ["登入系統", "請使用學校提供的帳號登入。"],
-        signup: ["建立帳號", "請使用學校登記的 Email 建立登入帳號。"],
+        signup: ["建立帳號", "學生使用學號與一次性註冊碼；老師使用 Email。"],
         "request-reset": ["帳號協助", "系統會將重設密碼連結寄到帳號登記的 Email。"],
         "update-password": ["帳號協助", "重設連結驗證成功，請設定新的登入密碼。"]
       };
@@ -4951,12 +4999,25 @@
       authPanelHint.textContent = hint;
     }
 
+    function updateSignupMode() {
+      const isStudent = roleInput.value === "student";
+      signupStudentFields.classList.toggle("hidden", !isStudent);
+      signupTeacherNameGroup.classList.toggle("hidden", isStudent);
+      signupTeacherEmailGroup.classList.toggle("hidden", isStudent);
+      signupModeHint.textContent = isStudent
+        ? "請輸入學號與管理員提供的一次性註冊碼，再自行設定密碼。聯絡 Email 可留空。"
+        : "老師請使用管理員名冊中登記的 Email 建立帳號，並完成信箱驗證。";
+    }
+
     function updateLoginModeHint() {
       const useLiveAuth = useSupabaseAuth.checked;
-      accountLabel.textContent = useLiveAuth ? "Email" : "帳號";
-      accountInput.type = useLiveAuth ? "email" : "text";
-      accountInput.autocomplete = useLiveAuth ? "email" : "username";
-      accountInput.placeholder = useLiveAuth ? "例如：abc123@gmail.com" : "例如：teacher01";
+      const isStudent = roleInput.value === "student";
+      accountLabel.textContent = useLiveAuth ? (isStudent ? "學號" : "Email") : "帳號";
+      accountInput.type = "text";
+      accountInput.autocomplete = useLiveAuth ? "username" : "username";
+      accountInput.placeholder = useLiveAuth
+        ? (isStudent ? "請輸入學號" : "請輸入教師 Email")
+        : "例如：teacher01";
     }
 
     function getPasswordResetRedirectUrl() {
@@ -5042,6 +5103,57 @@
       return data;
     }
 
+    async function registerStudentWithSupabase(studentNo, registrationCode, password, contactEmail) {
+      const config = getSupabaseConfig();
+      if (!config.url || !config.anonKey) {
+        throw new Error("尚未設定 Supabase URL 與 anon key。");
+      }
+
+      const response = await fetch(`${config.url}/functions/v1/register-student`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "apikey": config.anonKey
+        },
+        body: JSON.stringify({
+          student_no: studentNo,
+          registration_code: registrationCode,
+          password,
+          contact_email: contactEmail || null
+        })
+      });
+      const data = await parseAuthResponse(response);
+      if (!response.ok) {
+        throw new Error(data.message || "無法建立學生帳號。");
+      }
+      return data;
+    }
+
+    function getFriendlySignupError(error) {
+      const detail = String(error?.message || "").trim();
+
+      if (/rate limit|too many requests|429/i.test(detail)) {
+        return "註冊要求過於頻繁，Supabase 暫時停止寄送驗證信。請勿連續重送，稍後再試；管理員需設定自訂 SMTP，才能讓全班穩定建立帳號。";
+      }
+      if (/email address not authorized/i.test(detail)) {
+        return "Supabase 內建寄信服務無法寄送到此信箱。請由管理員設定自訂 SMTP 後再試。";
+      }
+      if (/user already registered|already been registered/i.test(detail)) {
+        return "這個 Email 已建立帳號，請直接登入；若忘記密碼，請使用「寄送重設信」。";
+      }
+      if (/signup.*disabled|signups not allowed/i.test(detail)) {
+        return "目前 Supabase 已關閉新帳號註冊，請聯絡管理員開啟 Email 註冊。";
+      }
+      if (/password/i.test(detail) && /weak|least|characters/i.test(detail)) {
+        return "密碼未符合 Supabase 的安全規則，請改用至少 8 個字元且不易猜測的密碼。";
+      }
+      if (/failed to fetch|network/i.test(detail)) {
+        return "目前無法連線到 Supabase，請確認網路後再試。";
+      }
+
+      return detail || "建立帳號時發生未預期的錯誤，請聯絡管理員。";
+    }
+
     function loadRecoverySessionFromUrl() {
       const hash = new URLSearchParams(window.location.hash.replace(/^#/, ""));
       const accessToken = hash.get("access_token");
@@ -5103,12 +5215,52 @@
       if (!response.ok) {
         const authMessage = data.error_description || data.msg || data.message || "Supabase 登入失敗。";
         if (/invalid login credentials/i.test(authMessage)) {
-          throw new Error("帳號或密碼不正確，或此 Email 尚未完成驗證。請確認使用完整登入 Email，例如 abc123@gmail.com。");
+          throw new Error("帳號或密碼不正確，或此 Email 尚未完成驗證。可使用完整 Email、已綁定學號或已設定的自訂帳號登入。");
         }
         if (/email not confirmed/i.test(authMessage)) {
           throw new Error("此 Email 尚未完成驗證，請先到信箱點擊 Supabase 驗證信。");
         }
         throw new Error(authMessage);
+      }
+
+      return data;
+    }
+
+    function looksLikeEmail(value) {
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || "").trim());
+    }
+
+    async function resolveLoginIdentifier(identifier, role) {
+      const rawIdentifier = String(identifier || "").trim();
+      if (!rawIdentifier || looksLikeEmail(rawIdentifier)) {
+        return rawIdentifier;
+      }
+
+      const config = getSupabaseConfig();
+      if (!config.url || !config.anonKey) {
+        throw new Error("尚未設定 Supabase URL 與 anon key。請先到系統連線頁完成設定。");
+      }
+
+      const response = await fetch(`${config.url}/rest/v1/rpc/resolve_login_identifier`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "apikey": config.anonKey,
+          "Authorization": `Bearer ${config.anonKey}`
+        },
+        body: JSON.stringify({
+          p_identifier: rawIdentifier,
+          p_role: role || null
+        })
+      });
+      const data = await parseAuthResponse(response);
+
+      if (!response.ok) {
+        throw new Error(data.message || "找不到此學號或自訂帳號，請改用完整 Email 登入。");
+      }
+
+      if (!data || typeof data !== "string" || !looksLikeEmail(data)) {
+        throw new Error("此學號或自訂帳號尚未綁定有效 Email，請改用完整 Email 登入。");
       }
 
       return data;
@@ -5280,12 +5432,16 @@
     showSignupButton.addEventListener("click", () => {
       signupDisplayName.value = "";
       signupEmail.value = accountInput.value.includes("@") ? accountInput.value : "";
+      signupStudentNo.value = roleInput.value === "student" && !accountInput.value.includes("@") ? accountInput.value : "";
+      signupRegistrationCode.value = "";
+      signupContactEmail.value = "";
       signupPassword.value = "";
       signupConfirmPassword.value = "";
       signupMessage.className = "message";
       signupMessage.textContent = "";
+      updateSignupMode();
       showAuthView("signup");
-      signupDisplayName.focus();
+      (roleInput.value === "student" ? signupStudentNo : signupDisplayName).focus();
     });
 
     cancelSignupButton.addEventListener("click", () => {
@@ -5295,6 +5451,20 @@
     });
 
     showResetRequestButton.addEventListener("click", () => {
+      if (roleInput.value === "student") {
+        signupStudentNo.value = !accountInput.value.includes("@") ? accountInput.value : "";
+        signupRegistrationCode.value = "";
+        signupContactEmail.value = "";
+        signupPassword.value = "";
+        signupConfirmPassword.value = "";
+        signupMessage.className = "message";
+        signupMessage.textContent = "請向管理員申請新的註冊碼，再設定新密碼。";
+        updateSignupMode();
+        showAuthView("signup");
+        authPanelTitle.textContent = "重設學生密碼";
+        signupStudentNo.focus();
+        return;
+      }
       resetEmail.value = accountInput.value.includes("@") ? accountInput.value : "";
       resetMessage.className = "message";
       resetMessage.textContent = "";
@@ -5310,18 +5480,38 @@
 
     signupForm.addEventListener("submit", async (event) => {
       event.preventDefault();
+      const submitButton = signupForm.querySelector('button[type="submit"]');
+      const isStudent = roleInput.value === "student";
       const displayName = signupDisplayName.value.trim();
       const email = signupEmail.value.trim();
+      const studentNo = signupStudentNo.value.trim();
+      const registrationCode = signupRegistrationCode.value.trim().toUpperCase();
+      const contactEmail = signupContactEmail.value.trim();
       const password = signupPassword.value;
       const confirmation = signupConfirmPassword.value;
       signupMessage.className = "message";
 
-      if (!displayName) {
+      if (isStudent && !studentNo) {
+        signupMessage.textContent = "請輸入學號。";
+        signupMessage.classList.add("error");
+        return;
+      }
+      if (isStudent && !/^[A-Fa-f0-9]{10}$/.test(registrationCode)) {
+        signupMessage.textContent = "請輸入管理員提供的 10 碼一次性註冊碼。";
+        signupMessage.classList.add("error");
+        return;
+      }
+      if (isStudent && contactEmail && !signupContactEmail.validity.valid) {
+        signupMessage.textContent = "聯絡 Email 格式不正確。";
+        signupMessage.classList.add("error");
+        return;
+      }
+      if (!isStudent && !displayName) {
         signupMessage.textContent = "請輸入姓名。";
         signupMessage.classList.add("error");
         return;
       }
-      if (!email || !signupEmail.validity.valid) {
+      if (!isStudent && (!email || !signupEmail.validity.valid)) {
         signupMessage.textContent = "請輸入正確的 Email。";
         signupMessage.classList.add("error");
         return;
@@ -5338,15 +5528,26 @@
       }
 
       try {
+        submitButton.disabled = true;
         signupMessage.textContent = "正在建立帳號……";
-        await signUpWithSupabase(displayName, email, password);
-        signupMessage.textContent = "帳號建立申請已送出。若系統要求 Email 驗證，請先到信箱完成驗證；之後請管理員在名冊中綁定身分。";
+        if (isStudent) {
+          const result = await registerStudentWithSupabase(studentNo, registrationCode, password, contactEmail);
+          signupMessage.textContent = result.mode === "password_reset"
+            ? "學生密碼已重設，請返回登入。"
+            : "學生帳號已建立，不需要 Email 驗證，請返回登入。";
+          accountInput.value = studentNo;
+        } else {
+          await signUpWithSupabase(displayName, email, password);
+          signupMessage.textContent = "老師帳號建立申請已送出。請到信箱完成驗證，再返回登入。";
+          accountInput.value = email;
+        }
         signupMessage.classList.add("success");
-        accountInput.value = email;
         passwordInput.value = "";
       } catch (error) {
-        signupMessage.textContent = `建立帳號失敗：${error.message}`;
+        signupMessage.textContent = `建立帳號失敗：${getFriendlySignupError(error)}`;
         signupMessage.classList.add("error");
+      } finally {
+        submitButton.disabled = false;
       }
     });
 
@@ -5421,6 +5622,8 @@
         ? "正式登入時，身分會依資料庫帳號角色自動判定；下拉選單只作為操作提示。"
         : "目前使用前端示範帳號登入。";
     });
+
+    roleInput.addEventListener("change", updateLoginModeHint);
 
     adminNavButtons.forEach((button) => {
       button.addEventListener("click", async () => {
@@ -5704,7 +5907,12 @@
         batchStudentStatus.textContent = `正在批次建立 ${rows.length} 位學生……`;
         let successCount = 0;
         for (const payload of rows) {
-          await callSupabaseRpc("admin_upsert_student", payload);
+          const { contact_email: contactEmail, ...studentPayload } = payload;
+          await callSupabaseRpc("admin_upsert_student", studentPayload);
+          await callSupabaseRpc("admin_set_student_contact_email", {
+            p_student_no: payload.p_student_no,
+            p_contact_email: contactEmail
+          });
           successCount += 1;
         }
         batchStudentStatus.textContent = `批次學生名冊完成：已新增或更新 ${successCount} 位學生。`;
@@ -5760,8 +5968,9 @@
         p_academic_year: Number(studentYearInput.value),
         p_class_code: studentClassInput.value,
         p_seat_no: Number(studentSeatInput.value),
-        p_account_email: studentAccountEmailInput.value.trim() || null
+        p_account_email: null
       };
+      const contactEmail = studentAccountEmailInput.value.trim() || null;
 
       if (!payload.p_student_no || !payload.p_student_name || !payload.p_class_code) {
         studentEditorStatus.textContent = "請填寫學號、姓名與班級。";
@@ -5775,14 +5984,42 @@
       try {
         studentEditorStatus.textContent = "正在儲存學生資料……";
         await callSupabaseRpc("admin_upsert_student", payload);
+        await callSupabaseRpc("admin_set_student_contact_email", {
+          p_student_no: payload.p_student_no,
+          p_contact_email: contactEmail
+        });
         studentEditorStatus.textContent = getSupabaseConfig().enabled
-          ? "學生資料已儲存；若填寫帳號 Email，也已完成綁定。"
+          ? "學生資料已儲存；聯絡 Email 不作登入或密碼重設。"
           : "示範模式：學生資料格式檢查完成，尚未送至 Supabase。";
         if (getSupabaseConfig().enabled) {
           await loadPeopleData();
         }
       } catch (error) {
         studentEditorStatus.textContent = `儲存學生失敗：${error.message}`;
+      }
+    });
+
+    issueStudentRegistrationCodeButton.addEventListener("click", async () => {
+      const studentNo = studentNoInput.value.trim();
+      if (!studentNo) {
+        studentEditorStatus.textContent = "請先輸入並儲存學生學號。";
+        return;
+      }
+
+      try {
+        issueStudentRegistrationCodeButton.disabled = true;
+        studentEditorStatus.textContent = "正在產生一次性註冊碼……";
+        const result = await callSupabaseRpc("admin_issue_student_registration_code", {
+          p_student_no: studentNo,
+          p_valid_days: 7
+        });
+        const data = result.data || {};
+        const purpose = data.purpose === "reset_password" ? "重設密碼" : "首次註冊";
+        studentEditorStatus.textContent = `${data.student_name || studentNo}｜${purpose}碼：${data.registration_code}｜7 天內有效。此碼只顯示這一次，請私下交給學生。`;
+      } catch (error) {
+        studentEditorStatus.textContent = `產生註冊碼失敗：${error.message}`;
+      } finally {
+        issueStudentRegistrationCodeButton.disabled = false;
       }
     });
 
@@ -6016,14 +6253,15 @@
 
       if (useSupabaseAuth.checked) {
         if (!account || !password) {
-          message.textContent = "請填寫 Supabase 登入 Email 與密碼。";
+          message.textContent = "請填寫 Email、學號或自訂帳號，以及密碼。";
           message.classList.add("error");
           return;
         }
 
         try {
-          message.textContent = "正在連接 Supabase 並確認帳號角色……";
-          currentSession = await signInWithSupabase(account, password);
+          message.textContent = "正在確認登入帳號並連接 Supabase……";
+          const loginEmail = await resolveLoginIdentifier(account, role);
+          currentSession = await signInWithSupabase(loginEmail, password);
           supabaseAccessToken.value = currentSession.access_token || "";
           const profile = await fetchCurrentProfile(currentSession.user.id, currentSession.access_token);
           enterRolePage(profile);
