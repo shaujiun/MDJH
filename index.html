@@ -1815,8 +1815,9 @@
             <div class="action-row">
               <button class="secondary-button" type="button" id="previewBatchStudentButton">預覽學生名冊</button>
               <button class="primary-action" type="button" id="executeBatchStudentButton">正式批次建立</button>
+              <button class="secondary-button" type="button" id="downloadBatchRegistrationCodesButton">產生註冊碼並下載 Word</button>
             </div>
-            <p class="setting-note" id="batchStudentStatus">批次建立會逐筆新增或更新學生目前名冊。</p>
+            <p class="setting-note" id="batchStudentStatus">請先完成批次建立，再產生註冊碼。新碼會使該生尚未使用的舊碼失效。</p>
           </div>
         </form>
 
@@ -2416,6 +2417,7 @@
     const batchStudentFileInput = document.querySelector("#batchStudentFileInput");
     const previewBatchStudentButton = document.querySelector("#previewBatchStudentButton");
     const executeBatchStudentButton = document.querySelector("#executeBatchStudentButton");
+    const downloadBatchRegistrationCodesButton = document.querySelector("#downloadBatchRegistrationCodesButton");
     const batchStudentStatus = document.querySelector("#batchStudentStatus");
     const teacherEditorForm = document.querySelector("#teacherEditorForm");
     const teacherNameInput = document.querySelector("#teacherNameInput");
@@ -5924,6 +5926,46 @@
       }
     });
 
+    downloadBatchRegistrationCodesButton.addEventListener("click", async () => {
+      const rows = previewBatchStudents();
+      if (!rows) return;
+      if (!getSupabaseConfig().enabled) {
+        batchStudentStatus.textContent = "示範模式無法產生正式註冊碼，請連線 Supabase 後再試。";
+        return;
+      }
+
+      try {
+        downloadBatchRegistrationCodesButton.disabled = true;
+        batchStudentStatus.textContent = `正在為 ${rows.length} 位學生產生註冊碼與 Word 檔……`;
+        const result = await callSupabaseRpc("admin_issue_student_registration_codes", {
+          p_student_nos: rows.map((row) => row.p_student_no),
+          p_valid_days: 7
+        });
+        const codes = Array.isArray(result.data) ? result.data : [];
+        const rowByStudentNo = new Map(rows.map((row) => [row.p_student_no.toLowerCase(), row]));
+        const cards = codes.map((code) => {
+          const row = rowByStudentNo.get(String(code.student_no).toLowerCase()) || {};
+          return {
+            studentNo: code.student_no,
+            studentName: code.student_name || row.p_student_name || "－",
+            classCode: row.p_class_code || "－",
+            seatNo: row.p_seat_no || "－",
+            registrationCode: code.registration_code,
+            expiresAt: code.expires_at
+          };
+        });
+        if (cards.length !== rows.length) {
+          throw new Error(`預期 ${rows.length} 筆，實際收到 ${cards.length} 筆註冊碼。`);
+        }
+        downloadRegistrationCodeWord(cards);
+        batchStudentStatus.textContent = `已產生 ${cards.length} 組註冊碼並下載 Word。註冊碼只顯示這一次，請妥善保管檔案。`;
+      } catch (error) {
+        batchStudentStatus.textContent = `批次產生註冊碼失敗：${error.message}`;
+      } finally {
+        downloadBatchRegistrationCodesButton.disabled = false;
+      }
+    });
+
     executeBatchSeatButton.addEventListener("click", async () => {
       const updates = previewBatchSeatUpdates();
       const academicYear = Number(batchSeatYearInput.value);
@@ -6107,6 +6149,53 @@
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
+    }
+
+    function formatRegistrationCodeExpiry(value) {
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return "－";
+      return new Intl.DateTimeFormat("zh-TW", {
+        timeZone: "Asia/Taipei", year: "numeric", month: "2-digit", day: "2-digit",
+        hour: "2-digit", minute: "2-digit", hour12: false
+      }).format(date);
+    }
+
+    function buildRegistrationCodeWord(cards) {
+      const cardHtml = cards.map((card, index) => {
+        const pageBreak = index > 0 && index % 4 === 0 ? '<div class="page-break"></div>' : "";
+        return `${pageBreak}<section class="student-card">
+          <h1>麻豆國中模擬考成績系統｜學生帳號啟用通知</h1>
+          <p>請開啟 <strong>https://shaujiun.github.io/MDJH/</strong>，身分選擇「學生」，再點選「建立帳號／設定學生密碼」。</p>
+          <p>輸入下方學號與一次性註冊碼，自行設定至少 8 個字元的密碼。註冊碼僅可使用一次，逾期或遺失請向管理員申請新碼。</p>
+          <table>
+            <tr><th>班級／座號</th><td>${escapeHtml(card.classCode)}／${escapeHtml(card.seatNo)} 號</td><th>姓名</th><td>${escapeHtml(card.studentName)}</td></tr>
+            <tr><th>學號</th><td>${escapeHtml(card.studentNo)}</td><th>一次性註冊碼</th><td class="code">${escapeHtml(card.registrationCode)}</td></tr>
+            <tr><th>有效期限</th><td colspan="3">${escapeHtml(formatRegistrationCodeExpiry(card.expiresAt))}</td></tr>
+            <tr><th>家長知悉簽名</th><td colspan="3" class="signature"></td></tr>
+          </table>
+        </section>`;
+      }).join("");
+      return `<!DOCTYPE html><html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="utf-8"><title>學生註冊碼</title><style>
+        @page { size: A4 portrait; margin: 16mm 18mm; }
+        body { font-family: "Microsoft JhengHei", sans-serif; color: #111; font-size: 8.5pt; margin: 0; }
+        .student-card { height: 49mm; box-sizing: border-box; border: 1.2pt solid #222; padding: 2mm 3mm; margin: 0 0 2mm; page-break-inside: avoid; }
+        h1 { font-size: 11pt; text-align: center; margin: 0 0 1mm; letter-spacing: 0; }
+        p { line-height: 1.1; margin: 0 0 0.5mm; }
+        table { border-collapse: collapse; width: 100%; table-layout: fixed; margin-top: 0.5mm; }
+        th, td { border: 0.8pt solid #333; padding: 0.5mm 1mm; vertical-align: middle; }
+        th { width: 20%; background: #e9eef3; font-weight: bold; white-space: nowrap; }
+        td { width: 30%; } .code { font-family: Consolas, monospace; font-size: 11pt; font-weight: bold; letter-spacing: 1pt; }
+        .signature { height: 3mm; } .page-break { page-break-before: always; }
+      </style></head><body>${cardHtml}</body></html>`;
+    }
+
+    function downloadRegistrationCodeWord(cards) {
+      const sortedCards = [...cards].sort((a, b) => String(a.classCode).localeCompare(String(b.classCode), "zh-Hant")
+        || Number(a.seatNo) - Number(b.seatNo) || String(a.studentNo).localeCompare(String(b.studentNo)));
+      const classNames = [...new Set(sortedCards.map((card) => card.classCode))];
+      const classLabel = classNames.length === 1 ? classNames[0] : "多班";
+      downloadBlob(new Blob(["\ufeff", buildRegistrationCodeWord(sortedCards)], { type: "application/msword;charset=utf-8" }),
+        `${classLabel}學生註冊碼_${new Date().toISOString().slice(0, 10)}.doc`);
     }
 
     function downloadStudentSeatTemplate() {
