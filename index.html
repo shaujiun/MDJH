@@ -2469,11 +2469,6 @@
     const reportHeading = document.querySelector("#reportHeading");
     const reportStatus = document.querySelector("#reportStatus");
     const individualReportSheet = document.querySelector("#individualReportSheet");
-    const individualReportTitle = document.querySelector("#individualReportTitle");
-    const individualReportExam = document.querySelector("#individualReportExam");
-    const individualStudentInfo = document.querySelector("#individualStudentInfo");
-    const individualScoreBody = document.querySelector("#individualScoreBody");
-    const individualSummaryGrid = document.querySelector("#individualSummaryGrid");
     const ruleSetSelect = document.querySelector("#ruleSet");
     const pointRuleSetSelect = document.querySelector("#pointRuleSet");
     const ruleEditorBody = document.querySelector("#ruleEditorBody");
@@ -3758,27 +3753,6 @@
       portalStatus.textContent = `查詢完成，目前顯示 ${currentPortalRows.length} 位學生。`;
     }
 
-    function addOptionIfMissing(selectElement, value, label, data = {}) {
-      const existing = Array.from(selectElement.options).find((option) => option.value === value);
-      if (existing) {
-        existing.textContent = label;
-        Object.entries(data).forEach(([key, itemValue]) => {
-          existing.dataset[key] = itemValue;
-        });
-        selectElement.value = value;
-        return;
-      }
-
-      const option = document.createElement("option");
-      option.value = value;
-      option.textContent = label;
-      Object.entries(data).forEach(([key, itemValue]) => {
-        option.dataset[key] = itemValue;
-      });
-      selectElement.appendChild(option);
-      selectElement.value = value;
-    }
-
     function getSelectedImportGrades() {
       if (gradeLevelInput.value === "all") {
         return [7, 8, 9];
@@ -3928,7 +3902,7 @@
       };
     }
 
-    function applyParsedExamSettings(result, fileName) {
+    function applyParsedExamSettings(result) {
       const grades = [...new Set(result.records.map((record) => record.grade).filter(Boolean))];
       if (grades.length === 1) {
         gradeLevelInput.value = String(grades[0]);
@@ -6627,7 +6601,7 @@
         });
         const result = parseImportWorkbook(workbook, file.name);
         currentParsedImport = result;
-        applyParsedExamSettings(result, file.name);
+        applyParsedExamSettings(result);
         renderWorkbookPreview(result, file.name);
         renderImportIssues(result);
       } catch (error) {
@@ -6704,9 +6678,7 @@
 
     saveRuleSetButton.addEventListener("click", async () => {
       const year = newRuleYear.value || "113";
-      const grade = newRuleGrade.value === "all" ? "全年級" : `${newRuleGrade.value} 年級`;
       const name = newRuleName.value.trim() || `${year} 模擬考換算標準`;
-      const value = name;
       const gradeLevels = newRuleGrade.value === "all" ? [7, 8, 9] : [Number(newRuleGrade.value)];
       const examTypes = ["mock_exam", "weekly_exam"];
       const rpcPayloads = gradeLevels.flatMap((gradeLevel) =>
@@ -6754,7 +6726,6 @@
       const city = newPointCity.value.trim() || "台南市";
       const year = newPointYear.value || "113";
       const name = newPointName.value.trim() || `${city} ${year} 積分版`;
-      const value = name;
       const rpcPayload = buildPointRuleSetPayload();
 
       try {
