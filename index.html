@@ -1969,6 +1969,17 @@
           <button class="secondary-button" type="button" id="refreshPeopleButton">重新整理名單</button>
         </div>
         <h2 style="margin-top: 22px;">學生名單</h2>
+        <div class="report-filter-row" style="margin-bottom: 14px;">
+          <div class="form-group">
+            <label for="studentListYearFilter">學年度</label>
+            <select id="studentListYearFilter"><option value="">尚未載入</option></select>
+          </div>
+          <div class="form-group">
+            <label for="studentListClassFilter">班級</label>
+            <select id="studentListClassFilter"><option value="">請先選擇學年度</option></select>
+          </div>
+        </div>
+        <p class="setting-note" id="studentListFilterStatus">請選擇學年度與班級後查看學生。</p>
         <div class="preview-table-wrap">
           <table>
             <thead><tr><th>學號</th><th>姓名</th><th>班級</th><th>座號</th><th>帳號</th><th>狀態</th><th>操作</th></tr></thead>
@@ -2450,6 +2461,9 @@
     const executeAdvanceButton = document.querySelector("#executeAdvanceButton");
     const advanceYearStatus = document.querySelector("#advanceYearStatus");
     const refreshPeopleButton = document.querySelector("#refreshPeopleButton");
+    const studentListYearFilter = document.querySelector("#studentListYearFilter");
+    const studentListClassFilter = document.querySelector("#studentListClassFilter");
+    const studentListFilterStatus = document.querySelector("#studentListFilterStatus");
     const studentListBody = document.querySelector("#studentListBody");
     const teacherListBody = document.querySelector("#teacherListBody");
     const peopleListStatus = document.querySelector("#peopleListStatus");
@@ -2514,6 +2528,7 @@
     let currentPortalRows = [];
     let currentPortalReportData = null;
     let currentPortalExamName = "";
+    let currentPeopleData = { students: [], teachers: [], classes: [] };
     let conversionRuleOptions = [
       { academic_year: 113, grade_level: 7, exam_type: "mock_exam", version_name: "09檔預設換算標準" },
       { academic_year: 113, grade_level: 8, exam_type: "mock_exam", version_name: "09檔預設換算標準" },
@@ -2808,9 +2823,42 @@
       }).join("、");
     }
 
-    function renderPeopleLists(data) {
-      const students = data.students || [];
+    function populateStudentListFilters(students) {
+      const previousYear = studentListYearFilter.value;
+      const years = [...new Set(students.map((student) => Number(student.academic_year)).filter(Number.isInteger))]
+        .sort((a, b) => b - a);
+      studentListYearFilter.innerHTML = years.length
+        ? years.map((year) => `<option value="${year}">${year} 學年度</option>`).join("")
+        : '<option value="">沒有學年度資料</option>';
+      studentListYearFilter.value = years.includes(Number(previousYear)) ? previousYear : String(years[0] || "");
+      populateStudentListClassFilter(students, Boolean(previousYear));
+    }
+
+    function populateStudentListClassFilter(students, preserveSelection = true) {
+      const previousClass = preserveSelection ? studentListClassFilter.value : "";
+      const selectedYear = Number(studentListYearFilter.value);
+      const classes = [...new Set(students
+        .filter((student) => Number(student.academic_year) === selectedYear)
+        .map((student) => student.class_code)
+        .filter(Boolean))]
+        .sort((a, b) => String(a).localeCompare(String(b), "zh-Hant", { numeric: true }));
+      studentListClassFilter.innerHTML = [
+        '<option value="">請選擇班級</option>',
+        '<option value="__all">全部班級</option>',
+        ...classes.map((classCode) => `<option value="${escapeHtml(classCode)}">${escapeHtml(classCode)}</option>`)
+      ].join("");
+      studentListClassFilter.value = classes.includes(previousClass) || previousClass === "__all" ? previousClass : "";
+    }
+
+    function renderPeopleLists(data = currentPeopleData) {
+      const allStudents = data.students || [];
       const teachers = data.teachers || [];
+      const selectedYear = Number(studentListYearFilter.value);
+      const selectedClass = studentListClassFilter.value;
+      const students = selectedClass
+        ? allStudents.filter((student) => Number(student.academic_year) === selectedYear
+          && (selectedClass === "__all" || student.class_code === selectedClass))
+        : [];
 
       studentListBody.innerHTML = students.length
         ? students.map((student) => {
@@ -2827,7 +2875,10 @@
             </tr>
           `;
         }).join("")
-        : '<tr><td colspan="7">目前沒有學生資料。</td></tr>';
+        : `<tr><td colspan="7">${selectedClass ? "此篩選條件沒有學生資料。" : "請先選擇班級。"}</td></tr>`;
+      studentListFilterStatus.textContent = selectedClass
+        ? `${selectedYear} 學年度｜${selectedClass === "__all" ? "全部班級" : selectedClass}｜共 ${students.length} 位學生。`
+        : "請選擇班級後查看學生，避免一次顯示全部名單。";
 
       teacherListBody.innerHTML = teachers.length
         ? teachers.map((teacher) => `
@@ -3036,12 +3087,14 @@
       peopleListStatus.textContent = "正在載入師生名單……";
       const result = await callSupabaseRpc("admin_list_people", {});
       const data = result.data || {};
+      currentPeopleData = data;
       if (Array.isArray(data.classes) && data.classes.length) {
         classCatalog = data.classes;
       }
       populateClassSelect(studentClassInput, studentYearInput.value);
       populateClassSelect(teacherClassInput, teacherYearInput.value);
       populateClassSelect(seatClassInput, seatYearInput.value);
+      populateStudentListFilters(data.students || []);
       renderPeopleLists(data);
       populateSeatStudentSelect(data.students || []);
       peopleListStatus.textContent = `已載入 ${data.students?.length || 0} 位學生、${data.teachers?.length || 0} 位教師。`;
@@ -5797,6 +5850,15 @@
       } finally {
         refreshPeopleButton.disabled = false;
       }
+    });
+
+    studentListYearFilter.addEventListener("change", () => {
+      populateStudentListClassFilter(currentPeopleData.students || [], false);
+      renderPeopleLists();
+    });
+
+    studentListClassFilter.addEventListener("change", () => {
+      renderPeopleLists();
     });
 
     previewAdvanceButton.addEventListener("click", async () => {
