@@ -2935,6 +2935,7 @@
       seatStudentSelect.innerHTML = activeStudents.length
         ? activeStudents.map((student) => `
           <option value="${escapeHtml(student.id)}"
+            data-student-no="${escapeHtml(student.student_no)}"
             data-year="${escapeHtml(student.academic_year ?? "")}"
             data-class-code="${escapeHtml(student.class_code || "")}"
             data-seat-no="${escapeHtml(student.seat_no ?? "")}">
@@ -5927,6 +5928,7 @@
 
     seatAdjustForm.addEventListener("submit", async (event) => {
       event.preventDefault();
+      const selectedStudent = seatStudentSelect.selectedOptions[0];
       const payload = {
         p_student_id: seatStudentSelect.value,
         p_academic_year: Number(seatYearInput.value),
@@ -5944,9 +5946,9 @@
         seatAdjustStatus.textContent = "學年度與新座號必須是正確的正整數。";
         return;
       }
-      const placementError = getStudentPlacementError(payload.p_student_no, payload.p_academic_year, payload.p_class_code);
+      const placementError = getStudentPlacementError(selectedStudent?.dataset.studentNo, payload.p_academic_year, payload.p_class_code);
       if (placementError) {
-        studentEditorStatus.textContent = placementError;
+        seatAdjustStatus.textContent = placementError;
         return;
       }
 
