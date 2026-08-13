@@ -1777,7 +1777,7 @@
             </div>
             <div class="form-group">
               <label for="studentYearInput">學年度</label>
-              <input id="studentYearInput" type="number" value="113" min="100" max="130">
+              <input id="studentYearInput" type="number" value="115" min="100" max="130">
             </div>
             <div class="form-group">
               <label for="studentClassInput">班級</label>
@@ -1800,7 +1800,7 @@
 
           <div class="manual-score-panel">
             <h3>批次建立學生名冊</h3>
-            <p class="setting-note">可從 Excel 複製貼上，每列格式：學號,學年度,班級,座號,姓名,聯絡 Email。Email 可留空；若未填學年度，才使用上方欄位。</p>
+            <p class="setting-note">可從 Excel 複製貼上，每列格式：學號,學年度,班級,座號,姓名,聯絡 Email。學號前三碼代表入學學年度；Email 可留空。若未填學年度，才使用上方欄位。</p>
             <div class="action-row">
               <button class="secondary-button download-seat-template-button" type="button">下載空白 Excel 範本</button>
               <button class="secondary-button" type="button" id="uploadBatchStudentButton">上傳學生名冊 Excel</button>
@@ -1809,8 +1809,8 @@
             <div class="form-group wide">
               <label for="batchStudentTextarea">批次學生資料</label>
               <textarea id="batchStudentTextarea" rows="6" placeholder="例如：
-1130901,114,九培,1,王小明,student01@example.com
-1130902,114,九培,2,李小華,"></textarea>
+1130901,115,九培,1,王小明,student01@example.com
+1130902,115,九培,2,李小華,"></textarea>
             </div>
             <div class="action-row">
               <button class="secondary-button" type="button" id="previewBatchStudentButton">預覽學生名冊</button>
@@ -2605,6 +2605,43 @@
       `).join("");
     }
 
+    function getCurrentAcademicYear(date = new Date()) {
+      const taiwanYear = date.getFullYear() - 1911;
+      return date.getMonth() >= 7 ? taiwanYear : taiwanYear - 1;
+    }
+
+    function initializeAcademicYearDefaults() {
+      const currentYear = getCurrentAcademicYear();
+      [academicYearInput, classYearInput, studentYearInput, teacherYearInput, seatYearInput,
+        batchSeatYearInput, advanceFromYearInput, newRuleYear, newPointYear]
+        .forEach((input) => { input.value = String(currentYear); });
+      advanceToYearInput.value = String(currentYear + 1);
+      semesterInput.value = new Date().getMonth() >= 7 || new Date().getMonth() === 0 ? "1" : "2";
+      examNameInput.value = buildSystemExamName();
+    }
+
+    function getStudentGradeLevel(studentNo, academicYear) {
+      const entryYear = Number(String(studentNo || "").trim().slice(0, 3));
+      const year = Number(academicYear);
+      if (!Number.isInteger(entryYear) || !Number.isInteger(year)) return null;
+      const gradeLevel = 7 + year - entryYear;
+      return gradeLevel >= 7 && gradeLevel <= 9 ? gradeLevel : null;
+    }
+
+    function getStudentPlacementError(studentNo, academicYear, classCode) {
+      const expectedGrade = getStudentGradeLevel(studentNo, academicYear);
+      if (!expectedGrade) {
+        return `學號 ${studentNo} 在 ${academicYear} 學年度不屬於七至九年級。`;
+      }
+      const selectedClass = classCatalog.find((item) =>
+        Number(item.academic_year) === Number(academicYear) && item.class_code === classCode
+      );
+      if (selectedClass && Number(selectedClass.grade_level) !== expectedGrade) {
+        return `學號 ${studentNo} 在 ${academicYear} 學年度應為 ${expectedGrade} 年級，不能放入「${classCode}」。`;
+      }
+      return "";
+    }
+
     function showAdminPage(pageName) {
       const pageText = {
         import: {
@@ -3030,6 +3067,11 @@
         );
         if (!classExists) {
           errors.push(`第 ${index + 1} 列找不到 ${academicYear} 學年度「${classCode}」班級，請先建立班級或修正班級名稱。`);
+          return;
+        }
+        const placementError = getStudentPlacementError(studentNo, academicYear, classCode);
+        if (placementError) {
+          errors.push(`第 ${index + 1} 列：${placementError}`);
           return;
         }
 
@@ -3932,10 +3974,10 @@
 
     function buildConversionRuleSetPayload(gradeLevel, examType = "mock_exam") {
       return {
-        p_academic_year: Number(newRuleYear.value || 113),
+        p_academic_year: Number(newRuleYear.value || getCurrentAcademicYear()),
         p_grade_level: Number(gradeLevel),
         p_exam_type: examType,
-        p_version_name: newRuleName.value.trim() || `${newRuleYear.value || 113} 模擬考換算標準`,
+        p_version_name: newRuleName.value.trim() || `${newRuleYear.value || getCurrentAcademicYear()} 模擬考換算標準`,
         p_source_file_name: "網頁手動建立",
         p_rules: getRuleEditorRows()
       };
@@ -3943,7 +3985,7 @@
 
     function buildPointRuleSetPayload() {
       const city = newPointCity.value.trim() || "台南市";
-      const year = Number(newPointYear.value || 113);
+      const year = Number(newPointYear.value || getCurrentAcademicYear());
       const name = newPointName.value.trim() || `${city} ${year} 積分版`;
 
       return {
@@ -5902,6 +5944,11 @@
         seatAdjustStatus.textContent = "學年度與新座號必須是正確的正整數。";
         return;
       }
+      const placementError = getStudentPlacementError(payload.p_student_no, payload.p_academic_year, payload.p_class_code);
+      if (placementError) {
+        studentEditorStatus.textContent = placementError;
+        return;
+      }
 
       if (!getSupabaseConfig().enabled) {
         seatAdjustStatus.textContent = "示範模式：已完成班級與座號調整格式檢查，尚未送至 Supabase。";
@@ -6739,7 +6786,7 @@
     supabaseAccessToken.addEventListener("input", updateSupabaseStatus);
 
     saveRuleSetButton.addEventListener("click", async () => {
-      const year = newRuleYear.value || "113";
+      const year = newRuleYear.value || String(getCurrentAcademicYear());
       const name = newRuleName.value.trim() || `${year} 模擬考換算標準`;
       const gradeLevels = newRuleGrade.value === "all" ? [7, 8, 9] : [Number(newRuleGrade.value)];
       const examTypes = ["mock_exam", "weekly_exam"];
@@ -6786,7 +6833,7 @@
 
     savePointSetButton.addEventListener("click", async () => {
       const city = newPointCity.value.trim() || "台南市";
-      const year = newPointYear.value || "113";
+      const year = newPointYear.value || String(getCurrentAcademicYear());
       const name = newPointName.value.trim() || `${city} ${year} 積分版`;
       const rpcPayload = buildPointRuleSetPayload();
 
@@ -6821,6 +6868,7 @@
     });
 
     loadSavedSupabaseConfig();
+    initializeAcademicYearDefaults();
     updateLoginModeHint();
     if (!loadRecoverySessionFromUrl()) {
       showAuthView("login");
