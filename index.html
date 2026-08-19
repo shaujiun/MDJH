@@ -2923,13 +2923,16 @@
       studentListBody.innerHTML = students.length
         ? students.map((student) => {
           const isActive = student.status === "active";
+          const registeredEmail = String(student.account_email || "");
+          const visibleEmail = student.contact_email
+            || (registeredEmail && !registeredEmail.endsWith("@students.invalid") ? registeredEmail : "");
           return `
             <tr>
               <td>${escapeHtml(student.student_no)}</td>
               <td>${escapeHtml(student.student_name)}</td>
               <td>${escapeHtml(student.class_code || "－")}</td>
               <td>${escapeHtml(student.seat_no ?? "－")}</td>
-              <td>${escapeHtml(student.contact_email || "未填寫")}</td>
+              <td>${escapeHtml(visibleEmail || "未填寫")}</td>
               <td>${student.account_email
                 ? (student.account_active === false ? "已註冊｜帳號停用" : "已註冊｜學號登入")
                 : "尚未註冊"}</td>
