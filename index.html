@@ -1720,8 +1720,22 @@
 
     <section class="admin-page" data-admin-page="people" aria-label="人員與帳號管理">
       <section class="app-card" style="margin-bottom: 22px;">
+        <div class="form-group">
+          <label for="peopleToolSelect">管理項目</label>
+          <select id="peopleToolSelect">
+            <option value="students">學生資料建立</option>
+            <option value="classes">班級建立</option>
+            <option value="teachers">教師資料建立</option>
+            <option value="seats">班級與座號調整</option>
+            <option value="advance">學籍年度維護</option>
+            <option value="directory">人員與帳號查詢</option>
+          </select>
+        </div>
+      </section>
+
+      <section class="app-card people-tool-section hidden" data-people-tool="classes" style="margin-bottom: 22px;">
         <h2>班級建立</h2>
-        <p class="hint">匯入新學年度學生名冊前，可先建立該學年度班級。不會執行學籍升級，也不會影響舊成績快照。</p>
+        <p class="hint">匯入新學年度學生資料前，可先建立該學年度班級。不會執行學籍升級，也不會影響舊成績快照。</p>
         <div class="report-filter-row">
           <div class="form-group">
             <label for="classYearInput">學年度</label>
@@ -1763,9 +1777,8 @@
         </form>
         <p class="setting-note" id="classEditorStatus">若要測試 114 學年度新生，請先建立 114 學年度班級。</p>
       </section>
-      <div class="settings-grid">
-        <form class="app-card" id="studentEditorForm" novalidate>
-          <h2>學生名冊</h2>
+        <form class="app-card people-tool-section" data-people-tool="students" id="studentEditorForm" novalidate>
+          <h2>學生資料建立</h2>
           <div class="form-grid">
             <div class="form-group">
               <label for="studentNoInput">學號</label>
@@ -1796,14 +1809,14 @@
             <button class="primary-action" type="submit">儲存學生</button>
             <button class="secondary-button" type="button" id="issueStudentRegistrationCodeButton">產生／重設註冊碼</button>
           </div>
-          <p class="setting-note" id="studentEditorStatus">先儲存學生名冊，再產生一次性註冊碼交給學生。</p>
+          <p class="setting-note" id="studentEditorStatus">先儲存學生資料，再產生一次性註冊碼交給學生。</p>
 
           <div class="manual-score-panel">
-            <h3>批次建立學生名冊</h3>
+            <h3>批次建立學生資料</h3>
             <p class="setting-note">可從 Excel 複製貼上，每列格式：學號,學年度,班級,座號,姓名,聯絡 Email。學號前三碼代表入學學年度；Email 可留空。若未填學年度，才使用上方欄位。</p>
             <div class="action-row">
               <button class="secondary-button download-seat-template-button" type="button">下載空白 Excel 範本</button>
-              <button class="secondary-button" type="button" id="uploadBatchStudentButton">上傳學生名冊 Excel</button>
+              <button class="secondary-button" type="button" id="uploadBatchStudentButton">上傳學生資料 Excel</button>
               <input id="batchStudentFileInput" class="hidden" type="file" accept=".xlsx,.xls">
             </div>
             <div class="form-group wide">
@@ -1813,7 +1826,7 @@
 1130902,115,九培,2,李小華,"></textarea>
             </div>
             <div class="action-row">
-              <button class="secondary-button" type="button" id="previewBatchStudentButton">預覽學生名冊</button>
+              <button class="secondary-button" type="button" id="previewBatchStudentButton">預覽學生資料</button>
               <button class="primary-action" type="button" id="executeBatchStudentButton">正式批次建立</button>
               <button class="secondary-button" type="button" id="downloadBatchRegistrationCodesButton">產生註冊碼並下載 Word</button>
             </div>
@@ -1821,8 +1834,8 @@
           </div>
         </form>
 
-        <form class="app-card" id="teacherEditorForm" novalidate>
-          <h2>教師名冊</h2>
+        <form class="app-card people-tool-section hidden" data-people-tool="teachers" id="teacherEditorForm" novalidate>
+          <h2>教師資料建立</h2>
           <div class="form-grid">
             <div class="form-group">
               <label for="teacherNameInput">姓名</label>
@@ -1872,9 +1885,7 @@
           </div>
           <p class="setting-note" id="teacherEditorStatus">綁定帳號後，系統會依導師或任課老師設定角色。</p>
         </form>
-      </div>
-
-      <section class="app-card" style="margin-top: 22px;">
+      <section class="app-card people-tool-section hidden" data-people-tool="seats">
         <h2>班級與座號調整</h2>
         <p class="hint">用於培訓班加入、退出或重新編座號。此處只調整目前名冊，不會改變已匯入成績單的班級與座號快照。</p>
         <form id="seatAdjustForm" novalidate>
@@ -1942,7 +1953,7 @@
         </div>
       </section>
 
-      <section class="app-card" style="margin-top: 22px;">
+      <section class="app-card people-tool-section hidden" data-people-tool="advance">
         <h2>學籍年度維護</h2>
         <p class="hint">預設於每年 7 月 10 日升級七、八年級；九年級畢業生標記為畢業並停用登入帳號，舊成績快照仍保留。</p>
         <div class="report-filter-row">
@@ -1964,7 +1975,7 @@
         <p class="setting-note" id="advanceYearStatus">正式執行前請先預覽，確認升級與畢業人數。</p>
       </section>
 
-      <section class="app-card" style="margin-top: 22px;">
+      <section class="app-card people-tool-section hidden" data-people-tool="directory">
         <div class="action-row" style="margin-top: 0;">
           <button class="secondary-button" type="button" id="refreshPeopleButton">重新整理名單</button>
         </div>
@@ -1982,8 +1993,8 @@
         <p class="setting-note" id="studentListFilterStatus">請選擇學年度與班級後查看學生。</p>
         <div class="preview-table-wrap">
           <table>
-            <thead><tr><th>學號</th><th>姓名</th><th>班級</th><th>座號</th><th>系統帳號（仍用學號登入）</th><th>學籍狀態</th><th>操作</th></tr></thead>
-            <tbody id="studentListBody"><tr><td colspan="7">尚未載入名單。</td></tr></tbody>
+            <thead><tr><th>學號</th><th>姓名</th><th>班級</th><th>座號</th><th>聯絡 Email</th><th>註冊綁定</th><th>學籍狀態</th><th>操作</th></tr></thead>
+            <tbody id="studentListBody"><tr><td colspan="8">尚未載入名單。</td></tr></tbody>
           </table>
         </div>
         <h2 style="margin-top: 28px;">教師名單</h2>
@@ -2460,6 +2471,8 @@
     const previewAdvanceButton = document.querySelector("#previewAdvanceButton");
     const executeAdvanceButton = document.querySelector("#executeAdvanceButton");
     const advanceYearStatus = document.querySelector("#advanceYearStatus");
+    const peopleToolSelect = document.querySelector("#peopleToolSelect");
+    const peopleToolSections = document.querySelectorAll(".people-tool-section");
     const refreshPeopleButton = document.querySelector("#refreshPeopleButton");
     const studentListYearFilter = document.querySelector("#studentListYearFilter");
     const studentListClassFilter = document.querySelector("#studentListClassFilter");
@@ -2686,6 +2699,16 @@
       }
     }
 
+    function showPeopleTool(toolName) {
+      const selected = Array.from(peopleToolSections).some((section) => section.dataset.peopleTool === toolName)
+        ? toolName
+        : "students";
+      peopleToolSelect.value = selected;
+      peopleToolSections.forEach((section) => {
+        section.classList.toggle("hidden", section.dataset.peopleTool !== selected);
+      });
+    }
+
     function populateClassSelect(selectElement, academicYear) {
       const selectedValue = selectElement.value;
       const classes = classCatalog.filter((item) => Number(item.academic_year) === Number(academicYear));
@@ -2906,15 +2929,16 @@
               <td>${escapeHtml(student.student_name)}</td>
               <td>${escapeHtml(student.class_code || "－")}</td>
               <td>${escapeHtml(student.seat_no ?? "－")}</td>
+              <td>${escapeHtml(student.contact_email || "未填寫")}</td>
               <td>${student.account_email
-                ? `${escapeHtml(student.account_email)}${student.account_active === false ? "（停用）" : ""}`
-                : "未綁定"}</td>
+                ? (student.account_active === false ? "已註冊｜帳號停用" : "已註冊｜學號登入")
+                : "尚未註冊"}</td>
               <td>${isActive ? "在籍" : escapeHtml(student.status)}</td>
               <td><button class="secondary-button person-status-button" type="button" data-person-type="student" data-person-id="${escapeHtml(student.id)}" data-next-active="${String(!isActive)}">${isActive ? "停用" : "恢復"}</button></td>
             </tr>
           `;
         }).join("")
-        : `<tr><td colspan="7">${selectedClass ? "此篩選條件沒有學生資料。" : "請先選擇班級。"}</td></tr>`;
+        : `<tr><td colspan="8">${selectedClass ? "此篩選條件沒有學生資料。" : "請先選擇班級。"}</td></tr>`;
       studentListFilterStatus.textContent = selectedClass
         ? `${selectedYear} 學年度｜${selectedClass === "__all" ? "全部班級" : selectedClass}｜共 ${students.length} 位學生。`
         : "請選擇班級後查看學生，避免一次顯示全部名單。";
@@ -3107,7 +3131,7 @@
         return null;
       }
       if (!rows.length) {
-        batchStudentStatus.textContent = "請先貼上批次學生名冊。";
+        batchStudentStatus.textContent = "請先貼上批次學生資料。";
         return null;
       }
 
@@ -3130,8 +3154,17 @@
       }
 
       peopleListStatus.textContent = "正在載入師生名單……";
-      const result = await callSupabaseRpc("admin_list_people", {});
+      const [result, contactResult] = await Promise.all([
+        callSupabaseRpc("admin_list_people", {}),
+        callSupabaseRpc("admin_list_student_contact_emails", {})
+      ]);
       const data = result.data || {};
+      const contacts = Array.isArray(contactResult.data) ? contactResult.data : [];
+      const contactByStudentId = new Map(contacts.map((item) => [item.student_id, item.contact_email]));
+      data.students = (data.students || []).map((student) => ({
+        ...student,
+        contact_email: contactByStudentId.get(student.id) || null
+      }));
       currentPeopleData = data;
       if (Array.isArray(data.classes) && data.classes.length) {
         classCatalog = data.classes;
@@ -5886,6 +5919,10 @@
 
     teacherRoleInput.addEventListener("change", updateTeacherSubjectVisibility);
 
+    peopleToolSelect.addEventListener("change", () => {
+      showPeopleTool(peopleToolSelect.value);
+    });
+
     refreshPeopleButton.addEventListener("click", async () => {
       try {
         refreshPeopleButton.disabled = true;
@@ -5987,7 +6024,7 @@
       }
 
       if (!getSupabaseConfig().enabled) {
-        batchStudentStatus.textContent = `示範模式：已完成 ${rows.length} 位學生名冊格式檢查，尚未送至 Supabase。`;
+        batchStudentStatus.textContent = `示範模式：已完成 ${rows.length} 位學生資料格式檢查，尚未送至 Supabase。`;
         return;
       }
 
@@ -6004,10 +6041,10 @@
           });
           successCount += 1;
         }
-        batchStudentStatus.textContent = `批次學生名冊完成：已新增或更新 ${successCount} 位學生。`;
+        batchStudentStatus.textContent = `批次學生資料完成：已新增或更新 ${successCount} 位學生。`;
         await loadPeopleData();
       } catch (error) {
-        batchStudentStatus.textContent = `批次學生名冊失敗：${error.message}`;
+        batchStudentStatus.textContent = `批次學生資料失敗：${error.message}`;
       } finally {
         executeBatchStudentButton.disabled = false;
       }
@@ -6878,6 +6915,7 @@
       showAuthView("login");
     }
     showAdminPage("import");
+    showPeopleTool("students");
     initializeSettingEditors();
     syncClassFormDefaults();
     renderImportRuleOptions();
