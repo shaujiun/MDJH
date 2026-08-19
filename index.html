@@ -1982,7 +1982,7 @@
         <p class="setting-note" id="studentListFilterStatus">請選擇學年度與班級後查看學生。</p>
         <div class="preview-table-wrap">
           <table>
-            <thead><tr><th>學號</th><th>姓名</th><th>班級</th><th>座號</th><th>登入狀態</th><th>學籍狀態</th><th>操作</th></tr></thead>
+            <thead><tr><th>學號</th><th>姓名</th><th>班級</th><th>座號</th><th>系統帳號（仍用學號登入）</th><th>學籍狀態</th><th>操作</th></tr></thead>
             <tbody id="studentListBody"><tr><td colspan="7">尚未載入名單。</td></tr></tbody>
           </table>
         </div>
@@ -1993,7 +1993,7 @@
             <tbody id="teacherListBody"><tr><td colspan="5">尚未載入名單。</td></tr></tbody>
           </table>
         </div>
-        <p class="setting-note" id="peopleListStatus">學生顯示「已綁定」代表已完成註冊，登入時仍使用學號，不使用系統內部 Email。</p>
+        <p class="setting-note" id="peopleListStatus">系統帳號 Email 僅供 Supabase Auth 識別；學生登入時仍輸入學號。</p>
       </section>
     </section>
 
@@ -2907,7 +2907,7 @@
               <td>${escapeHtml(student.class_code || "－")}</td>
               <td>${escapeHtml(student.seat_no ?? "－")}</td>
               <td>${student.account_email
-                ? (student.account_active === false ? "已綁定｜帳號停用" : "已綁定｜學號登入")
+                ? `${escapeHtml(student.account_email)}${student.account_active === false ? "（停用）" : ""}`
                 : "未綁定"}</td>
               <td>${isActive ? "在籍" : escapeHtml(student.status)}</td>
               <td><button class="secondary-button person-status-button" type="button" data-person-type="student" data-person-id="${escapeHtml(student.id)}" data-next-active="${String(!isActive)}">${isActive ? "停用" : "恢復"}</button></td>
