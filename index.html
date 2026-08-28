@@ -5340,6 +5340,14 @@
       return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || "").trim());
     }
 
+    function formatLoginError(error) {
+      const detail = String(error?.message || error || "");
+      if (/failed to fetch|networkerror|load failed|network request failed/i.test(detail)) {
+        return "目前無法連線到 Supabase。專案可能已暫停，或網路暫時無法使用；請通知管理員檢查 Supabase 專案狀態。";
+      }
+      return detail || "發生未知錯誤。";
+    }
+
     async function resolveLoginIdentifier(identifier, role) {
       const rawIdentifier = String(identifier || "").trim();
       if (!rawIdentifier || looksLikeEmail(rawIdentifier)) {
@@ -6484,7 +6492,7 @@
         } catch (error) {
           currentSession = null;
           supabaseAccessToken.value = "";
-          message.textContent = `登入失敗：${error.message}`;
+          message.textContent = `登入失敗：${formatLoginError(error)}`;
           message.classList.add("error");
         }
         return;
