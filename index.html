@@ -1332,7 +1332,7 @@
 
         <div class="form-group">
           <label for="account" id="accountLabel">帳號</label>
-          <input id="account" name="account" type="text" autocomplete="username" placeholder="例如：teacher01" required>
+          <input id="account" name="account" type="text" autocomplete="username" placeholder="請輸入學號或教師 Email" required>
         </div>
 
         <div class="form-group">
@@ -1345,12 +1345,8 @@
 
         <div class="form-options">
           <label class="remember">
-            <input id="remember" name="remember" type="checkbox">
-            記住此裝置
-          </label>
-          <label class="remember">
-            <input id="useSupabaseAuth" name="useSupabaseAuth" type="checkbox">
-            使用 Supabase Auth
+            <input id="remember" name="remember" type="checkbox" checked>
+            重新整理後保持登入
           </label>
         </div>
 
@@ -1469,10 +1465,6 @@
         <div class="form-group">
           <label for="supabaseAnonKey">Supabase anon key</label>
           <input id="supabaseAnonKey" type="password" placeholder="只填 anon key，不填 service role key">
-        </div>
-        <div class="form-group">
-          <label for="supabaseAccessToken">登入後 access token</label>
-          <input id="supabaseAccessToken" type="password" placeholder="正式登入後由系統自動帶入" readonly>
         </div>
         <label class="switch-row">
           <input id="enableLiveRpc" type="checkbox">
@@ -1978,6 +1970,7 @@
       <section class="app-card people-tool-section hidden" data-people-tool="directory">
         <div class="action-row" style="margin-top: 0;">
           <button class="secondary-button" type="button" id="refreshPeopleButton">重新整理名單</button>
+          <button class="secondary-button" type="button" id="downloadPeopleBackupButton">下載人員名冊備份</button>
         </div>
         <h2 style="margin-top: 22px;">學生名單</h2>
         <div class="report-filter-row" style="margin-bottom: 14px;">
@@ -1993,15 +1986,15 @@
         <p class="setting-note" id="studentListFilterStatus">請選擇學年度與班級後查看學生。</p>
         <div class="preview-table-wrap">
           <table>
-            <thead><tr><th>學號</th><th>姓名</th><th>班級</th><th>座號</th><th>聯絡 Email</th><th>註冊綁定</th><th>學籍狀態</th><th>操作</th></tr></thead>
-            <tbody id="studentListBody"><tr><td colspan="8">尚未載入名單。</td></tr></tbody>
+            <thead><tr><th>學號</th><th>姓名</th><th>班級</th><th>座號</th><th>聯絡 Email</th><th>註冊綁定</th><th>註冊碼</th><th>學籍狀態</th><th>操作</th></tr></thead>
+            <tbody id="studentListBody"><tr><td colspan="9">尚未載入名單。</td></tr></tbody>
           </table>
         </div>
         <h2 style="margin-top: 28px;">教師名單</h2>
         <div class="preview-table-wrap">
           <table>
-            <thead><tr><th>姓名</th><th>任教設定</th><th>帳號</th><th>狀態</th><th>操作</th></tr></thead>
-            <tbody id="teacherListBody"><tr><td colspan="5">尚未載入名單。</td></tr></tbody>
+            <thead><tr><th>姓名</th><th>任教設定</th><th>帳號</th><th>Email 驗證</th><th>狀態</th><th>操作</th></tr></thead>
+            <tbody id="teacherListBody"><tr><td colspan="6">尚未載入名單。</td></tr></tbody>
           </table>
         </div>
         <p class="setting-note" id="peopleListStatus">系統帳號 Email 僅供 Supabase Auth 識別；學生登入時仍輸入學號。</p>
@@ -2366,7 +2359,7 @@
     const accountLabel = document.querySelector("#accountLabel");
     const passwordInput = document.querySelector("#password");
     const togglePassword = document.querySelector("#togglePassword");
-    const useSupabaseAuth = document.querySelector("#useSupabaseAuth");
+    const rememberInput = document.querySelector("#remember");
     const loginShell = document.querySelector(".login-shell");
     const adminApp = document.querySelector("#adminApp");
     const portalApp = document.querySelector("#portalApp");
@@ -2474,6 +2467,7 @@
     const peopleToolSelect = document.querySelector("#peopleToolSelect");
     const peopleToolSections = document.querySelectorAll(".people-tool-section");
     const refreshPeopleButton = document.querySelector("#refreshPeopleButton");
+    const downloadPeopleBackupButton = document.querySelector("#downloadPeopleBackupButton");
     const studentListYearFilter = document.querySelector("#studentListYearFilter");
     const studentListClassFilter = document.querySelector("#studentListClassFilter");
     const studentListFilterStatus = document.querySelector("#studentListFilterStatus");
@@ -2506,7 +2500,6 @@
     const pointSetStatus = document.querySelector("#pointSetStatus");
     const supabaseUrl = document.querySelector("#supabaseUrl");
     const supabaseAnonKey = document.querySelector("#supabaseAnonKey");
-    const supabaseAccessToken = document.querySelector("#supabaseAccessToken");
     const enableLiveRpc = document.querySelector("#enableLiveRpc");
     const supabaseStatus = document.querySelector("#supabaseStatus");
     const saveSupabaseConfigButton = document.querySelector("#saveSupabaseConfigButton");
@@ -2532,6 +2525,7 @@
     const newPointName = document.querySelector("#newPointName");
     let currentSession = null;
     let currentProfile = null;
+    const AUTH_SESSION_STORAGE_KEY = "mockExamRefreshToken";
     let currentParsedImport = null;
     const STUDENT_SEAT_TEMPLATE_BASE64 = "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";
     let currentReportRows = [];
@@ -2926,6 +2920,13 @@
           const registeredEmail = String(student.account_email || "");
           const visibleEmail = student.contact_email
             || (registeredEmail && !registeredEmail.endsWith("@students.invalid") ? registeredEmail : "");
+          const registrationLabels = {
+            registered: "已完成註冊",
+            available: "可使用",
+            expired: "已過期，請重發",
+            consumed: "已使用",
+            not_issued: "尚未產生"
+          };
           return `
             <tr>
               <td>${escapeHtml(student.student_no)}</td>
@@ -2936,12 +2937,13 @@
               <td>${student.account_email
                 ? (student.account_active === false ? "已註冊｜帳號停用" : "已註冊｜學號登入")
                 : "尚未註冊"}</td>
+              <td>${registrationLabels[student.registration_status] || "尚未產生"}</td>
               <td>${isActive ? "在籍" : escapeHtml(student.status)}</td>
-              <td><button class="secondary-button person-status-button" type="button" data-person-type="student" data-person-id="${escapeHtml(student.id)}" data-next-active="${String(!isActive)}">${isActive ? "停用" : "恢復"}</button></td>
+              <td><button class="secondary-button student-edit-button" type="button" data-person-id="${escapeHtml(student.id)}">編輯</button> <button class="secondary-button person-status-button" type="button" data-person-type="student" data-person-id="${escapeHtml(student.id)}" data-next-active="${String(!isActive)}">${isActive ? "停用" : "恢復"}</button></td>
             </tr>
           `;
         }).join("")
-        : `<tr><td colspan="8">${selectedClass ? "此篩選條件沒有學生資料。" : "請先選擇班級。"}</td></tr>`;
+        : `<tr><td colspan="9">${selectedClass ? "此篩選條件沒有學生資料。" : "請先選擇班級。"}</td></tr>`;
       studentListFilterStatus.textContent = selectedClass
         ? `${selectedYear} 學年度｜${selectedClass === "__all" ? "全部班級" : selectedClass}｜共 ${students.length} 位學生。`
         : "請選擇班級後查看學生，避免一次顯示全部名單。";
@@ -2952,11 +2954,12 @@
             <td>${escapeHtml(teacher.teacher_name)}</td>
             <td>${escapeHtml(teacherAssignmentsLabel(teacher))}</td>
             <td>${escapeHtml(teacher.account_email || "未綁定")}</td>
+            <td>${teacher.email_confirmed_at ? "已驗證" : (teacher.account_email ? "尚未驗證" : "尚未建立帳號")}</td>
             <td>${teacher.is_active ? "啟用" : "停用"}</td>
             <td><button class="secondary-button person-status-button" type="button" data-person-type="teacher" data-person-id="${escapeHtml(teacher.id)}" data-next-active="${String(!teacher.is_active)}">${teacher.is_active ? "停用" : "恢復"}</button></td>
           </tr>
         `).join("")
-        : '<tr><td colspan="5">目前沒有教師資料。</td></tr>';
+        : '<tr><td colspan="6">目前沒有教師資料。</td></tr>';
     }
 
     function populateSeatStudentSelect(students = []) {
@@ -3157,16 +3160,25 @@
       }
 
       peopleListStatus.textContent = "正在載入師生名單……";
-      const [result, contactResult] = await Promise.all([
+      const [result, contactResult, registrationResult, teacherAuthResult] = await Promise.all([
         callSupabaseRpc("admin_list_people", {}),
-        callSupabaseRpc("admin_list_student_contact_emails", {})
+        callSupabaseRpc("admin_list_student_contact_emails", {}),
+        callSupabaseRpc("admin_list_student_registration_statuses", {}),
+        callSupabaseRpc("admin_list_teacher_auth_statuses", {})
       ]);
       const data = result.data || {};
       const contacts = Array.isArray(contactResult.data) ? contactResult.data : [];
       const contactByStudentId = new Map(contacts.map((item) => [item.student_id, item.contact_email]));
+      const registrationByStudentId = new Map((registrationResult.data || []).map((item) => [item.student_id, item]));
+      const teacherAuthById = new Map((teacherAuthResult.data || []).map((item) => [item.teacher_id, item]));
       data.students = (data.students || []).map((student) => ({
         ...student,
-        contact_email: contactByStudentId.get(student.id) || null
+        contact_email: contactByStudentId.get(student.id) || null,
+        ...(registrationByStudentId.get(student.id) || {})
+      }));
+      data.teachers = (data.teachers || []).map((teacher) => ({
+        ...teacher,
+        ...(teacherAuthById.get(teacher.id) || {})
       }));
       currentPeopleData = data;
       if (Array.isArray(data.classes) && data.classes.length) {
@@ -3301,9 +3313,9 @@
         },
         {
           label: "Supabase Auth",
-          level: useSupabaseAuth.checked ? "ok" : "warning",
-          status: useSupabaseAuth.checked ? "通過" : "提醒",
-          hint: useSupabaseAuth.checked ? "登入介面已切換為 Supabase Auth。" : "正式上線測試時，登入介面需勾選 Supabase Auth。"
+          level: "ok",
+          status: "通過",
+          hint: "登入介面固定使用 Supabase Auth。"
         },
         {
           label: "Auth Redirect URL",
@@ -5055,7 +5067,7 @@
         enabled: enableLiveRpc.checked,
         url: normalizeSupabaseUrl(supabaseUrl.value || defaultSupabaseConfig.url),
         anonKey: supabaseAnonKey.value.trim() || defaultSupabaseConfig.anonKey,
-        accessToken: supabaseAccessToken.value.trim()
+        accessToken: currentSession?.access_token || ""
       };
     }
 
@@ -5065,13 +5077,11 @@
         supabaseUrl.value = normalizeSupabaseUrl(saved.url || defaultSupabaseConfig.url);
         supabaseAnonKey.value = saved.anonKey || defaultSupabaseConfig.anonKey;
         enableLiveRpc.checked = saved.liveRpc == null ? defaultSupabaseConfig.liveRpc : Boolean(saved.liveRpc);
-        useSupabaseAuth.checked = Boolean(supabaseUrl.value && supabaseAnonKey.value);
       } catch {
         localStorage.removeItem("mockExamSupabaseConfig");
         supabaseUrl.value = defaultSupabaseConfig.url;
         supabaseAnonKey.value = defaultSupabaseConfig.anonKey;
         enableLiveRpc.checked = defaultSupabaseConfig.liveRpc;
-        useSupabaseAuth.checked = true;
       }
     }
 
@@ -5088,7 +5098,6 @@
         anonKey,
         liveRpc: enableLiveRpc.checked
       }));
-      useSupabaseAuth.checked = true;
     }
 
     function showAuthView(view) {
@@ -5096,7 +5105,7 @@
       signupForm.classList.toggle("hidden", view !== "signup");
       resetRequestForm.classList.toggle("hidden", view !== "request-reset");
       updatePasswordForm.classList.toggle("hidden", view !== "update-password");
-      demoAccount.classList.toggle("hidden", view !== "login");
+      demoAccount?.classList.add("hidden");
 
       const headings = {
         login: ["登入系統", "請使用學校提供的帳號登入。"],
@@ -5120,14 +5129,11 @@
     }
 
     function updateLoginModeHint() {
-      const useLiveAuth = useSupabaseAuth.checked;
       const isStudent = roleInput.value === "student";
-      accountLabel.textContent = useLiveAuth ? (isStudent ? "學號" : "Email") : "帳號";
+      accountLabel.textContent = isStudent ? "學號" : "Email";
       accountInput.type = "text";
-      accountInput.autocomplete = useLiveAuth ? "username" : "username";
-      accountInput.placeholder = useLiveAuth
-        ? (isStudent ? "請輸入學號" : "請輸入教師 Email")
-        : "例如：teacher01";
+      accountInput.autocomplete = "username";
+      accountInput.placeholder = isStudent ? "請輸入學號" : "請輸入教師 Email";
     }
 
     function getPasswordResetRedirectUrl() {
@@ -5278,8 +5284,45 @@
         access_token: accessToken,
         refresh_token: refreshToken
       };
-      supabaseAccessToken.value = accessToken;
       showAuthView("update-password");
+      return true;
+    }
+
+    function persistCurrentSession(session) {
+      currentSession = session;
+      if (rememberInput.checked && session?.refresh_token) {
+        sessionStorage.setItem(AUTH_SESSION_STORAGE_KEY, session.refresh_token);
+      } else {
+        sessionStorage.removeItem(AUTH_SESSION_STORAGE_KEY);
+      }
+    }
+
+    function clearCurrentSession() {
+      currentSession = null;
+      currentProfile = null;
+      sessionStorage.removeItem(AUTH_SESSION_STORAGE_KEY);
+    }
+
+    async function restoreCurrentSession() {
+      const refreshToken = sessionStorage.getItem(AUTH_SESSION_STORAGE_KEY);
+      if (!refreshToken) return false;
+
+      const config = getSupabaseConfig();
+      const response = await fetch(`${config.url}/auth/v1/token?grant_type=refresh_token`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "apikey": config.anonKey },
+        body: JSON.stringify({ refresh_token: refreshToken })
+      });
+      const session = await parseAuthResponse(response);
+      if (!response.ok || !session?.access_token || !session?.user?.id) {
+        clearCurrentSession();
+        return false;
+      }
+
+      rememberInput.checked = true;
+      persistCurrentSession(session);
+      const profile = await fetchCurrentProfile(session.user.id, session.access_token);
+      enterRolePage(profile);
       return true;
     }
 
@@ -5718,8 +5761,7 @@
           // 密碼已更新完成，遠端登出失敗不影響更新結果。
         }
 
-        currentSession = null;
-        supabaseAccessToken.value = "";
+        clearCurrentSession();
         newPassword.value = "";
         confirmNewPassword.value = "";
         window.history.replaceState({}, document.title, `${window.location.pathname}${window.location.search}`);
@@ -5730,15 +5772,6 @@
         updatePasswordMessage.textContent = `更新失敗：${error.message}`;
         updatePasswordMessage.classList.add("error");
       }
-    });
-
-    useSupabaseAuth.addEventListener("change", () => {
-      const useLiveAuth = useSupabaseAuth.checked;
-      updateLoginModeHint();
-      message.className = "message";
-      message.textContent = useLiveAuth
-        ? "正式登入時，身分會依資料庫帳號角色自動判定；下拉選單只作為操作提示。"
-        : "目前使用前端示範帳號登入。";
     });
 
     roleInput.addEventListener("change", updateLoginModeHint);
@@ -5943,6 +5976,13 @@
       } finally {
         refreshPeopleButton.disabled = false;
       }
+    });
+
+    downloadPeopleBackupButton.addEventListener("click", () => {
+      const date = new Date().toISOString().slice(0, 10);
+      const payload = JSON.stringify({ exported_at: new Date().toISOString(), ...currentPeopleData }, null, 2);
+      downloadBlob(new Blob([payload], { type: "application/json;charset=utf-8" }), `人員名冊備份_${date}.json`);
+      peopleListStatus.textContent = `已下載 ${date} 人員名冊備份。`;
     });
 
     studentListYearFilter.addEventListener("change", () => {
@@ -6422,7 +6462,25 @@
       );
       batchSeatFileInput.value = "";
     });
-    studentListBody.addEventListener("click", handlePersonStatusChange);
+    studentListBody.addEventListener("click", (event) => {
+      const editButton = event.target.closest(".student-edit-button");
+      if (!editButton) {
+        handlePersonStatusChange(event);
+        return;
+      }
+      const student = (currentPeopleData.students || []).find((item) => item.id === editButton.dataset.personId);
+      if (!student) return;
+      studentNoInput.value = student.student_no || "";
+      studentNameInput.value = student.student_name || "";
+      studentYearInput.value = student.academic_year || "";
+      populateClassSelect(studentClassInput, studentYearInput.value);
+      studentClassInput.value = student.class_code || "";
+      studentSeatInput.value = student.seat_no ?? "";
+      studentAccountEmailInput.value = student.contact_email || "";
+      showPeopleTool("students");
+      studentEditorForm.scrollIntoView({ behavior: "smooth", block: "start" });
+      studentEditorStatus.textContent = `正在編輯 ${student.student_name}（${student.student_no}），儲存後會更新原資料。`;
+    });
     teacherListBody.addEventListener("click", handlePersonStatusChange);
 
     saveSupabaseConfigButton.addEventListener("click", () => {
@@ -6465,71 +6523,26 @@
       const role = String(formData.get("role") || "").trim();
       const account = String(formData.get("account") || "").trim();
       const password = String(formData.get("password") || "");
-      const rolePages = {
-        student: "學生個人成績頁面",
-        subject_teacher: "任課老師科目成績頁面",
-        homeroom_teacher: "導師班級總表頁面",
-        admin: "行政匯入與報表管理頁面",
-        viewer: "成績查詢頁面"
-      };
-
       message.className = "message";
 
-      if (useSupabaseAuth.checked) {
-        if (!account || !password) {
-          message.textContent = "請填寫 Email、學號或自訂帳號，以及密碼。";
-          message.classList.add("error");
-          return;
-        }
-
-        try {
-          message.textContent = "正在確認登入帳號並連接 Supabase……";
-          const loginEmail = await resolveLoginIdentifier(account, role);
-          currentSession = await signInWithSupabase(loginEmail, password);
-          supabaseAccessToken.value = currentSession.access_token || "";
-          const profile = await fetchCurrentProfile(currentSession.user.id, currentSession.access_token);
-          enterRolePage(profile);
-        } catch (error) {
-          currentSession = null;
-          supabaseAccessToken.value = "";
-          message.textContent = `登入失敗：${formatLoginError(error)}`;
-          message.classList.add("error");
-        }
-        return;
-      }
-
-      if (!role || !account || !password) {
-        message.textContent = "請完整填寫登入身分、帳號與密碼。";
+      if (!account || !password) {
+        message.textContent = "請填寫 Email 或學號，以及密碼。";
         message.classList.add("error");
         return;
       }
 
-      const isDemoAdmin = role === "admin" && account === "admin01" && password === "123456";
-      const isDemoUser = role !== "admin" && account === "teacher01" && password === "123456";
-
-      if (isDemoAdmin || isDemoUser) {
-        message.textContent = `登入成功。之後可導向${rolePages[role] || "模擬考成績轉換頁面"}。`;
-        message.classList.add("success");
-        window.setTimeout(() => {
-          if (isDemoAdmin) {
-            loginShell.classList.add("hidden");
-            adminApp.classList.remove("hidden");
-            showAdminPage("import");
-            renderImportRuleOptions();
-            return;
-          }
-          enterRolePage({
-            role,
-            display_name: "示範使用者",
-            account_name: account,
-            is_active: true
-          });
-        }, 350);
-        return;
+      try {
+        message.textContent = "正在確認登入帳號並連接 Supabase……";
+        const loginEmail = await resolveLoginIdentifier(account, role);
+        const session = await signInWithSupabase(loginEmail, password);
+        persistCurrentSession(session);
+        const profile = await fetchCurrentProfile(session.user.id, session.access_token);
+        enterRolePage(profile);
+      } catch (error) {
+        clearCurrentSession();
+        message.textContent = `登入失敗：${formatLoginError(error)}`;
+        message.classList.add("error");
       }
-
-      message.textContent = "帳號或密碼不正確，請重新確認。";
-      message.classList.add("error");
     });
 
     logoutButton.addEventListener("click", async () => {
@@ -6539,9 +6552,7 @@
         // 即使遠端登出失敗，仍清除目前頁面的登入狀態。
       }
 
-      currentSession = null;
-      currentProfile = null;
-      supabaseAccessToken.value = "";
+      clearCurrentSession();
       adminApp.classList.add("hidden");
       portalApp.classList.add("hidden");
       loginShell.classList.remove("hidden");
@@ -6557,9 +6568,7 @@
         // 即使遠端登出失敗，仍清除目前頁面的登入狀態。
       }
 
-      currentSession = null;
-      currentProfile = null;
-      supabaseAccessToken.value = "";
+      clearCurrentSession();
       portalApp.classList.add("hidden");
       adminApp.classList.add("hidden");
       loginShell.classList.remove("hidden");
@@ -6835,7 +6844,6 @@
     });
     supabaseUrl.addEventListener("input", updateSupabaseStatus);
     supabaseAnonKey.addEventListener("input", updateSupabaseStatus);
-    supabaseAccessToken.addEventListener("input", updateSupabaseStatus);
 
     saveRuleSetButton.addEventListener("click", async () => {
       const year = newRuleYear.value || String(getCurrentAcademicYear());
@@ -6924,6 +6932,10 @@
     updateLoginModeHint();
     if (!loadRecoverySessionFromUrl()) {
       showAuthView("login");
+      restoreCurrentSession().catch(() => {
+        clearCurrentSession();
+        showAuthView("login");
+      });
     }
     showAdminPage("import");
     showPeopleTool("students");

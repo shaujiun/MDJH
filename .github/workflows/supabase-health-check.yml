@@ -1,0 +1,25 @@
+name: Supabase health check
+
+on:
+  schedule:
+    - cron: "15 22 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  health-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check GitHub Pages
+        run: curl --fail --silent --show-error --retry 3 https://shaujiun.github.io/MDJH/ > /dev/null
+      - name: Check Supabase Auth
+        env:
+          SUPABASE_URL: https://ksczjwtdvvmdrpzaggfo.supabase.co
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          test -n "$SUPABASE_ANON_KEY"
+          curl --fail --silent --show-error --retry 3 \
+            -H "apikey: $SUPABASE_ANON_KEY" \
+            "$SUPABASE_URL/auth/v1/settings" > /dev/null
