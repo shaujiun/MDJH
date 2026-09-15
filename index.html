@@ -2606,6 +2606,7 @@
     ];
 
     function initializeSettingEditors() {
+      const totalRow = ruleEditorBody.querySelector(".rule-total-row");
       ruleEditorBody.innerHTML = gradeRows.map((row) => `
         <tr>
           <td>${row.grade}</td>
@@ -2616,6 +2617,7 @@
           <td><input type="number" step="0.01" data-rule-grade="${row.grade}" data-rule-field="social" value="${row.social}"></td>
         </tr>
       `).join("");
+      if (totalRow) ruleEditorBody.prepend(totalRow);
 
       pointEditorBody.innerHTML = gradeRows.map((row) => `
         <tr>
