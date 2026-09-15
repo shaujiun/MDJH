@@ -662,6 +662,10 @@
       padding: 0 10px;
       border-radius: 10px;
     }
+    .rule-total-row { background: #f4f8f5; }
+    .rule-total-pair { display: flex; gap: 8px; }
+    .rule-total-pair label { display: grid; gap: 3px; font-size: 12px; white-space: nowrap; }
+    .rule-total-pair input { width: 86px; }
 
     .manual-score-panel {
       margin-top: 18px;
@@ -1685,7 +1689,7 @@
         <p class="setting-note">系統已依數學選擇讀卡名單建立學生列。請輸入實際得分，`0` 分請直接輸入 `0`；缺考請勾選缺考。</p>
         <div class="form-group">
           <label for="mathNonChoiceTotal">數非總分</label>
-          <input id="mathNonChoiceTotal" type="number" min="1" step="1" value="6">
+          <input id="mathNonChoiceTotal" type="number" min="6" max="6" step="1" value="6" readonly>
         </div>
         <div class="mini-table-wrap">
           <table class="mini-table">
@@ -2113,6 +2117,14 @@
                 </tr>
               </thead>
               <tbody id="ruleEditorBody">
+                <tr class="rule-total-row">
+                  <th scope="row">總題數</th>
+                  <td><input type="number" min="1" step="1" data-component-total="chinese" aria-label="國文總題數"></td>
+                  <td><div class="rule-total-pair"><label>閱讀<input type="number" min="1" step="1" data-component-total="english_reading" aria-label="英語閱讀總題數"></label><label>聽力<input type="number" min="1" step="1" data-component-total="english_listening" aria-label="英語聽力總題數"></label></div></td>
+                  <td><input type="number" min="1" step="1" data-component-total="math_choice" aria-label="數學選擇總題數"></td>
+                  <td><input type="number" min="1" step="1" data-component-total="science" aria-label="自然總題數"></td>
+                  <td><input type="number" min="1" step="1" data-component-total="social" aria-label="社會總題數"></td>
+                </tr>
                 <tr>
                   <td>A++</td>
                   <td><input type="number" step="0.01" data-rule-grade="A++" data-rule-field="chinese" value="40"></td>
@@ -2544,6 +2556,7 @@
       { academic_year: 113, grade_level: 8, exam_type: "weekly_exam", version_name: "09檔預設換算標準" },
       { academic_year: 113, grade_level: 9, exam_type: "weekly_exam", version_name: "09檔預設換算標準" }
     ];
+    let conversionComponentTotals = [];
     let pointRuleOptions = [
       { academic_year: 113, city_name: "台南市", version_name: "預設積分版" }
     ];
@@ -3982,8 +3995,12 @@
         return;
       }
 
-      const result = await callSupabaseRpc("admin_list_rule_options", {});
+      const [result, totalsResult] = await Promise.all([
+        callSupabaseRpc("admin_list_rule_options", {}),
+        callSupabaseRpc("admin_list_conversion_component_totals", {})
+      ]);
       const data = result.data || {};
+      conversionComponentTotals = Array.isArray(totalsResult.data) ? totalsResult.data : [];
       if (Array.isArray(data.conversion_rule_sets)) {
         conversionRuleOptions = data.conversion_rule_sets;
       }
@@ -3991,6 +4008,52 @@
         pointRuleOptions = data.point_rule_sets;
       }
       renderImportRuleOptions();
+      applySelectedRuleComponentTotals(currentParsedImport);
+    }
+
+    const editableTotalComponents = [
+      "chinese", "english_reading", "english_listening",
+      "math_choice", "science", "social"
+    ];
+
+    function getRuleEditorComponentTotals() {
+      const totals = { math_non_choice: 6 };
+      for (const component of editableTotalComponents) {
+        const input = ruleEditorBody.querySelector(`[data-component-total="${component}"]`);
+        const value = Number(input?.value);
+        if (!Number.isInteger(value) || value <= 0) {
+          throw new Error(`請填寫 ${componentLabels[component]} 的正整數總題數。`);
+        }
+        totals[component] = value;
+      }
+      return totals;
+    }
+
+    function getSelectedRuleComponentTotals(gradeLevel) {
+      const year = Number(academicYearInput.value);
+      const selected = conversionComponentTotals.find((item) =>
+        Number(item.academic_year) === year
+        && Number(item.grade_level) === Number(gradeLevel)
+        && item.exam_type === examTypeInput.value
+        && item.version_name === ruleSetSelect.value);
+      return selected?.component_totals || null;
+    }
+
+    function applySelectedRuleComponentTotals(result) {
+      if (!result) return;
+      const grades = [...new Set(result.records.map((record) => record.grade).filter(Boolean))];
+      if (grades.length !== 1) return;
+      const configured = getSelectedRuleComponentTotals(grades[0]);
+      result.componentTotals = { ...(result.fileComponentTotals || result.componentTotals), ...(configured || {}) };
+      result.warnings = (result.fileWarnings || result.warnings).filter((warning) =>
+        !configured || !String(warning).includes("找不到題目總數"));
+      if (configured) {
+        const mismatches = Object.entries(result.fileComponentTotals || {})
+          .filter(([component, total]) => configured[component] && Number(total) !== Number(configured[component]));
+        if (mismatches.length) {
+          result.warnings.push(`檔案題數與所選換算標準不一致：${mismatches.map(([component]) => componentLabels[component]).join("、")}；正式匯入會使用換算標準題數。`);
+        }
+      }
     }
 
     function getRuleEditorRows() {
@@ -4147,7 +4210,10 @@
         p_point_city_name: pointRuleSetSelect.selectedOptions[0]?.dataset.city || "台南市",
         p_point_version_name: pointVersionName,
         p_original_file_name: excelFile.files[0]?.name || "manual-import",
-        p_component_totals: currentParsedImport.componentTotals || {},
+        p_component_totals: {
+          ...(currentParsedImport.componentTotals || {}),
+          ...(getSelectedRuleComponentTotals(grade) || {})
+        },
         p_records: records.map((record) => ({
           student_no: record.studentNo,
           name: record.name,
@@ -4509,6 +4575,10 @@
             ? row[columns.singleChoice]
             : row[columns.totalScore];
           const score = normalizeScore(scoreSource);
+          const isAbsent = score === null
+            && [columns.singleChoice, columns.totalScore]
+              .filter((column) => column >= 0)
+              .every((column) => row[column] == null || String(row[column]).trim() === "");
           records.push({
             studentNo,
             name,
@@ -4517,6 +4587,7 @@
             subjectText: componentLabels[component] || "",
             component,
             score,
+            isAbsent,
             grade,
             totalQuestions,
             sheetName,
@@ -4524,7 +4595,7 @@
           });
           recordCount += 1;
 
-          if (score === null) {
+          if (score === null && !isAbsent) {
             warnings.push(`「${sheetName}」第 ${rowIndex + 1} 列沒有可使用的答對題數。`);
           }
         }
@@ -4546,11 +4617,16 @@
         return null;
       }
 
+      const absentCount = records.filter((record) => record.isAbsent).length;
+      if (absentCount) warnings.push(`有 ${absentCount} 筆成績欄位完全空白，已標記為缺考；請在確認匯入前核對名單。`);
+
       return {
         mode: "class-report",
         records,
         sheets,
         warnings,
+        fileWarnings: [...warnings],
+        fileComponentTotals: { ...componentTotals },
         componentTotals,
         examType: sheets[0]?.examType || null,
         examNumber: sheets[0]?.examNumber || null
@@ -4884,7 +4960,7 @@
           <td>${escapeHtml(row.classCode)}</td>
           <td>${escapeHtml(row.seatNo)}</td>
           <td>${escapeHtml(componentLabels[row.component] || row.subjectText)}</td>
-          <td>${escapeHtml(row.score ?? "")}</td>
+          <td>${row.isAbsent ? "缺考" : escapeHtml(row.score ?? "")}</td>
         </tr>
       `).join("");
 
@@ -6614,8 +6690,17 @@
       gradeLevelInput,
       examTypeInput
     ].forEach((input) => {
-      input.addEventListener("change", renderImportRuleOptions);
-      input.addEventListener("input", renderImportRuleOptions);
+      const updateRule = () => {
+        renderImportRuleOptions();
+        applySelectedRuleComponentTotals(currentParsedImport);
+        if (currentParsedImport) renderImportIssues(currentParsedImport);
+      };
+      input.addEventListener("change", updateRule);
+      input.addEventListener("input", updateRule);
+    });
+    ruleSetSelect.addEventListener("change", () => {
+      applySelectedRuleComponentTotals(currentParsedImport);
+      if (currentParsedImport) renderImportIssues(currentParsedImport);
     });
 
     examNameInput.addEventListener("change", syncMathExamContext);
@@ -6653,8 +6738,8 @@
       }
 
       const totalPoints = Number(mathNonChoiceTotal.value);
-      if (!Number.isFinite(totalPoints) || totalPoints <= 0) {
-        mathNonChoiceStatus.textContent = "數非總分必須大於 0。";
+      if (totalPoints !== 6) {
+        mathNonChoiceStatus.textContent = "數非滿分固定為 6 分。";
         return;
       }
 
@@ -6772,6 +6857,7 @@
         const result = parseImportWorkbook(workbook, file.name);
         currentParsedImport = result;
         applyParsedExamSettings(result);
+        applySelectedRuleComponentTotals(result);
         renderWorkbookPreview(result, file.name);
         renderImportIssues(result);
       } catch (error) {
@@ -6793,6 +6879,7 @@
 
     importButton.addEventListener("click", async () => {
       try {
+        applySelectedRuleComponentTotals(currentParsedImport);
         const issues = renderImportIssues(currentParsedImport);
         if (issues.errors.length) {
           previewStatus.textContent = `目前有 ${issues.errors.length} 項需修正問題，已停止匯入。`;
@@ -6850,15 +6937,23 @@
       const name = newRuleName.value.trim() || `${year} 模擬考換算標準`;
       const gradeLevels = newRuleGrade.value === "all" ? [7, 8, 9] : [Number(newRuleGrade.value)];
       const examTypes = ["mock_exam", "weekly_exam"];
-      const rpcPayloads = gradeLevels.flatMap((gradeLevel) =>
-        examTypes.map((examType) => buildConversionRuleSetPayload(gradeLevel, examType))
-      );
 
       try {
+        const componentTotals = getRuleEditorComponentTotals();
+        const rpcPayloads = gradeLevels.flatMap((gradeLevel) =>
+          examTypes.map((examType) => buildConversionRuleSetPayload(gradeLevel, examType))
+        );
         ruleSetStatus.textContent = "處理中，請稍候。";
 
         for (const payload of rpcPayloads) {
           await callSupabaseRpc("admin_upsert_conversion_rule_set", payload);
+          await callSupabaseRpc("admin_upsert_conversion_component_totals", {
+            p_academic_year: payload.p_academic_year,
+            p_grade_level: payload.p_grade_level,
+            p_exam_type: payload.p_exam_type,
+            p_version_name: payload.p_version_name,
+            p_component_totals: componentTotals
+          });
         }
 
         if (getSupabaseConfig().enabled) {
