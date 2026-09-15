@@ -4293,6 +4293,11 @@
       return Number.isFinite(number) ? number : null;
     }
 
+    function isAbsentScoreCell(value) {
+      const text = String(value ?? "").trim();
+      return text === "" || ["-", "－", "—"].includes(text);
+    }
+
     function hasStudentRowEnded(row) {
       const firstCells = row.slice(0, 3).map((value) => String(value ?? "").trim());
       const rowText = firstCells.join(" ");
@@ -4580,7 +4585,7 @@
           const isAbsent = score === null
             && [columns.singleChoice, columns.totalScore]
               .filter((column) => column >= 0)
-              .every((column) => row[column] == null || String(row[column]).trim() === "");
+              .every((column) => isAbsentScoreCell(row[column]));
           records.push({
             studentNo,
             name,
@@ -4620,7 +4625,7 @@
       }
 
       const absentCount = records.filter((record) => record.isAbsent).length;
-      if (absentCount) warnings.push(`有 ${absentCount} 筆成績欄位完全空白，已標記為缺考；請在確認匯入前核對名單。`);
+      if (absentCount) warnings.push(`有 ${absentCount} 筆成績欄位為空白或「-」，已標記為缺考；請在確認匯入前核對名單。`);
 
       return {
         mode: "class-report",
