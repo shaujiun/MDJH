@@ -3446,10 +3446,11 @@
         if (!Number.isFinite(value) || !Number.isFinite(step) || step <= 0 || gradeIndex < 0) return "";
         const targetA = Number(rule?.A);
         const targetBpp = Number(rule?.["B++"]);
+        const upperBound = (target) => Number((target - (Number.isInteger(target * 10) ? 0.06 : 0.01)).toFixed(2));
         if (Number.isFinite(targetA) && gradeIndex > gradeOrder.indexOf("A")
-          && value >= Number((targetA - step).toFixed(2)) && value < targetA) return "near-a";
+          && value >= Number((targetA - step).toFixed(2)) && value <= upperBound(targetA)) return "near-a";
         if (Number.isFinite(targetBpp) && gradeIndex > gradeOrder.indexOf("B++")
-          && value >= Number((targetBpp - step).toFixed(2)) && value < targetBpp) return "near-bpp";
+          && value >= Number((targetBpp - step).toFixed(2)) && value <= upperBound(targetBpp)) return "near-bpp";
         return "";
       }
       if (!["chinese", "science", "social"].includes(subjectKey)) return "";
