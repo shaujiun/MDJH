@@ -3409,55 +3409,61 @@
     }
 
     const reportSubjects = [
-      { key: "chinese", label: "國文", oneQuestionPercent: 100 / 42 },
-      { key: "english", label: "英文", oneQuestionPercent: 80 / 43 },
-      { key: "math", label: "數學", oneQuestionPercent: 3.4 },
-      { key: "science", label: "自然", oneQuestionPercent: 100 / 54 },
-      { key: "social", label: "社會", oneQuestionPercent: 100 / 63 }
+      { key: "chinese", label: "國文" },
+      { key: "english", label: "英文" },
+      { key: "math", label: "數學" },
+      { key: "science", label: "自然" },
+      { key: "social", label: "社會" }
     ];
 
     const gradeOrder = ["A++", "A+", "A", "B++", "B+", "B", "C"];
-    function getThresholdPercent(subjectKey, grade) {
-      const row = gradeRows.find((item) => item.grade === grade);
-      if (!row || row[subjectKey] == null) {
-        return null;
-      }
-      if (subjectKey === "english" || subjectKey === "math") {
-        return Number(row[subjectKey]);
-      }
-      const subject = reportSubjects.find((item) => item.key === subjectKey);
-      return subject?.oneQuestionPercent ? Number(row[subjectKey]) * subject.oneQuestionPercent : null;
-    }
-
-    function getNearThresholdClass(subjectKey, grade, percent) {
-      if (percent == null || grade == null || grade === "absent") {
+    function getNearThresholdClass(subjectKey, grade, percent, nearThresholds = {}) {
+      if (percent == null || grade == null || grade === "absent"
+        || !["chinese", "science", "social"].includes(subjectKey)) {
         return "";
       }
-      const value = Number(percent);
-      if (!Number.isFinite(value)) {
+      const rule = nearThresholds[subjectKey];
+      const total = Number(rule?.total);
+      const rawEstimate = Number(percent) * total / 100;
+      const correctCount = Math.round(rawEstimate);
+      const gradeIndex = gradeOrder.indexOf(grade);
+      if (!Number.isInteger(total) || total <= 0 || !Number.isFinite(rawEstimate)
+        || gradeIndex < 0 || Math.abs(rawEstimate - correctCount) > 0.005 * total / 100 + 0.0001) {
         return "";
       }
-      const subject = reportSubjects.find((item) => item.key === subjectKey);
-      const tolerance = subject?.oneQuestionPercent || 0;
-      const targetA = getThresholdPercent(subjectKey, "A");
-      const targetBpp = getThresholdPercent(subjectKey, "B++");
-      if (targetA != null && value < targetA && targetA - value <= tolerance + 0.01) {
+      const targetA = Number(rule?.A);
+      const targetBpp = Number(rule?.["B++"]);
+      if (Number.isInteger(targetA) && gradeIndex > gradeOrder.indexOf("A")
+        && targetA - correctCount === 1) {
         return "near-a";
       }
-      if (targetBpp != null && value < targetBpp && targetBpp - value <= tolerance + 0.01) {
+      if (Number.isInteger(targetBpp) && gradeIndex > gradeOrder.indexOf("B++")
+        && targetBpp - correctCount === 1) {
         return "near-bpp";
       }
       return "";
     }
 
-    function formatScoreCell(subjectKey, grade, percent) {
+    function formatScoreCell(subjectKey, grade, percent, nearThresholds = {}) {
       if (grade == null && percent == null) {
         return '<td class="score-cell"><strong>－</strong><small>－</small></td>';
       }
       const gradeText = grade === "absent" ? "缺考" : grade;
-      const nearClass = getNearThresholdClass(subjectKey, grade, percent);
+      const nearClass = getNearThresholdClass(subjectKey, grade, percent, nearThresholds);
       const nearLabel = nearClass === "near-a" ? "差 1 題達 A" : nearClass === "near-bpp" ? "差 1 題達 B++" : "";
       return `<td class="score-cell ${nearClass}" title="${escapeHtml(nearLabel)}"><strong>${escapeHtml(gradeText || "缺考")}</strong><small>${percent == null ? "－" : escapeHtml(Number(percent).toFixed(2))}</small></td>`;
+    }
+
+    async function loadExamNearThresholdContext(examId) {
+      if (!examId) return { rules: {}, error: null };
+      try {
+        const result = await callSupabaseRpc("get_exam_near_threshold_context", {
+          p_exam_id: examId
+        }, true);
+        return { rules: result.data || {}, error: null };
+      } catch (error) {
+        return { rules: {}, error: error.message };
+      }
     }
 
     function renderAnalysisCharts(rows, averageContainer, gradeContainer) {
@@ -3696,11 +3702,11 @@
             <td>${escapeHtml(row.class_code || "－")}</td>
             <td>${escapeHtml(row.seat_no ?? "－")}</td>
             <td>${escapeHtml(row.student_name || row.student_no || "－")}</td>
-            ${formatScoreCell("chinese", row.chinese_grade, row.chinese_percent)}
-            ${formatScoreCell("english", row.english_grade, row.english_percent)}
-            ${formatScoreCell("math", row.math_grade, row.math_percent)}
-            ${formatScoreCell("science", row.science_grade, row.science_percent)}
-            ${formatScoreCell("social", row.social_grade, row.social_percent)}
+            ${formatScoreCell("chinese", row.chinese_grade, row.chinese_percent, data.nearThresholds)}
+            ${formatScoreCell("english", row.english_grade, row.english_percent, data.nearThresholds)}
+            ${formatScoreCell("math", row.math_grade, row.math_percent, data.nearThresholds)}
+            ${formatScoreCell("science", row.science_grade, row.science_percent, data.nearThresholds)}
+            ${formatScoreCell("social", row.social_grade, row.social_percent, data.nearThresholds)}
             <td>${escapeHtml(row.a_count ?? 0)}／${escapeHtml(row.b_count ?? 0)}</td>
             <td>${escapeHtml(row.total_grade_points ?? 0)}</td>
             <td>${escapeHtml(row.class_grade_rank ?? "－")}／${escapeHtml(row.school_grade_rank ?? "－")}</td>
@@ -3743,8 +3749,13 @@
         p_exam_id: selectedExamId && !selectedExamId.startsWith("demo-") ? selectedExamId : null,
         p_class_code: null
       });
-      renderScoreReport(result.data || {});
-      reportStatus.textContent = `查詢完成，目前顯示 ${currentReportRows.length} 位學生。`;
+      const reportData = result.data || {};
+      const nearContext = await loadExamNearThresholdContext(reportData.selected_exam_id);
+      reportData.nearThresholds = nearContext.rules;
+      renderScoreReport(reportData);
+      reportStatus.textContent = nearContext.error
+        ? `成績已載入，但臨界題數標示暫無法載入：${nearContext.error}`
+        : `查詢完成，目前顯示 ${currentReportRows.length} 位學生。`;
     }
 
     async function publishImportedExams(results) {
@@ -3870,11 +3881,11 @@
             <td>${escapeHtml(row.class_code || "－")}</td>
             <td>${escapeHtml(row.seat_no ?? "－")}</td>
             <td>${escapeHtml(row.student_name || row.student_no || "－")}</td>
-            ${formatScoreCell("chinese", row.chinese_grade, row.chinese_percent)}
-            ${formatScoreCell("english", row.english_grade, row.english_percent)}
-            ${formatScoreCell("math", row.math_grade, row.math_percent)}
-            ${formatScoreCell("science", row.science_grade, row.science_percent)}
-            ${formatScoreCell("social", row.social_grade, row.social_percent)}
+            ${formatScoreCell("chinese", row.chinese_grade, row.chinese_percent, data.nearThresholds)}
+            ${formatScoreCell("english", row.english_grade, row.english_percent, data.nearThresholds)}
+            ${formatScoreCell("math", row.math_grade, row.math_percent, data.nearThresholds)}
+            ${formatScoreCell("science", row.science_grade, row.science_percent, data.nearThresholds)}
+            ${formatScoreCell("social", row.social_grade, row.social_percent, data.nearThresholds)}
             <td>${row.a_count == null ? "－" : `${escapeHtml(row.a_count)}／${escapeHtml(row.b_count ?? 0)}`}</td>
             <td>${escapeHtml(row.total_grade_points ?? "－")}</td>
             <td>${escapeHtml(row.class_grade_rank ?? "－")}／${escapeHtml(row.school_grade_rank ?? "－")}</td>
@@ -3910,8 +3921,12 @@
         p_exam_id: selectedExamId && !selectedExamId.startsWith("demo-") ? selectedExamId : null
       }, true);
       const reportData = result.data || {};
+      const nearContext = await loadExamNearThresholdContext(reportData.selected_exam_id);
+      reportData.nearThresholds = nearContext.rules;
       renderPortalReport(reportData);
-      portalStatus.textContent = `查詢完成，目前顯示 ${currentPortalRows.length} 位學生。`;
+      portalStatus.textContent = nearContext.error
+        ? `成績已載入，但臨界題數標示暫無法載入：${nearContext.error}`
+        : `查詢完成，目前顯示 ${currentPortalRows.length} 位學生。`;
     }
 
     function getSelectedImportGrades() {
