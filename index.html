@@ -5534,7 +5534,7 @@
       if (!response.ok) {
         const authMessage = data.error_description || data.msg || data.message || "Supabase 登入失敗。";
         if (/invalid login credentials/i.test(authMessage)) {
-          throw new Error("帳號或密碼不正確，或此 Email 尚未完成驗證。可使用完整 Email、已綁定學號或已設定的自訂帳號登入。");
+          throw new Error("帳號或密碼不正確。若使用學號登入仍失敗，請向管理員確認帳號綁定，或使用註冊碼重設學生密碼。");
         }
         if (/email not confirmed/i.test(authMessage)) {
           throw new Error("此 Email 尚未完成驗證，請先到信箱點擊 Supabase 驗證信。");
