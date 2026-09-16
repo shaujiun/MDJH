@@ -1358,8 +1358,8 @@
           第一次使用可
           <button class="text-button" type="button" id="showSignupButton">建立帳號／設定學生密碼</button>；
           忘記密碼時，可
-          <button class="text-button" type="button" id="showResetRequestButton">寄送重設信</button>；
-          如無法收信，請聯絡註冊組長協助重設。
+          <button class="text-button" type="button" id="showResetRequestButton">重設密碼</button>；
+          學生向管理員領取新註冊碼，不需收信；教師則使用 Email 重設信。
         </p>
 
         <button class="login-button" type="submit">登入</button>
@@ -5778,6 +5778,12 @@
     });
 
     showResetRequestButton.addEventListener("click", () => {
+      if (!roleInput.value) {
+        message.className = "message error";
+        message.textContent = "請先選擇登入身分。";
+        roleInput.focus();
+        return;
+      }
       if (roleInput.value === "student") {
         signupStudentNo.value = !accountInput.value.includes("@") ? accountInput.value : "";
         signupRegistrationCode.value = "";
