@@ -885,12 +885,12 @@
     }
 
     .individual-report-page {
-      display: grid;
+      display: block;
       height: 276mm;
-      grid-template-rows: 1fr 1fr;
-      gap: 0;
       page-break-after: always;
       break-after: page;
+      page-break-inside: avoid;
+      break-inside: avoid;
     }
 
     .individual-report-page:last-child {
@@ -901,13 +901,12 @@
     .individual-report-card {
       display: grid;
       box-sizing: border-box;
+      height: 50%;
       grid-template-columns: minmax(0, 1fr) 28mm;
       gap: 8mm;
       min-height: 0;
       padding: 6mm;
       border-bottom: 1px dashed #94a3b8;
-      page-break-inside: avoid;
-      break-inside: avoid;
     }
 
     .individual-report-page .individual-report-card:nth-child(2) {
@@ -3683,6 +3682,17 @@
       return examType === "weekly_exam" ? "週考" : "模擬考";
     }
 
+    function sortExamsNewestFirst(exams) {
+      return [...exams].sort((a, b) =>
+        Number(b.academic_year || 0) - Number(a.academic_year || 0)
+        || Number(b.semester || 0) - Number(a.semester || 0)
+        || Number(b.grade_level || 0) - Number(a.grade_level || 0)
+        || Number(b.exam_number || 0) - Number(a.exam_number || 0)
+        || String(a.exam_type || "").localeCompare(String(b.exam_type || ""), "zh-Hant")
+        || String(b.exam_date || "").localeCompare(String(a.exam_date || ""))
+      );
+    }
+
     function formatExamLabel(exam) {
       if (!exam) {
         return "未選擇考試";
@@ -3718,7 +3728,7 @@
 
     function renderScoreReport(data) {
       currentScoreReportData = data;
-      const exams = Array.isArray(data.exams) ? data.exams : [];
+      const exams = sortExamsNewestFirst(Array.isArray(data.exams) ? data.exams : []);
       const sourceRows = Array.isArray(data.rows) ? data.rows : [];
       const previousExamId = reportExamSelect.value;
       const previousClassCode = reportClassSelect.value;
@@ -3905,7 +3915,7 @@
 
     function renderPortalReport(data) {
       currentPortalReportData = data;
-      const exams = Array.isArray(data.exams) ? data.exams : [];
+      const exams = sortExamsNewestFirst(Array.isArray(data.exams) ? data.exams : []);
       const allRows = Array.isArray(data.rows) ? data.rows : [];
       const previousScope = portalScopeSelect.value;
       populatePortalScopeSelect(allRows, previousScope);
